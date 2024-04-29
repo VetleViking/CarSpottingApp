@@ -1,8 +1,16 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 export default function MakeSelected() {
-    const queryParams = new URLSearchParams(window.location.search);
-    const make = queryParams.get('make');
+    const [make, setMake] = useState('');
+    
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const queryParams = new URLSearchParams(window.location.search);
+            setMake(queryParams.get('make') || '');
+        }
+    }, []);
 
     console.log(make);
 

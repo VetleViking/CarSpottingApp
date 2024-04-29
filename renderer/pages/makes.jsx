@@ -5,6 +5,7 @@ import { get_makes } from '../stuff/api';
 function Next() {
   const [search, setSearch] = useState('');
   const [data, setData] = useState(null);
+  const [selected, setSelected] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -19,13 +20,17 @@ function Next() {
     return <div>Loading...</div>;
   }
 
-  console.log(data);
+  if (selected) {
+    return <div>{selected}</div>;
+  }
 
   return (
     <div>
       <Header search={search} setSearch={setSearch} />
       {data.map((item, id) => (
-        <div key={id}>
+        <div 
+          key={id}
+          onClick={() => setSelected(item.name)}>
           <h3>{item.name}</h3>
           {/* <h3>{item.make} {item.model}</h3>
           <p>{item.year}</p> */}

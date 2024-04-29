@@ -12,7 +12,7 @@ export default function HomePage() {
 
   return (
     <div>
-      <Link href="/next">gå dit</Link>
+      <Link href="/makes">gå dit</Link>
     </div>
   )
 }

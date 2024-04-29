@@ -12,7 +12,7 @@ const Search = ({ search, setSearch }: SearchProps) => {
         <div>
             <input
                 type="text"
-                placeholder="Search for makes..."
+                placeholder="Search..."
                 value={search}
 
                 onChange={(e) => {

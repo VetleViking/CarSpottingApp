@@ -4,8 +4,8 @@ export async function get_models(make?: string, model?: string) {
     const params = new URLSearchParams();
     if (make) params.append('make', make);
     if (model) params.append('model', model);
+    if (!make && !model) params.append('model', 'a');
     params.append('limit', '50');
-    params.append('offset', '300');
 
     const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
         headers: {
@@ -13,7 +13,17 @@ export async function get_models(make?: string, model?: string) {
         }
     });
 
-    return await response.json();
+    // return response.json();
+
+    const data = await response.json();
+
+    const uniqueModels = data.filter((item: any, index: any, self: any) =>
+        index === self.findIndex((t: any) => (
+            t.model === item.model
+        ))
+    );
+
+    return uniqueModels;
 }
 
 export async function get_makes(make?: string) {

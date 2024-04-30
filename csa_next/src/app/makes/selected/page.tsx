@@ -1,7 +1,9 @@
 "use client";
 
 import { get_models } from "@/api/api";
+import ListComponent from "@/components/ListComponent";
 import Search from "@/components/Search";
+import { get } from "http";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -10,16 +12,25 @@ export default function MakeSelected() {
     const [data, setData] = useState<{ model: string; }[]>([]);
     const searchParams = useSearchParams();
     const make = searchParams.get('make');
+
+    function selectedModel(model: string) {
+        window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}`;
+    }
     
     useEffect(() => {
         const fetchData = async () => {
-            const data = await get_models(make as string, search);
-            
+            let data = [];
+            if (make == "unknown") {
+                data = await get_models("", search);    
+            } else {
+                data = await get_models(make as string, search);
+            }
+
             setData(data);
         };
 
         fetchData();
-    }, []);
+    }, [search, make]);
 
     if (!data) {
         return (
@@ -30,11 +41,13 @@ export default function MakeSelected() {
     return (
         <div>
             <Search search={search} setSearch={setSearch} />
-            <h1>Selected Make: {make}</h1>
-            <h2>Models</h2>
+            <h1 className="text-white text-center">Selected Make: {make}</h1>
+            <h2 className="text-white text-center">{make}'s models:</h2>
             {data.map((item, id) => (
-                <div key={id}>
-                    <h3>{item.model}</h3>
+                <div 
+                key={id}
+                onClick={() => {selectedModel(item.model)}}>
+                    <ListComponent title={item.model} />
                 </div>
             ))}
         </div>

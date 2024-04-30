@@ -1,23 +1,38 @@
 "use client";
 
+import { get_models } from "@/api/api";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function MakeSelected() {
-    const [make, setMake] = useState('');
+    const [data, setData] = useState<{ model: string; }[]>([]);
+    const searchParams = useSearchParams();
+    const make = searchParams.get('make');
+
+    async function fetchData() {
+        const data = await get_models(make as string);
+        setData(data);
+    }
     
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const queryParams = new URLSearchParams(window.location.search);
-            setMake(queryParams.get('make') || '');
-        }
+        fetchData();
     }, []);
 
-    console.log(make);
+    if (!data) {
+        return (
+            <div>Loading...</div>
+        );
+    }
 
     return (
         <div>
             <h1>Selected Make: {make}</h1>
-            {/* Rest of your component UI */}
+            <h2>Models</h2>
+            {data.map((item, id) => (
+                <div key={id}>
+                    <h3>{item.model}</h3>
+                </div>
+            ))}
         </div>
     );
 };

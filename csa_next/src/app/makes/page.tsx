@@ -32,6 +32,7 @@ function Makes() {
 
     return (
         <div>
+            <p className='text-center text-white text-xl mb-4'>Select the make</p>
             <Search search={search} setSearch={setSearch} />
             <div onClick={() => selectedMake("unknown")}>
                 <ListComponent title="Dont know / other" />

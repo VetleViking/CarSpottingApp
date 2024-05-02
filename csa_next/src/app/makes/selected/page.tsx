@@ -3,7 +3,6 @@
 import { get_models } from "@/api/api";
 import ListComponent from "@/components/ListComponent";
 import Search from "@/components/Search";
-import { get } from "http";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -41,8 +40,8 @@ export default function MakeSelected() {
     return (
         <div>
             <Search search={search} setSearch={setSearch} />
-            <h1 className="text-white text-center">Selected Make: {make}</h1>
-            <h2 className="text-white text-center">{make}'s models:</h2>
+            <p className="text-white text-center text-xl">Selected Make: {make}</p>
+            <p className="text-white text-center text-xl">{make}'s models:</p>
             {data.map((item, id) => (
                 <div 
                 key={id}

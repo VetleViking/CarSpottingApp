@@ -1,15 +1,54 @@
 import { NextFunction, Request, Response, Router } from 'express';
+import { redisClient } from '../redis-source';
+import { generate_jwt } from '../utils/user';
 
 const router = Router();
 
-router.post('/login', (req: Request, res: Response, next: NextFunction) => {
+router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { username, password } = req.body;
-        if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
-            res.status(200).json({ message: 'Login successful' });
-        } else {
-            res.status(401).json({ message: 'Invalid credentials' });
+
+        if (!username || !password) {
+            res.status(400).json({ message: 'Username and password are required' });
+            return;
         }
+
+        const userExists = await redisClient.hGet('users', username);
+        if (!userExists) {
+            res.status(400).json({ message: 'User does not exist' });
+            return;
+        }
+
+        if (userExists !== password) {
+            res.status(400).json({ message: 'Incorrect password' });
+            return;
+        }
+
+        res.status(200).json({ message: 'Logged in', token: await generate_jwt(username) });
+    } catch(err) {
+        next(err);
+    }
+});
+
+
+router.post('/createuser', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { username, password } = req.body;
+
+        if (!username || !password) {
+            res.status(400).json({ message: 'Username and password are required' });
+            return;
+        }
+
+        const userExists = await redisClient.hGet('users', username);
+        if (userExists) {
+            res.status(400).json({ message: 'User already exists' });
+            return;
+        }
+
+        await redisClient.hSet('users', username, password);
+
+        res.status(201).json({ message: 'User created' });
     } catch(err) {
         next(err);
     }

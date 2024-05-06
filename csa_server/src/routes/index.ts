@@ -1,12 +1,13 @@
 import { Router } from "express";
 import Users from "./users";
-import Products from "./products/products";
-import Ai from "./ai/ai.controller";
+import userRequireMiddleware from "../middleware/userRequire";
+
 
 const router = Router();
 
+router.use(userRequireMiddleware);
+
+
 router.use("/users", Users);
-router.use("/products", Products);
-router.use("/ai", Ai);
 
 export default router;

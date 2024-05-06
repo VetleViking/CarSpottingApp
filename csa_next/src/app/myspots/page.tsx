@@ -1,5 +1,9 @@
-import { get_makes } from "@/api/api";
+"use client";
+
+import { create_user, get_makes } from "@/api/api";
+import CreateUser from "@/components/CreateUser";
 import ListComponent from "@/components/ListComponent";
+import Login from "@/components/Login";
 import Search from "@/components/Search";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -30,6 +34,9 @@ export default function MySpots() {
 
     return (
         <div>
+            <CreateUser />
+            <Login />
+
             <p className='text-center text-white text-xl mb-4'>Select the make</p>
             <Search search={search} setSearch={setSearch} />
             <div className="text-white text-center">My Spots</div>

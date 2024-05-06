@@ -1,6 +1,6 @@
 "use client";
 
-import { create_user, get_makes } from "@/api/api";
+import { create_user, get_makes, upload_makes } from "@/api/api";
 import CreateUser from "@/components/CreateUser";
 import ListComponent from "@/components/ListComponent";
 import Login from "@/components/Login";
@@ -36,6 +36,7 @@ export default function MySpots() {
         <div>
             <CreateUser />
             <Login />
+            <button onClick={upload_makes}>Upload makes</button>
 
             <p className='text-center text-white text-xl mb-4'>Select the make</p>
             <Search search={search} setSearch={setSearch} />

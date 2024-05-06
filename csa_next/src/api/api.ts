@@ -31,6 +31,19 @@ export async function get_makes(make?: string) {
     return  makes.filter((item) => item.name.toLowerCase().includes(make.toLowerCase()));
 }
 
+export async function upload_makes() {
+    makes.forEach(async (make) => {
+        await fetch(`http://localhost:4000/api/v1/cars/makes/${make.name}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'authorization': 'Bearer ' + localStorage.getItem('token')
+            },
+        });
+    });
+}
+
+
 export async function create_user(username: string, password: string) {
     const response = await fetch(`http://localhost:4000/api/v1/users/createuser`, {
         method: 'POST',
@@ -40,7 +53,7 @@ export async function create_user(username: string, password: string) {
         body: JSON.stringify({ username, password })
     });
 
-    return response.json();
+    return await response.json();
 }
 
 export async function login(username: string, password: string) {
@@ -52,5 +65,12 @@ export async function login(username: string, password: string) {
         body: JSON.stringify({ username, password })
     });
 
-    return response.json();
+    if (response.status === 200) {
+        const data = await response.json();
+        localStorage.setItem('token', data.token);
+    } else {
+        return await response.json();
+    }
+
+    return response;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { get_models } from "@/api/api";
+import { get_models, get_models_redis } from "@/api/api";
 import ListComponent from "@/components/ListComponent";
 import Search from "@/components/Search";
 import { useSearchParams } from "next/navigation";
@@ -20,9 +20,9 @@ export default function MakeSelected() {
         const fetchData = async () => {
             let data = [];
             if (make == "unknown") {
-                data = await get_models("", search);    
+                data = await get_models_redis("", search);    
             } else {
-                data = await get_models(make as string, search);
+                data = await get_models_redis(make as string, search);
             }
 
             setData(data);
@@ -42,13 +42,17 @@ export default function MakeSelected() {
             <Search search={search} setSearch={setSearch} />
             <p className="text-white text-center text-xl">Selected Make: {make}</p>
             <p className="text-white text-center text-xl">{make}'s models:</p>
-            {data.map((item, id) => (
-                <div 
-                key={id}
-                onClick={() => {selectedModel(item.model)}}>
-                    <ListComponent title={item.model} />
-                </div>
-            ))}
+            {Array.isArray(data) && data.length > 0 ? (
+                data.map((item, id) => (
+                    <div 
+                    key={id}
+                    onClick={() => {selectedModel(item.model)}}>
+                        <ListComponent title={item.model} />
+                    </div>
+                ))
+            ) : (
+                <div className="text-white text-center">No models found</div>
+            )}
         </div>
     );
 };

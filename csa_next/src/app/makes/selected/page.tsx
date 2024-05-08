@@ -43,11 +43,11 @@ export default function MakeSelected() {
             <p className="text-white text-center text-xl">Selected Make: {make}</p>
             <p className="text-white text-center text-xl">{make}'s models:</p>
             {Array.isArray(data) && data.length > 0 ? (
-                data.map((item, id) => (
+                data.map((item: any, id) => (
                     <div 
                     key={id}
-                    onClick={() => {selectedModel(item.model)}}>
-                        <ListComponent title={item.model} />
+                    onClick={() => {selectedModel(item.model? item.model : item)}}>
+                        <ListComponent title={item.model? item.model : item} />
                     </div>
                 ))
             ) : (

@@ -3,6 +3,19 @@ import { redisClient } from '../redis-source';
 
 const router = Router();
 
+router.get('/makes', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const makesObject = await redisClient.hGetAll('makes');
+        const makesArray = Object.keys(makesObject).map(key => makesObject[key]);
+
+        res.status(200).json(makesArray);
+        return;
+        
+    } catch(err) {
+        next(err);
+    }
+});
+
 router.get('/makes/:query', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { query } = req.params;
@@ -10,7 +23,7 @@ router.get('/makes/:query', async (req: Request, res: Response, next: NextFuncti
         const makesObject = await redisClient.hGetAll('makes');
         const makesArray = Object.keys(makesObject).map(key => makesObject[key]);
 
-        const filteredMakes = makesArray.filter(make => make.includes(query));
+        const filteredMakes = makesArray.filter(make => make.toLowerCase().includes(query.toLowerCase()));
 
         res.status(200).json(filteredMakes);
         return;
@@ -20,12 +33,56 @@ router.get('/makes/:query', async (req: Request, res: Response, next: NextFuncti
     }
 });
 
-router.get('/makes', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/makes/unknown/models/', async (req: Request, res: Response, next: NextFunction) => {
     try {
+        // if not searched bofore, save search and get from apininja instead
+        const searchedBefore = await redisClient.hGet(`searched:unknown`, ' ');
+
+        if (!searchedBefore) {
+            await redisClient.hSet(`searched:unknown`, ' ', ' ');
+        
+            const params = new URLSearchParams();
+            params.append('model', 'a');
+            params.append('limit', '50');
+        
+            const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
+                headers: {
+                    'X-Api-Key': `9UKQbcg6KLGBNFl1N0I2Kw==pvGsAwuxi8RToxzi`
+                }
+            });
+        
+            const data = await response.json();
+        
+            const uniqueModels = data.filter((item: any, index: any, self: any) =>
+                index === self.findIndex((t: any) => (
+                    t.model === item.model
+                ))
+            );
+
+            uniqueModels.forEach(async model => {
+                redisClient.hSet(`make:${model.make}`, model.model, model.model);
+            });
+
+            res.status(200).json(uniqueModels);
+            return;
+        }
+
+        // Else, get all makes from Redis
         const makesObject = await redisClient.hGetAll('makes');
         const makesArray = Object.keys(makesObject).map(key => makesObject[key]);
 
-        res.status(200).json(makesArray);
+        let modelsArray: string[] = [];
+
+        makesArray.forEach(async make => {
+            const modelsObject = await redisClient.hGetAll(`make:${make}`);    
+            const models = Object.keys(modelsObject).map(key => modelsObject[key]);
+
+            modelsArray = modelsArray.concat(models);
+
+            if (modelsArray.length > 50) return;
+        });
+
+        res.status(200).json(modelsArray);
         return;
         
     } catch(err) {
@@ -62,11 +119,6 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
                 ))
             );
 
-            if (uniqueModels.length === 0) {
-                res.status(404).json({ message: 'No models found' });
-                return;
-            }
-
             uniqueModels.forEach(async model => {
                 redisClient.hSet(`make:${model.make}`, model.model, model.model);
             });
@@ -82,16 +134,15 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
         let modelsArray: string[] = [];
 
         makesArray.forEach(async make => {
-            const modelsObject = await redisClient.hGet(`make:${make}`, query);
-        
+            const modelsObject = await redisClient.hGetAll(`make:${make}`);    
             const models = Object.keys(modelsObject).map(key => modelsObject[key]);
-            modelsArray = modelsArray.concat(models);
-        });
 
-        if (modelsArray.length === 0) {
-            res.status(404).json({ message: 'No models found' });
-            return;
-        }
+            const filteredModels = models.filter(model => model.toLowerCase().includes(query.toLowerCase()));
+
+            modelsArray = modelsArray.concat(filteredModels);
+
+            if (modelsArray.length > 50) return;
+        });
 
         res.status(200).json(modelsArray);
 
@@ -100,20 +151,19 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
     }
 });
 
-router.get('/makes/:make/models/:query', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/makes/:make/models/', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { make, query } = req.params;
+        const { make } = req.params;
         
         // if not searched bofore, save search and get from apininja instead
-        const searchedBefore = await redisClient.hGet(`searched:${make}`, query);
+        const searchedBefore = await redisClient.hGet(`searched:${make}`, ' ');
 
         if (!searchedBefore) {
-            await redisClient.hSet(`searched:${make}`, query, query);
+            await redisClient.hSet(`searched:${make}`, ' ', ' ');
         
             const params = new URLSearchParams();
             params.append('make', make);
-            params.append('model', query);
-            if (query.length == 0) params.append('model', 'a');
+            params.append('model', 'a');
             params.append('limit', '50');
         
             const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
@@ -130,10 +180,60 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
                 ))
             );
 
-            if (uniqueModels.length === 0) {
-                res.status(404).json({ message: 'No models found' });
-                return;
-            }
+            uniqueModels.forEach(async model => {
+                redisClient.hSet(`make:${make}`, model.model, model.model);
+            });
+
+            res.status(200).json(uniqueModels);
+            return;
+        }
+
+        // Else, get all makes from Redis
+        const modelsObject = await redisClient.hGetAll(`make:${make}`);
+        const modelsArray = Object.keys(modelsObject).map(key => modelsObject[key]);
+        
+        if (modelsArray.length > 50) {
+            res.status(200).json(modelsArray.slice(0, 50));
+            return;
+        }
+
+        res.status(200).json(modelsArray);
+        return;
+        
+    } catch(err) {
+        next(err);
+    }
+});
+
+
+router.get('/makes/:make/models/:query', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { make, query } = req.params;
+        
+        // if not searched bofore, save search and get from apininja instead
+        const searchedBefore = await redisClient.hGet(`searched:${make}`, query);
+
+        if (!searchedBefore) {
+            await redisClient.hSet(`searched:${make}`, query, query);
+        
+            const params = new URLSearchParams();
+            params.append('make', make);
+            params.append('model', query);
+            params.append('limit', '50');
+        
+            const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
+                headers: {
+                    'X-Api-Key': `9UKQbcg6KLGBNFl1N0I2Kw==pvGsAwuxi8RToxzi`
+                }
+            });
+        
+            const data = await response.json();
+        
+            const uniqueModels = data.filter((item: any, index: any, self: any) =>
+                index === self.findIndex((t: any) => (
+                    t.model === item.model
+                ))
+            );
 
             uniqueModels.forEach(async model => {
                 redisClient.hSet(`make:${make}`, model.model, model.model);
@@ -147,14 +247,14 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
         const modelsObject = await redisClient.hGetAll(`make:${make}`);
         const modelsArray = Object.keys(modelsObject).map(key => modelsObject[key]);
 
-        const filteredModels = modelsArray.filter(model => model.includes(query));
+        const filteredModels = modelsArray.filter(model => model.toLowerCase().includes(query.toLowerCase()));
 
-        if (modelsArray.length === 0) {
-            res.status(404).json({ message: 'No models found' });
+        if (filteredModels.length > 50) {
+            res.status(200).json(filteredModels.slice(0, 50));
             return;
         }
 
-        res.status(200).json(modelsArray);
+        res.status(200).json(filteredModels);
         return;
         
     } catch(err) {

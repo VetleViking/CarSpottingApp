@@ -33,9 +33,20 @@ export async function get_makes(make?: string) {
 
 export async function get_models_redis(make?: string, query?: string) {
     if (!make) make = 'unknown';
-    if (!query) query = 'a';
 
     const response = await fetch(`http://localhost:4000/api/v1/cars/makes/${make}/models/${query}` , {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + localStorage.getItem('token')
+        }
+    });
+
+    return await response.json();
+}
+
+export async function get_makes_redis(query?: string) {
+    const response = await fetch(`http://localhost:4000/api/v1/cars/makes/${query}` , {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

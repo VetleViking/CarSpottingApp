@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Search from '@/components/Search';
-import { get_makes } from '@/api/api';
+import { get_makes, get_makes_redis } from '@/api/api';
 import ListComponent from '@/components/ListComponent';
 
 
@@ -16,7 +16,7 @@ function Makes() {
 
     useEffect(() => {
         const fetchData = async () => {
-            const data = await get_makes(search);
+            const data = await get_makes_redis(search);
             
             setData(data);
         };
@@ -37,11 +37,11 @@ function Makes() {
             <div onClick={() => selectedMake("unknown")}>
                 <ListComponent title="Dont know / other" />
             </div>
-            {data.map((item, id) => (
+            {data.map((item: any, id) => (
                 <div
                 key={id}
-                onClick={() => selectedMake(item.name)}>
-                    <ListComponent  title={item.name} />
+                onClick={() => selectedMake(item.name ? item.name : item)}>
+                    <ListComponent  title={item.name ? item.name : item} />
                 </div>
             ))}
         </div>

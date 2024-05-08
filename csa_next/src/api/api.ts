@@ -57,6 +57,21 @@ export async function get_makes_redis(query?: string) {
     return await response.json();
 }
 
+export async function upload_spot(make: string, model: string, image: File) {
+    const formData = new FormData();
+    formData.append('make', make);
+    formData.append('model', model);
+    formData.append('image', image);
+
+    await fetch(`http://localhost:4000/api/v1/cars/addspot`, {
+        method: 'POST',
+        headers: {
+            'authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: formData
+    });
+}
+
 export async function upload_makes() {
     makes.forEach(async (make) => {
         await fetch(`http://localhost:4000/api/v1/cars/makes/${make.name}`, {

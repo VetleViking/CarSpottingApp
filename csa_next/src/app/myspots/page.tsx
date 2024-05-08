@@ -1,6 +1,6 @@
 "use client";
 
-import { create_user, get_makes, upload_makes } from "@/api/api";
+import { create_user, get_makes, upload_makes, upload_spot } from "@/api/api";
 import CreateUser from "@/components/CreateUser";
 import ListComponent from "@/components/ListComponent";
 import Login from "@/components/Login";
@@ -12,6 +12,8 @@ export default function MySpots() {
     const [search, setSearch] = useState('');
     const [data, setData] = useState<{ name: string; }[]>([]);
     const [file, setFile] = useState<FileList | null>(null);
+    const [previewUrl, setPreviewUrl] = useState('');
+    const [uploadButton, setUploadButton] = useState(false);
 
     function selectedMake(make: string) {
         window.location.href = `/makes/selected?make=${make}`;
@@ -32,15 +34,21 @@ export default function MySpots() {
             return;
         }
 
-        const upload = async () => {
-            const formData = new FormData();
-            formData.append('file', file[0]);
+        const url = URL.createObjectURL(file[0]);
+        setPreviewUrl(url);
+    }, [file]);
 
-            console.log(formData, file);
+    useEffect(() => { 
+        if (!file) {
+            return;
+        }
+
+        const upload = async () => {
+            upload_spot('Bugatti', 'chiron', file[0]);
         };
 
         upload();
-    }, [file]);
+    }, [uploadButton]);
 
     if (!data) {
         return (
@@ -54,6 +62,11 @@ export default function MySpots() {
                 (e) => {
                     setFile(e.target.files);
                 }}/>
+            {previewUrl && 
+            <div className="w-64">
+                <img className="w-64" src={previewUrl} alt="Preview" />
+            </div>}
+            <button onClick={() => setUploadButton(!uploadButton)}>Upload</button>
             <CreateUser />
             <Login />
             <button onClick={upload_makes}>Upload makes</button>

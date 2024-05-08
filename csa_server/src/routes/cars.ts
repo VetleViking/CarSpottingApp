@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { redisClient } from '../redis-source';
+import { verify_jwt } from '../utils/user';
 
 const router = Router();
 
@@ -275,6 +276,63 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
         next(err);
     }
 });
+
+import multer from 'multer';
+
+const upload = multer({ storage: multer.memoryStorage() });
+
+router.post('/addspot', upload.single('image'), async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { make, model } = req.body;
+        const image = req.file;
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
+        
+        if (!make || !model || !image) {
+            res.status(400).json({ message: 'Make, model, and image are required' });
+            return;
+        }
+
+        const allSpots = await redisClient.hGetAll(`spots:${decodedUser.username}:${make}:${model}`);
+
+        const offset = Object.keys(allSpots).length;
+
+        const imageBase64 = image.buffer.toString('base64');
+
+        await redisClient.hSet(`spots:${decodedUser.username}:${make}:${model}`, 'image' + offset, imageBase64);
+
+        res.status(201).json({ message: 'Spot added' });
+    } catch(err) {
+        next(err);
+    }
+});
+
+router.get('/spots/makes', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { query } = req.query;
+
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
+
+        const makesObject = await redisClient.hGetAll(`spots:${decodedUser.username}`);
+
+        const makesArray = Object.keys(makesObject).map(key => key.split(':')[2]);
+
+        if (!query) {
+            res.status(200).json(makesArray);
+            return;
+        }
+
+        const filteredMakes = makesArray.filter(make => make.toLowerCase().includes((query as string).toLowerCase()));
+
+        res.status(200).json(filteredMakes);
+        return;
+
+    } catch(err) {
+        next(err);
+    }
+});
+
 
 
 

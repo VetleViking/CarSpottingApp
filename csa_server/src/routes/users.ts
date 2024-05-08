@@ -54,16 +54,4 @@ router.post('/createuser', async (req: Request, res: Response, next: NextFunctio
     }
 });
 
-router.post('/addspot/', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { make, model, image } = req.body;
-        
-
-
-    } catch(err) {
-        next(err);
-    }
-});
-
-
 export default router;

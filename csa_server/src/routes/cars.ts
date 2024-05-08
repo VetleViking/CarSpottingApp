@@ -71,16 +71,20 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
         const makesObject = await redisClient.hGetAll('makes');
         const makesArray = Object.keys(makesObject).map(key => makesObject[key]);
 
-        let modelsArray: string[] = [];
+        let modelsArray: {make: string, model: string}[] = [];
 
-        makesArray.forEach(async make => {
+        for (const make of makesArray) {
             const modelsObject = await redisClient.hGetAll(`make:${make}`);    
             const models = Object.keys(modelsObject).map(key => modelsObject[key]);
-
-            modelsArray = modelsArray.concat(models);
-
-            if (modelsArray.length > 50) return;
-        });
+        
+            const modelsWithMake = models.map(model => ({make, model}));
+        
+            modelsArray = modelsArray.concat(modelsWithMake);
+        
+            if (modelsArray.length > 50) {
+                break;
+            }
+        }
 
         res.status(200).json(modelsArray);
         return;
@@ -119,8 +123,12 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
                 ))
             );
 
+            const makesObject = await redisClient.hGetAll('makes');
+            const makesArray = Object.keys(makesObject).map(key => makesObject[key]);
+
             uniqueModels.forEach(async model => {
-                redisClient.hSet(`make:${model.make}`, model.model, model.model);
+                const make = makesArray.find(make => make.toLowerCase() === model.make.toLowerCase()) || 'other';
+                redisClient.hSet(`make:${make}`, model.model, model.model);
             });
 
             res.status(200).json(uniqueModels);
@@ -130,21 +138,27 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
         // Else, get all makes from Redis
         const makesObject = await redisClient.hGetAll('makes');
         const makesArray = Object.keys(makesObject).map(key => makesObject[key]);
+        makesArray.push('other');
 
-        let modelsArray: string[] = [];
+        let modelsArray: {make: string, model: string}[] = [];
 
-        makesArray.forEach(async make => {
+        for (const make of makesArray) {
             const modelsObject = await redisClient.hGetAll(`make:${make}`);    
             const models = Object.keys(modelsObject).map(key => modelsObject[key]);
-
+        
             const filteredModels = models.filter(model => model.toLowerCase().includes(query.toLowerCase()));
-
-            modelsArray = modelsArray.concat(filteredModels);
-
-            if (modelsArray.length > 50) return;
-        });
-
+        
+            const modelsWithMake = filteredModels.map(model => ({make, model}));
+        
+            modelsArray = modelsArray.concat(modelsWithMake);
+        
+            if (modelsArray.length > 50) {
+                break;
+            }
+        }
+        
         res.status(200).json(modelsArray);
+        return;
 
     } catch(err) {
         next(err);
@@ -190,8 +204,8 @@ router.get('/makes/:make/models/', async (req: Request, res: Response, next: Nex
 
         // Else, get all makes from Redis
         const modelsObject = await redisClient.hGetAll(`make:${make}`);
-        const modelsArray = Object.keys(modelsObject).map(key => modelsObject[key]);
-        
+        const modelsArray = Object.keys(modelsObject).map(key => ({make, model: modelsObject[key]}));
+
         if (modelsArray.length > 50) {
             res.status(200).json(modelsArray.slice(0, 50));
             return;
@@ -199,7 +213,7 @@ router.get('/makes/:make/models/', async (req: Request, res: Response, next: Nex
 
         res.status(200).json(modelsArray);
         return;
-        
+
     } catch(err) {
         next(err);
     }
@@ -245,16 +259,16 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
 
         // Else, get all makes from Redis
         const modelsObject = await redisClient.hGetAll(`make:${make}`);
-        const modelsArray = Object.keys(modelsObject).map(key => modelsObject[key]);
+        const modelsArray = Object.keys(modelsObject).map(key => ({make, model: modelsObject[key]}));
 
-        const filteredModels = modelsArray.filter(model => model.toLowerCase().includes(query.toLowerCase()));
+        const filteredModels = modelsArray.filter(model => model.model.toLowerCase().includes(query.toLowerCase()));
 
         if (filteredModels.length > 50) {
-            res.status(200).json(filteredModels.slice(0, 50));
+            res.status(269).json(filteredModels.slice(0, 50));
             return;
         }
 
-        res.status(200).json(filteredModels);
+        res.status(269).json(filteredModels);
         return;
         
     } catch(err) {

@@ -46,8 +46,8 @@ export default function MakeSelected() {
                 data.map((item: any, id) => (
                     <div 
                     key={id}
-                    onClick={() => {selectedModel(item.model? item.model : item)}}>
-                        <ListComponent title={item.model? item.model : item} />
+                    onClick={() => {selectedModel(item.model)}}>
+                        <ListComponent title={make == "unknown" ? item.make + " " + item.model : item.model} />
                     </div>
                 ))
             ) : (

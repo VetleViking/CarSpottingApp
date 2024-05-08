@@ -54,4 +54,21 @@ router.post('/createuser', async (req: Request, res: Response, next: NextFunctio
     }
 });
 
+router.post('/addspot/', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { make, model, image } = req.body;
+        user = await redisClient.hGet('users', username);
+
+        if (!username || !password) {
+            res.status(400).json({ message: 'Username and password are required' });
+            return;
+        }
+
+
+    } catch(err) {
+        next(err);
+    }
+});
+
+
 export default router;

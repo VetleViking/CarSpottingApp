@@ -6,11 +6,12 @@ import ListComponent from "@/components/ListComponent";
 import Login from "@/components/Login";
 import Search from "@/components/Search";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 
 export default function MySpots() {
     const [search, setSearch] = useState('');
     const [data, setData] = useState<{ name: string; }[]>([]);
+    const [file, setFile] = useState<FileList | null>(null);
 
     function selectedMake(make: string) {
         window.location.href = `/makes/selected?make=${make}`;
@@ -26,6 +27,21 @@ export default function MySpots() {
         fetchData();
     }, [search]);
 
+    useEffect(() => {
+        if (!file) {
+            return;
+        }
+
+        const upload = async () => {
+            const formData = new FormData();
+            formData.append('file', file[0]);
+
+            console.log(formData);
+        };
+
+        upload();
+    }, [file]);
+
     if (!data) {
         return (
             <div className="text-white">Loading...</div>
@@ -34,6 +50,10 @@ export default function MySpots() {
 
     return (
         <div>
+            <input type="file" accept="image/*" onChange={
+                (e) => {
+                    setFile(e.target.files);
+                }}/>
             <CreateUser />
             <Login />
             <button onClick={upload_makes}>Upload makes</button>

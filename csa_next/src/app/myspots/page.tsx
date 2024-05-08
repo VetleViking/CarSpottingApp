@@ -36,7 +36,7 @@ export default function MySpots() {
             const formData = new FormData();
             formData.append('file', file[0]);
 
-            console.log(formData);
+            console.log(formData, file);
         };
 
         upload();

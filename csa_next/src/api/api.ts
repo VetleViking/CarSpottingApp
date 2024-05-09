@@ -106,7 +106,15 @@ export async function get_spotted_images(make: string, model: string) {
         }
     });
 
-    return await response.json();
+    const data = await response.json();
+    
+    const images = data.map((item: any) => {
+        const buffer = new Uint8Array(item.data).buffer;
+        const blob = new Blob([buffer], { type: 'image/jpeg' });
+        return URL.createObjectURL(blob);
+    });
+
+    return images;
 }
 
 export async function upload_makes() {

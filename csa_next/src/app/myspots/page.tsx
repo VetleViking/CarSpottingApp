@@ -44,7 +44,7 @@ export default function MySpots() {
         }
 
         const upload = async () => {
-            upload_spot('Bugatti', 'chiron', file[0]);
+            upload_spot('Honda', 'civic', file[0]);
         };
 
         upload();

@@ -1,6 +1,6 @@
 "use client";
 
-import { create_user, get_makes, upload_makes, upload_spot } from "@/api/api";
+import { create_user, get_makes, get_spotted_makes, upload_makes, upload_spot } from "@/api/api";
 import CreateUser from "@/components/CreateUser";
 import ListComponent from "@/components/ListComponent";
 import Login from "@/components/Login";
@@ -16,12 +16,12 @@ export default function MySpots() {
     const [uploadButton, setUploadButton] = useState(false);
 
     function selectedMake(make: string) {
-        window.location.href = `/makes/selected?make=${make}`;
+        window.location.href = `/myspots/selected?make=${make}`;
     }
 
     useEffect(() => {
         const fetchData = async () => {
-            const data = await get_makes(search);
+            const data = await get_spotted_makes(search);
             
             setData(data);
         };
@@ -80,11 +80,11 @@ export default function MySpots() {
             <div onClick={() => selectedMake("unknown")}>
                 <ListComponent title="Dont know / other" />
             </div>
-            {data.map((item, id) => (
+            {data.map((item: any, id) => (
                 <div
                 key={id}
-                onClick={() => selectedMake(item.name)}>
-                    <ListComponent  title={item.name} />
+                onClick={() => selectedMake(item)}>
+                    <ListComponent  title={item} />
                 </div>
             ))}
         

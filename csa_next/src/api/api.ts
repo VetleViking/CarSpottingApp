@@ -72,6 +72,31 @@ export async function upload_spot(make: string, model: string, image: File) {
     });
 }
 
+export async function get_spotted_makes(query?: string) {
+    const response = await fetch(`http://localhost:4000/api/v1/cars/spots/makes/${query}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + localStorage.getItem('token')
+        }
+    });
+
+    return await response.json();
+}
+
+export async function get_spotted_models(make?: string, query?: string) {
+    if (!make) make = 'unknown';
+    const response = await fetch(`http://localhost:4000/api/v1/cars/spots/makes/${make}/models/${query}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + localStorage.getItem('token')
+        }
+    });
+
+    return await response.json()
+}
+
 export async function upload_makes() {
     makes.forEach(async (make) => {
         await fetch(`http://localhost:4000/api/v1/cars/makes/${make.name}`, {

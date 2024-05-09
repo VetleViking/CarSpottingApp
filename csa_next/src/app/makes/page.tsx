@@ -40,8 +40,8 @@ function Makes() {
             {data.map((item: any, id) => (
                 <div
                 key={id}
-                onClick={() => selectedMake(item.name ? item.name : item)}>
-                    <ListComponent  title={item.name ? item.name : item} />
+                onClick={() => selectedMake(item)}>
+                    <ListComponent  title={item} />
                 </div>
             ))}
         </div>

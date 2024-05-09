@@ -97,6 +97,18 @@ export async function get_spotted_models(make?: string, query?: string) {
     return await response.json()
 }
 
+export async function get_spotted_images(make: string, model: string) {
+    const response = await fetch(`http://localhost:4000/api/v1/cars/getspot/${make}/${model}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + localStorage.getItem('token')
+        }
+    });
+
+    return await response.json();
+}
+
 export async function upload_makes() {
     makes.forEach(async (make) => {
         await fetch(`http://localhost:4000/api/v1/cars/makes/${make.name}`, {

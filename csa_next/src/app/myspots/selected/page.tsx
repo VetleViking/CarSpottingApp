@@ -12,8 +12,8 @@ export default function MakeSelected() {
     const searchParams = useSearchParams();
     const make = searchParams.get('make');
 
-    function selectedModel(model: string) {
-        //window.location.href = ``;
+    function selectedModel(make: string, model: string) {
+        window.location.href = `/myspots/selected/spotselected?make=${make}&model=${model}`;
     }
     
     useEffect(() => {
@@ -46,7 +46,7 @@ export default function MakeSelected() {
                 data.map((item: any, id) => (
                     <div 
                     key={id}
-                    onClick={() => {selectedModel(item.model)}}>
+                    onClick={() => {selectedModel(item.make, item.model)}}>
                         <ListComponent title={make == "unknown" ? item.make + " " + item.model : item.model} />
                     </div>
                 ))

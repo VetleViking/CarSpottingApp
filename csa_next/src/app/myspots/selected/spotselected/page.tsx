@@ -7,6 +7,8 @@ import Spotimage from '@/components/Spotimage';
 
 
 function Makes() {
+    // TODO: have username in the url for sharing
+
     const [data, setData] = useState<{ name: string; }[]>([]);
     const searchParams = useSearchParams();
     const make = searchParams.get('make');

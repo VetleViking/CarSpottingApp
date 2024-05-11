@@ -27,7 +27,7 @@ const Login = () => {
                     setPassword(e.target.value);
                 }} />
 
-            <button className="text-white" onClick={() => {login_handler(username, password)}}>Log in</button>
+            <button className="rounded-lg bg-gray-700 p-1 m-2 border-2 border-gray-800 text-white" onClick={() => {login_handler(username, password)}}>Log in</button>
         </div>
     );
 };

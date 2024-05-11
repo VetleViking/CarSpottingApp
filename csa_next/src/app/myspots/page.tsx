@@ -5,15 +5,13 @@ import CreateUser from "@/components/CreateUser";
 import ListComponent from "@/components/ListComponent";
 import Login from "@/components/Login";
 import Search from "@/components/Search";
+import UploadSpot from "@/components/UploadSpot";
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
 
 export default function MySpots() {
     const [search, setSearch] = useState('');
     const [data, setData] = useState<{ name: string; }[]>([]);
-    const [file, setFile] = useState<FileList | null>(null);
-    const [previewUrl, setPreviewUrl] = useState('');
-    const [uploadButton, setUploadButton] = useState(false);
 
     function selectedMake(make: string) {
         window.location.href = `/myspots/selected?make=${make}`;
@@ -29,27 +27,6 @@ export default function MySpots() {
         fetchData();
     }, [search]);
 
-    useEffect(() => {
-        if (!file) {
-            return;
-        }
-
-        const url = URL.createObjectURL(file[0]);
-        setPreviewUrl(url);
-    }, [file]);
-
-    useEffect(() => { 
-        if (!file) {
-            return;
-        }
-
-        const upload = async () => {
-            upload_spot('Honda', 'civic', file[0]);
-        };
-
-        upload();
-    }, [uploadButton]);
-
     if (!data) {
         return (
             <div className="text-white">Loading...</div>
@@ -58,15 +35,10 @@ export default function MySpots() {
 
     return (
         <div>
-            <input type="file" accept="image/*" onChange={
-                (e) => {
-                    setFile(e.target.files);
-                }}/>
-            {previewUrl && 
-            <div className="w-64">
-                <img className="w-64" src={previewUrl} alt="Preview" />
-            </div>}
-            <button onClick={() => setUploadButton(!uploadButton)}>Upload</button>
+            <UploadSpot 
+            make={"Bugatti"}
+            model={"chiron"}
+            />
             <CreateUser />
             <Login />
             <button onClick={upload_makes}>Upload makes</button>

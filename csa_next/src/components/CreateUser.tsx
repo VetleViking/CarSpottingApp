@@ -27,7 +27,7 @@ const CreateUser = () => {
                     setPassword(e.target.value);
                 }} />
                 
-            <button className="text-white" onClick={() => {create_user_handler(username, password)}}>Create user</button>
+            <button className="rounded-lg bg-gray-700 p-1 m-2 border-2 border-gray-800 text-white" onClick={() => {create_user_handler(username, password)}}>Create user</button>
         </div>
     );
 };

@@ -1,37 +1,4 @@
-import makes from './makes.json';
-
-export async function get_models(make?: string, model?: string) {
-    const params = new URLSearchParams();
-    if (make) params.append('make', make);
-    if (model) params.append('model', model);
-    if (!make && !model) params.append('model', 'a');
-    params.append('limit', '50');
-
-    const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
-        headers: {
-        'X-Api-Key': `9UKQbcg6KLGBNFl1N0I2Kw==pvGsAwuxi8RToxzi`
-        }
-    });
-
-    // return response.json();
-
-    const data = await response.json();
-
-    const uniqueModels = data.filter((item: any, index: any, self: any) =>
-        index === self.findIndex((t: any) => (
-            t.model === item.model
-        ))
-    );
-
-    return uniqueModels;
-}
-
-export async function get_makes(make?: string) {
-    if (!make) return makes;
-    return  makes.filter((item) => item.name.toLowerCase().includes(make.toLowerCase()));
-}
-
-export async function get_models_redis(make?: string, query?: string) {
+export async function get_models(make?: string, query?: string) {
     if (!make) make = 'unknown';
 
     const response = await fetch(`http://localhost:4000/api/v1/cars/makes/${make}/models/${query}` , {
@@ -45,7 +12,7 @@ export async function get_models_redis(make?: string, query?: string) {
     return await response.json();
 }
 
-export async function get_makes_redis(query?: string) {
+export async function get_makes(query?: string) {
     const response = await fetch(`http://localhost:4000/api/v1/cars/makes/${query}` , {
         method: 'GET',
         headers: {
@@ -72,8 +39,8 @@ export async function upload_spot(make: string, model: string, image: File) {
     });
 }
 
-export async function get_spotted_makes(query?: string) {
-    const response = await fetch(`http://localhost:4000/api/v1/cars/spots/makes/${query}`, {
+export async function get_spotted_makes(query?: string, username?: string) {
+    const response = await fetch(`http://localhost:4000/api/v1/cars/spots/makes/${query}${username ? '?username=' + username : ''}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -84,9 +51,9 @@ export async function get_spotted_makes(query?: string) {
     return await response.json();
 }
 
-export async function get_spotted_models(make?: string, query?: string) {
+export async function get_spotted_models(make?: string, query?: string, username?: string) {
     if (!make) make = 'unknown';
-    const response = await fetch(`http://localhost:4000/api/v1/cars/spots/makes/${make}/models/${query}`, {
+    const response = await fetch(`http://localhost:4000/api/v1/cars/spots/makes/${make}/models/${query}${username ? '?username=' + username : ''}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -97,8 +64,8 @@ export async function get_spotted_models(make?: string, query?: string) {
     return await response.json()
 }
 
-export async function get_spotted_images(make: string, model: string) {
-    const response = await fetch(`http://localhost:4000/api/v1/cars/getspot/${make}/${model}`, {
+export async function get_spotted_images(make: string, model: string, username?: string) {
+    const response = await fetch(`http://localhost:4000/api/v1/cars/getspots/${make}/${model}${username ? '?username=' + username : ''}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -116,19 +83,6 @@ export async function get_spotted_images(make: string, model: string) {
 
     return images;
 }
-
-export async function upload_makes() {
-    makes.forEach(async (make) => {
-        await fetch(`http://localhost:4000/api/v1/cars/makes/${make.name}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'authorization': 'Bearer ' + localStorage.getItem('token')
-            },
-        });
-    });
-}
-
 
 export async function create_user(username: string, password: string) {
     const response = await fetch(`http://localhost:4000/api/v1/users/createuser`, {
@@ -151,12 +105,18 @@ export async function login(username: string, password: string) {
         body: JSON.stringify({ username, password })
     });
 
-    if (response.status === 200) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token);
-    } else {
-        return await response.json();
-    }
+    return await response.json();
+}
 
-    return response;
+export async function decode_jwt(token: string) {
+    const response = await fetch(`http://localhost:4000/api/v1/users/decodejwt`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: JSON.stringify({ token })
+    });
+
+    return await response.json();
 }

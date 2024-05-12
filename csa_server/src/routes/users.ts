@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { redisClient } from '../redis-source';
-import { generate_jwt } from '../utils/user';
+import { generate_jwt, verify_jwt } from '../utils/user';
 
 const router = Router();
 
@@ -49,6 +49,23 @@ router.post('/createuser', async (req: Request, res: Response, next: NextFunctio
         await redisClient.hSet('users', username, password);
 
         res.status(201).json({ message: 'User created' });
+    } catch(err) {
+        next(err);
+    }
+});
+
+router.post('/decodejwt', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { token } = req.body;
+
+        if (!token) {
+            res.status(400).json({ message: 'Token is required' });
+            return;
+        }
+
+        const decoded = await verify_jwt(token);
+
+        res.status(200).json(decoded.username);
     } catch(err) {
         next(err);
     }

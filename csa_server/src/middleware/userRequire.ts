@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const userRequireMiddleware = async (req, res, next) => {
     const excludedRoutes = [
         'users/login',
-        'users/createuser',
+        'users/createuser'
     ];
     console.log('User Conneced', req.ip);
 

@@ -307,9 +307,10 @@ router.post('/addspot', upload.single('image'), async (req: Request, res: Respon
     }
 });
 
-router.get('/getspot/:make/:model', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/getspots/:make/:model', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model } = req.params;
+        const username = req.query.username;
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
 
@@ -318,11 +319,7 @@ router.get('/getspot/:make/:model', async (req: Request, res: Response, next: Ne
             return;
         }
 
-        const allSpots = await redisClient.hGetAll(`spots:${decodedUser.username}:${make}:${model}`);
-
-        console.log(decodedUser.username);
-        console.log(make);
-        console.log(model);
+        const allSpots = await redisClient.hGetAll(`spots:${username || decodedUser.username}:${make}:${model}`);
 
         console.log(allSpots);
 
@@ -331,7 +328,7 @@ router.get('/getspot/:make/:model', async (req: Request, res: Response, next: Ne
             if (key.startsWith('image')) {
                 const imageBase64 = allSpots[key];
                 const imageBuffer = Buffer.from(imageBase64, 'base64');
-                images.push(imageBuffer);
+                images.push({ key, image: imageBuffer });
             }
         }
 
@@ -343,10 +340,11 @@ router.get('/getspot/:make/:model', async (req: Request, res: Response, next: Ne
 
 router.get('/spots/makes/', async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const username = req.query.username;
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
 
-        const keys = await redisClient.keys(`spots:${decodedUser.username}:*`);
+        const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
 
         const makesArray = keys.map(key => key.split(':')[2]);
 
@@ -362,10 +360,11 @@ router.get('/spots/makes/:query', async (req: Request, res: Response, next: Next
     try {
         const { query } = req.params;
 
+        const username = req.query.username;
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
 
-        const keys = await redisClient.keys(`spots:${decodedUser.username}:*`);
+        const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
 
         const makesArray = Object.keys(keys).map(key => key.split(':')[2]);
 
@@ -381,10 +380,11 @@ router.get('/spots/makes/:query', async (req: Request, res: Response, next: Next
 
 router.get('/spots/makes/unknown/models/', async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const username = req.query.username;
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
 
-        const keys = await redisClient.keys(`spots:${decodedUser.username}:*`);
+        const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
            
         const makesArray = keys.map(key => key.split(':')[2]);
         const modelsArray = keys.map(key => key.split(':')[3]);
@@ -403,10 +403,11 @@ router.get('/spots/makes/unknown/models/:query', async (req: Request, res: Respo
     try {
         const { query } = req.params;
 
+        const username = req.query.username;
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
 
-        const keys = await redisClient.keys(`spots:${decodedUser.username}:*`);
+        const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
 
         const makesArray = keys.map(key => key.split(':')[2]);
         const modelsArray = keys.map(key => key.split(':')[3]);
@@ -427,10 +428,11 @@ router.get('/spots/makes/:make/models/', async (req: Request, res: Response, nex
     try {
         const { make } = req.params;
 
+        const username = req.query.username;
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
 
-        const keys = await redisClient.keys(`spots:${decodedUser.username}:${make}:*`);
+        const keys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:*`);
 
         const modelsArray = keys.map(key => key.split(':')[3]);
 
@@ -448,10 +450,11 @@ router.get('/spots/makes/:make/models/:query', async (req: Request, res: Respons
     try {
         const { make, query } = req.params;
 
+        const username = req.query.username;
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
 
-        const keys = await redisClient.keys(`spots:${decodedUser.username}:${make}:*`);
+        const keys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:*`);
 
         const modelsArray = keys.map(key => key.split(':')[3]);
 
@@ -466,25 +469,6 @@ router.get('/spots/makes/:make/models/:query', async (req: Request, res: Respons
         next(err);
     }
 });
-
-router.get('/spots/makes/:make/models/:model/image', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { make, model } = req.params;
-
-        const token = req.headers.authorization.split(' ')[1];
-
-        const decodedUser = await verify_jwt(token);
-
-        const imageBase64 = await redisClient.hGet(`spots:${decodedUser.username}:${make}:${model}`, 'image0');
-    } catch(err) {
-        next(err);
-    }
-});
-
-
-
-
-
 
 router.post('/makes/:make', async (req: Request, res: Response, next: NextFunction) => {
     try {

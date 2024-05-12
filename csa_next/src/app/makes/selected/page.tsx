@@ -1,6 +1,6 @@
 "use client";
 
-import { get_models, get_models_redis } from "@/api/api";
+import { get_models, get_spotted_models } from "@/api/api";
 import ListComponent from "@/components/ListComponent";
 import Search from "@/components/Search";
 import { useSearchParams } from "next/navigation";
@@ -11,18 +11,24 @@ export default function MakeSelected() {
     const [data, setData] = useState<{ model: string; }[]>([]);
     const searchParams = useSearchParams();
     const make = searchParams.get('make');
+    const username = searchParams.get('username');
 
-    function selectedModel(model: string) {
+    function selectedModel(make: string, model: string) {
+        if (username) {
+            window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}&username=${username}`;
+        } else {
         window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}`;
+        }
     }
     
     useEffect(() => {
         const fetchData = async () => {
             let data = [];
-            if (make == "unknown") {
-                data = await get_models_redis("", search);    
+            
+            if (username) {
+                data = await get_spotted_models(make as string, search, username);
             } else {
-                data = await get_models_redis(make as string, search);
+                data = await get_models(make as string, search);
             }
 
             setData(data);
@@ -41,12 +47,12 @@ export default function MakeSelected() {
         <div>
             <Search search={search} setSearch={setSearch} />
             <p className="text-white text-center text-xl">Selected Make: {make}</p>
-            <p className="text-white text-center text-xl">{make}'s models:</p>
+            <p className="text-white text-center text-xl">{username ? `${username}'s spots of ${make}'s:` : `${make}'s models:`}</p>
             {Array.isArray(data) && data.length > 0 ? (
                 data.map((item: any, id) => (
                     <div 
                     key={id}
-                    onClick={() => {selectedModel(item.model)}}>
+                    onClick={() => {selectedModel(item.make, item.model)}}>
                         <ListComponent title={make == "unknown" ? item.make + " " + item.model : item.model} />
                     </div>
                 ))

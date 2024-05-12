@@ -2,23 +2,34 @@
 
 import React, { useState, useEffect } from 'react';
 import Search from '@/components/Search';
-import { get_makes, get_makes_redis } from '@/api/api';
+import { get_makes, get_spotted_makes } from '@/api/api';
 import ListComponent from '@/components/ListComponent';
+import { useSearchParams } from 'next/navigation';
 
 
 function Makes() {
+    const searchParams = useSearchParams();
+    const username = searchParams.get('username');
     const [search, setSearch] = useState('');
     const [data, setData] = useState<{ name: string; }[]>([]);
 
     function selectedMake(make: string) {
-        window.location.href = `/makes/selected?make=${make}`;
+        if (username) {
+            window.location.href = `/makes/selected?make=${make}&username=${username}`;
+        } else {
+            window.location.href = `/makes/selected?make=${make}`;    
+        }
     }
 
     useEffect(() => {
         const fetchData = async () => {
-            const data = await get_makes_redis(search);
-            
-            setData(data);
+            if (username) {
+                const data = await get_spotted_makes(search, username);
+                setData(data);
+            } else {
+                const data = await get_makes(search); 
+                setData(data);
+            }
         };
 
         fetchData();
@@ -32,7 +43,6 @@ function Makes() {
 
     return (
         <div>
-            
             <Search search={search} setSearch={setSearch} />
             <p className='text-center text-white text-xl mb-4'>Select the make</p>
             <div onClick={() => selectedMake("unknown")}>

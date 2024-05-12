@@ -39,6 +39,19 @@ export async function upload_spot(make: string, model: string, image: File) {
     });
 }
 
+export async function delete_spot(make: string, model: string, key: string) {
+    const response = await fetch(`http://localhost:4000/api/v1/cars/deletespot`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: JSON.stringify({ make, model, key })
+    });
+
+    return await response.json();
+}
+
 export async function get_spotted_makes(query?: string, username?: string) {
     const response = await fetch(`http://localhost:4000/api/v1/cars/spots/makes/${query}${username ? '?username=' + username : ''}`, {
         method: 'GET',
@@ -76,9 +89,10 @@ export async function get_spotted_images(make: string, model: string, username?:
     const data = await response.json();
     
     const images = data.map((item: any) => {
-        const buffer = new Uint8Array(item.data).buffer;
+        const buffer = new Uint8Array(item.image.data).buffer;
         const blob = new Blob([buffer], { type: 'image/jpeg' });
-        return URL.createObjectURL(blob);
+        const url = URL.createObjectURL(blob);
+        return { key: item.key, url };
     });
 
     return images;

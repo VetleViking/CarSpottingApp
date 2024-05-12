@@ -307,6 +307,34 @@ router.post('/addspot', upload.single('image'), async (req: Request, res: Respon
     }
 });
 
+router.post('/deletespot', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { make, model, key } = req.body;
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
+        
+        if (!make || !model || !key) {
+            res.status(400).json({ message: 'Make, model, and key are required' });
+            return;
+        }
+
+        const allSpots = await redisClient.hGetAll(`spots:${decodedUser.username}:${make}:${model}`);
+
+        const spot = allSpots[key];
+
+        if (!spot) {
+            res.status(404).json({ message: 'Spot not found' });
+            return;
+        }
+
+        await redisClient.hDel(`spots:${decodedUser.username}:${make}:${model}`, key);
+
+        res.status(200).json({ message: 'Spot deleted' });
+    } catch(err) {
+        next(err);
+    }
+});
+
 router.get('/getspots/:make/:model', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model } = req.params;
@@ -320,8 +348,6 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
         }
 
         const allSpots = await redisClient.hGetAll(`spots:${username || decodedUser.username}:${make}:${model}`);
-
-        console.log(allSpots);
 
         const images = [];
         for (const key in allSpots) {

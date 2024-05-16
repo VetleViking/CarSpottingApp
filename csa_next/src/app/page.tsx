@@ -29,13 +29,19 @@ export default function Home() {
 
   return (
     <div>
-      <div className="mt-8">
-        <Link href={`/makes?username=${username}`} className="text-white p-4 bg-gray-700 rounded-lg m-4">
-          My Spots
+      <div className="mt-8 flex flex-col items-center">
+        <div className="mb-10 text-center">
+          <p className="text-4xl text-white mb-2">Car Spotting App</p>
+          <p className="text-xl text-white">Welcome, {username}</p>
+        </div>
+        <div>
+          <Link href={`/makes?username=${username}`} className="text-white p-4 bg-gray-700 rounded-lg m-4">
+            My Spots
+          </Link>
+          <Link href="/makes" className="text-white p-4 bg-gray-700 rounded-lg m-4">
+            Upload Spot
         </Link>
-        <Link href="/makes" className="text-white p-4 bg-gray-700 rounded-lg m-4">
-          Upload Spot
-        </Link>
+        </div>
       </div>
     </div>
   );

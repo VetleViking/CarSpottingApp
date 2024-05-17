@@ -16,6 +16,21 @@ function Makes() {
 
     const username = searchParams.get('username');
     const [isOwner, setIsOwner] = useState(false);
+    const [altUsername, setAltUsername] = useState(username);
+
+    useEffect(() => {
+        if (altUsername) {
+            return;
+        }
+        const encodedUsername = localStorage.getItem('token');
+
+        const fetchData = async () => {            
+            const decoded = await decode_jwt(encodedUsername as string);
+            setAltUsername(decoded as string);
+        };
+
+        fetchData();
+    }, []);
 
     useEffect(() => {
         if (username) {
@@ -64,6 +79,7 @@ function Makes() {
 
     return (
         <div>
+            <Header username={altUsername as string} />
             <UploadSpot make={make as string} model={model as string} />
         </div>
     );

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import UploadSpot from '@/components/UploadSpot';
 import { decode_jwt, get_spotted_images } from '@/api/api';
 import Spotimage from '@/components/Spotimage';
+import Header from '@/components/Header';
 
 
 function Makes() {
@@ -50,7 +51,8 @@ function Makes() {
     if (username) {
         return (
             <div>
-                <p className="text-white text-center text-xl">{username}'s spots of {make} {model}:</p>
+                <Header username={username as string} />
+                <p className="text-white text-center text-xl">{(isOwner ? `Your` : `${username}'s`) + ` spots of ${make} ${model}:`}</p>
                 {data.map((item: any, id) => (
                     <div key={id}>
                         <Spotimage image={item.url} deletedata={{ make: make as string, model: model as string, key: item.key, isOwner: isOwner }}/>

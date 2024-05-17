@@ -1,8 +1,8 @@
 "use client";
 
 import { get_models, get_spotted_models } from "@/api/api";
+import Header from "@/components/Header";
 import ListComponent from "@/components/ListComponent";
-import Search from "@/components/Search";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -45,7 +45,7 @@ export default function MakeSelected() {
 
     return (
         <div>
-            <Search search={search} setSearch={setSearch} />
+            <Header search={search} setSearch={setSearch} username={username as string}/>
             <p className="text-white text-center text-xl">Selected Make: {make}</p>
             <p className="text-white text-center text-xl">{username ? `${username}'s spots of ${make}'s:` : `${make}'s models:`}</p>
             {Array.isArray(data) && data.length > 0 ? (

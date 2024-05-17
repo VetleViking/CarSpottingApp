@@ -392,7 +392,7 @@ router.get('/spots/makes/:query', async (req: Request, res: Response, next: Next
 
         const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
 
-        const makesArray = Object.keys(keys).map(key => key.split(':')[2]);
+        const makesArray = keys.map(key => key.split(':')[2]);
 
         const filteredMakes = makesArray.filter(make => make.toLowerCase().includes((query as string).toLowerCase()));
 

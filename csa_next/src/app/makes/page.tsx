@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import Search from '@/components/Search';
 import { get_makes, get_spotted_makes } from '@/api/api';
 import ListComponent from '@/components/ListComponent';
 import { useSearchParams } from 'next/navigation';
+import Header from '@/components/Header';
 
 
 function Makes() {
@@ -43,7 +43,7 @@ function Makes() {
 
     return (
         <div>
-            <Search search={search} setSearch={setSearch} />
+            <Header search={search} setSearch={setSearch} username={username as string} />
             <p className='text-center text-white text-xl mb-4'>Select the make</p>
             <div onClick={() => selectedMake("unknown")}>
                 <ListComponent title="Dont know / other" />

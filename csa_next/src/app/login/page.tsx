@@ -6,7 +6,7 @@ import LoginComponent from "@/components/LoginComponent";
 
 export default function Login() {
     return (
-        <div className='flex justify-around flex-wrap mt-4'>
+        <div className='flex justify-around flex-wrap mt-8'>
             <div>
                 <p className='text-white text-xl text-center'>Log in</p>
                 <LoginComponent />

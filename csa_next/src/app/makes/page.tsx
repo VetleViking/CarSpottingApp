@@ -59,7 +59,7 @@ function Makes() {
     return (
         <div>
             <Header search={search} setSearch={setSearch} username={altUsername as string} />
-            <p className='text-center text-white text-xl mb-4'>Select the make</p>
+            <p className='text-center text-white text-3xl my-4'>Select the make</p>
             <div onClick={() => selectedMake("unknown")}>
                 <ListComponent title="Dont know / other" />
             </div>

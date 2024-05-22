@@ -61,8 +61,8 @@ export default function MakeSelected() {
     return (
         <div>
             <Header search={search} setSearch={setSearch} username={altUsername as string}/>
-            <p className="text-white text-center text-xl">Selected Make: {make}</p>
-            <p className="text-white text-center text-xl">{username ? `${username}'s spots of ${make}'s:` : `${make}'s models:`}</p>
+            <p className="text-white text-center text-2xl mb-1 mt-4">Selected Make: {make}</p>
+            <p className="text-white text-center text-xl mb-4">{username ? `${username}'s spots of ${make}'s:` : `${make}'s models:`}</p>
             {Array.isArray(data) && data.length > 0 ? (
                 data.map((item: any, id) => (
                     <div 

@@ -21,6 +21,27 @@ const CreateUser = () => {
 
     
     return (
+        // <div className="flex flex-col gap-2 w-48 p-2 bg-gray-600 rounded-md">
+        //     <input 
+        //         type="text" 
+        //         placeholder="username" 
+        //         value={username}
+        //         onChange={(e) => {
+        //             setUsername(e.target.value);
+        //         }}/>
+
+        //     <input 
+        //         type="text" 
+        //         placeholder="password"
+        //         value={password}
+        //         onChange={(e) => {
+        //             setPassword(e.target.value);
+        //         }} />
+                
+        //     <button className="rounded-lg bg-gray-700 p-1 m-2 border-2 border-gray-800 text-white" onClick={() => {create_user_handler(username, password)}}>Create user</button>
+        //     <p className="text-red-500 text-center">{errormessage}</p>
+        // </div>
+    
         <div className="flex flex-col gap-2 w-48 p-2 bg-gray-600 rounded-md">
             <input 
                 type="text" 

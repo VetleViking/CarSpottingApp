@@ -35,21 +35,21 @@ const UploadSpot = ({ make, model }: SpotProps) => {
 
     return (
         <div className="flex justify-center">
-        <div className="flex items-center flex-col max-w-96 ">
-            <p className="text-white text-center text-xl">Upload a spot of {make} {model}:</p>
-            <input 
-            className="rounded-lg bg-gray-700 p-1 m-2 border-2 border-gray-800 text-white" 
-            type="file" 
-            accept="image/*" 
-            onChange={
-                (e) => {
-                    setFile(e.target.files);
-                }}/>
-            {previewUrl && <Spotimage image={previewUrl} />}
-            <button 
-            className="rounded-lg bg-gray-700 p-1 m-2 border-2 border-gray-800 text-white" 
-            onClick={() => setUploadButton(!uploadButton)}>Upload</button>
-        </div>
+            <div className="flex items-center flex-col max-w-96 ">
+                <p className="text-white text-center text-xl m-4">Upload a spot of {make} {model}:</p>
+                <input 
+                className="rounded-sm bg-black p-1 mb-2 border border-white text-white font-ListComponent" 
+                type="file" 
+                accept="image/*" 
+                onChange={
+                    (e) => {
+                        setFile(e.target.files);
+                    }}/>
+                {previewUrl && <Spotimage image={previewUrl} />}
+                <button 
+                className="bg-white text-black py-1 px-4 mt-1 italic" 
+                onClick={() => setUploadButton(!uploadButton)}>Upload</button>
+            </div>
         </div>
     );
 };

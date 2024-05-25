@@ -12,10 +12,10 @@ const Spotimage = ({ image, alt, deletedata }: ImageProps) => {
 
     return (
         <div className="flex justify-center">
-            <div className="max-w-96 rounded-lg bg-gray-700 p-1 m-2 border-2 border-gray-800">
-                <img className="w-96 rounded-md" src={image} alt={alt ? alt : "spot"} />                
+            <div className="max-w-96 bg-white p-1">
+                <img className="w-96 border border-black" src={image} alt={alt ? alt : "spot"} />                
                 {(deletedata && deletedata.isOwner) && <button 
-                    className="bg-red-500 text-white p-2 rounded-lg mt-2"
+                    className="bg-[#e72328] text-white py-1 px-2 mt-1 border border-black italic"
                     onClick={() => {delete_spot(deletedata.make, deletedata.model, deletedata.key).then(() => window.location.reload())}}
                     >Delete</button>}
             </div>

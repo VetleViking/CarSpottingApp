@@ -67,12 +67,14 @@ function Makes() {
         return (
             <div>
                 <Header username={username as string} />
-                <p className="text-white text-center text-xl">{(isOwner ? `Your` : `${username}'s`) + ` spots of ${make} ${model}:`}</p>
-                {data.map((item: any, id) => (
-                    <div key={id}>
-                        <Spotimage image={item.url} deletedata={{ make: make as string, model: model as string, key: item.key, isOwner: isOwner }}/>
-                    </div> 
-                ))}
+                <p className="text-white text-center text-xl m-4">{(isOwner ? `Your` : `${username}'s`) + ` spots of ${make} ${model}:`}</p>
+                <div className='flex flex-col items-center gap-2'>
+                    {data.map((item: any, id) => (
+                        <div key={id}>
+                            <Spotimage image={item.url} deletedata={{ make: make as string, model: model as string, key: item.key, isOwner: isOwner }}/>
+                        </div> 
+                    ))}
+                </div>
             </div>
         );
     }

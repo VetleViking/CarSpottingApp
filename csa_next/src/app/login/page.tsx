@@ -8,11 +8,11 @@ export default function Login() {
     return (
         <div className='flex justify-around flex-wrap mt-8'>
             <div>
-                <p className='text-white text-xl text-center'>Log in</p>
+                <p className="text-white text-center p-2 text-xl italic font-medium">Sign <span className="text-[#e72328]">in</span></p>
                 <LoginComponent />
             </div>
             <div>
-                <p className='text-white text-xl text-center'>Sign up</p>
+                <p className="text-white text-center p-2 text-xl italic font-medium">Sign <span className="text-[#e72328]">up</span></p>
                 <CreateUser />
             </div>
         </div>

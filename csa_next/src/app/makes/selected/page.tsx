@@ -18,7 +18,7 @@ export default function MakeSelected() {
         if (username) {
             window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}&username=${username}`;
         } else {
-        window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}`;
+            window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}`;
         }
     }
 

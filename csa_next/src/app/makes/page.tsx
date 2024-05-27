@@ -63,13 +63,16 @@ function Makes() {
             <div onClick={() => selectedMake("unknown")}>
                 <ListComponent title="Dont know / other" />
             </div>
-            {data.map((item: any, id) => (
+            {Array.isArray(data) && data.length > 0 ? (
+                data.map((item: any, id) => (
                 <div
                 key={id}
                 onClick={() => selectedMake(item)}>
                     <ListComponent  title={item} />
                 </div>
-            ))}
+            ))): (<></>)}
+            
+            
         </div>
     );
 }

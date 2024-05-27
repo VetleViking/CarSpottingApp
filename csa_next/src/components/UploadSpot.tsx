@@ -22,6 +22,7 @@ const UploadSpot = ({ make, model }: SpotProps) => {
     }, [file]);
 
     useEffect(() => { 
+        // TODO: go to spots page
         if (!file) {
             return;
         }
@@ -38,7 +39,7 @@ const UploadSpot = ({ make, model }: SpotProps) => {
             <div className="flex items-center flex-col max-w-96 ">
                 <p className="text-white text-center text-xl m-4">Upload a spot of {make} {model}:</p>
                 <input 
-                className="rounded-sm bg-black p-1 mb-2 border border-white text-white font-ListComponent" 
+                className="rounded-sm bg-black p-1 mb-2 border border-[#9ca3af] text-[#9ca3af] font-ListComponent" 
                 type="file" 
                 accept="image/*" 
                 onChange={
@@ -47,7 +48,7 @@ const UploadSpot = ({ make, model }: SpotProps) => {
                     }}/>
                 {previewUrl && <Spotimage image={previewUrl} />}
                 <button 
-                className="bg-white text-black py-1 px-4 mt-1 italic" 
+                className="bg-[#9ca3af] text-black py-1 px-4 mt-1 italic" 
                 onClick={() => setUploadButton(!uploadButton)}>Upload</button>
             </div>
         </div>

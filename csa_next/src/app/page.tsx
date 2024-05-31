@@ -1,7 +1,6 @@
 "use client";
 import { decode_jwt } from "@/api/api";
 import Header from "@/components/Header";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -10,10 +9,6 @@ export default function Home() {
   useEffect(() => {
     const encodedUsername = localStorage.getItem('token');
 
-    if (!encodedUsername) {
-      window.location.href = '/login';
-    }
-    
     const decode = async () => {
       const decoded = await decode_jwt(encodedUsername as string);
       setUsername(decoded as string);

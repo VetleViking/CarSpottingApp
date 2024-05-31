@@ -11,7 +11,7 @@ function Makes() {
     const username = searchParams.get('username');
     const [search, setSearch] = useState('');
     const [data, setData] = useState<{ name: string; }[]>([]);
-    const [altUsername, setAltUsername] = useState(username);
+    const [altUsername, setAltUsername] = useState("");
 
     function selectedMake(make: string) {
         if (username) {
@@ -33,7 +33,7 @@ function Makes() {
         };
 
         fetchData();
-    }, []);
+    });
     
 
     useEffect(() => {
@@ -48,7 +48,7 @@ function Makes() {
         };
 
         fetchData();
-    }, [search]);
+    }, [search, username]);
 
     if (!data) {
         return (

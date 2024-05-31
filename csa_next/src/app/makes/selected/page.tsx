@@ -12,7 +12,7 @@ export default function MakeSelected() {
     const searchParams = useSearchParams();
     const make = searchParams.get('make');
     const username = searchParams.get('username');
-    const [altUsername, setAltUsername] = useState(username);
+    const [altUsername, setAltUsername] = useState("");
 
     function selectedModel(make: string, model: string) {
         if (username) {
@@ -34,7 +34,7 @@ export default function MakeSelected() {
         };
 
         fetchData();
-    }, []);
+    });
     
     useEffect(() => {
         const fetchData = async () => {
@@ -50,7 +50,7 @@ export default function MakeSelected() {
         };
 
         fetchData();
-    }, [search, make]);
+    }, [search, make, username]);
 
     if (!data) {
         return (

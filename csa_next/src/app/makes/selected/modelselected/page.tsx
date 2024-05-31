@@ -16,7 +16,7 @@ function Makes() {
 
     const username = searchParams.get('username');
     const [isOwner, setIsOwner] = useState(false);
-    const [altUsername, setAltUsername] = useState(username);
+    const [altUsername, setAltUsername] = useState("");
 
     useEffect(() => {
         if (altUsername) {
@@ -30,7 +30,7 @@ function Makes() {
         };
 
         fetchData();
-    }, []);
+    });
 
     useEffect(() => {
         if (username) {
@@ -55,7 +55,7 @@ function Makes() {
 
             fetchData();
         }
-    }, []);
+    }, [make, model, username]);
 
     if (!data) {
         return (

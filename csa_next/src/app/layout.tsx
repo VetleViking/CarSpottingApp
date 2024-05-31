@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { useEffect, useState } from "react";
 import { decode_jwt } from "@/api/api";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -16,23 +15,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [username, setUsername] = useState('');
-
-  useEffect(() => {
-    const encodedUsername = localStorage.getItem('token');
-
-    if (!encodedUsername) {
-      window.location.href = '/login';
-    }
-    
-    const decode = async () => {
-      const decoded = await decode_jwt(encodedUsername as string);
-      setUsername(decoded as string);
-    };
-
-    decode();
-  }, []);
-
   return (
     <html lang="en" className="bg-black">
       <body className="">{children}</body>

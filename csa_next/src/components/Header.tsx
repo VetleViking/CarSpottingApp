@@ -9,7 +9,6 @@ type HeaderProps = {
 };
 
 const Header = ({ search, setSearch, username }: HeaderProps) => {
-    console.log(username);
     return (
         <div className=" bg-white border-b-[6px] border-white">
             <div className="flex justify-center py-3 items-center gap-8 lg:gap-20 border-b-[6px] border-black">

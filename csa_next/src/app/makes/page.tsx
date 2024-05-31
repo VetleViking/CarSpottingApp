@@ -5,8 +5,9 @@ import { decode_jwt, get_makes, get_spotted_makes } from '@/api/api';
 import ListComponent from '@/components/ListComponent';
 import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
+import { Suspense } from 'react'
 
-function Makes() {
+function MakesComponent() {
     const searchParams = useSearchParams();
     const username = searchParams.get('username');
     const [search, setSearch] = useState('');
@@ -57,24 +58,32 @@ function Makes() {
     }
 
     return (
-        <div>
-            <Header search={search} setSearch={setSearch} username={altUsername as string} />
-            <p className='text-center text-white text-3xl my-4'>Select the make</p>
-            <div onClick={() => selectedMake("unknown")}>
-                <ListComponent title="Dont know / other" />
-            </div>
-            {Array.isArray(data) && data.length > 0 ? (
-                data.map((item: any, id) => (
-                <div
-                key={id}
-                onClick={() => selectedMake(item)}>
-                    <ListComponent  title={item} />
+        <Suspense fallback={<div>Loading...</div>}>
+            <div>
+                <Header search={search} setSearch={setSearch} username={altUsername as string} />
+                <p className='text-center text-white text-3xl my-4'>Select the make</p>
+                <div onClick={() => selectedMake("unknown")}>
+                    <ListComponent title="Dont know / other" />
                 </div>
-            ))): (<></>)}
-            
-            
-        </div>
+                {Array.isArray(data) && data.length > 0 ? (
+                    data.map((item: any, id) => (
+                    <div
+                    key={id}
+                    onClick={() => selectedMake(item)}>
+                        <ListComponent  title={item} />
+                    </div>
+                ))): (<></>)}
+                
+                
+            </div>
+        </Suspense>
     );
 }
 
-export default Makes;
+export default function Makes() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <MakesComponent />
+        </Suspense>
+    );
+};

@@ -5,8 +5,9 @@ import Header from "@/components/Header";
 import ListComponent from "@/components/ListComponent";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Suspense } from 'react'
 
-export default function MakeSelected() {
+function MakeSelectedComponent() {
     const [search, setSearch] = useState('');
     const [data, setData] = useState<{ model: string; }[]>([]);
     const searchParams = useSearchParams();
@@ -77,3 +78,11 @@ export default function MakeSelected() {
         </div>
     );
 };
+
+export default function MakeSelected() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <MakeSelectedComponent />
+        </Suspense>
+    );
+}

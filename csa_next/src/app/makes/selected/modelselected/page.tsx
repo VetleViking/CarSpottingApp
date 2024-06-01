@@ -6,9 +6,9 @@ import UploadSpot from '@/components/UploadSpot';
 import { decode_jwt, get_spotted_images } from '@/api/api';
 import Spotimage from '@/components/Spotimage';
 import Header from '@/components/Header';
+import { Suspense } from 'react'
 
-
-function Makes() {
+function MakesComponent() {
     const [data, setData] = useState<{ name: string; }[]>([]);
     const searchParams = useSearchParams();
     const make = searchParams.get('make');
@@ -87,4 +87,10 @@ function Makes() {
     );
 }
 
-export default Makes;
+export default function Makes() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <MakesComponent />
+        </Suspense>
+    );
+};

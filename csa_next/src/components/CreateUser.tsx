@@ -1,5 +1,5 @@
 "use client";
-import { create_user } from "@/api/api";
+import { create_user, login } from "@/api/api";
 import { useState } from "react";
 
 const CreateUser = () => {   
@@ -10,9 +10,15 @@ const CreateUser = () => {
     const create_user_handler = async (username: string, password: string) => {
         const data = await create_user(username, password);
         
-        if (data.token) {
-            localStorage.setItem('token', data.token);
-            window.location.href = '/';
+        if (data.message === "User created") {
+            const loginData = await login(username, password);
+
+            if (loginData.token) {
+                localStorage.setItem('token', loginData.token);
+                window.location.href = '/';
+            } else {
+                setErrormessage(loginData.message);
+            }
         } else {
             setErrormessage(data.message);
         }

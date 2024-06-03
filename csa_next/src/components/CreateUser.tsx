@@ -33,7 +33,7 @@ const CreateUser = () => {
 
             <input 
                 className="font-ListComponent"
-                type="text" 
+                type="password" 
                 placeholder="password"
                 value={password}
                 onChange={(e) => {

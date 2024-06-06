@@ -11,6 +11,12 @@ export default function Home() {
 
     const decode = async () => {
       const decoded = await decode_jwt(encodedUsername as string);
+
+      if (decoded.error) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
+
       setUsername(decoded as string);
     };
 

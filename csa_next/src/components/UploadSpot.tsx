@@ -1,4 +1,4 @@
-import { upload_spot } from "@/api/api";
+import { decode_jwt, upload_spot } from "@/api/api";
 import React, { useEffect, useState } from "react";
 import Spotimage from "./Spotimage";
 
@@ -13,6 +13,24 @@ const UploadSpot = ({ make, model }: SpotProps) => {
     const [previewUrl, setPreviewUrl] = useState('');
     const [notes, setNotes] = useState('');
     const [date, setDate] = useState('');
+    const [username, setUsername] = useState('');
+
+    useEffect(() => {
+        const encodedUsername = localStorage.getItem('token');
+
+        const decode = async () => {
+            const decoded = await decode_jwt(encodedUsername as string);
+
+            if (decoded.error) {
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+            }
+
+            setUsername(decoded as string);
+        };
+
+        decode();
+    }, []);
     
     useEffect(() => {
         if (!file) {
@@ -30,9 +48,13 @@ const UploadSpot = ({ make, model }: SpotProps) => {
         }
 
         const upload = async () => {
-            upload_spot(make, model, file[0]);
+            const data: any = await upload_spot(make, model, file[0]);
+        
+            if (!data.error) {
+                window.location.href = `/makes/selected?username=${username}&make=${make}&model=${model}`;
+            }
         };
-
+        
         upload();
     }, [uploadButton]);
 
@@ -66,13 +88,14 @@ const UploadSpot = ({ make, model }: SpotProps) => {
                                 <input 
                                     className="rounded-sm p-[2px] border border-[#9ca3af] font-ListComponent" 
                                     type="date" 
+                                    value={date}
                                     onChange={(e) => setDate(e.target.value)}
                                     />
                                 <button className="rounded-sm bg-[#9ca3af] text-black py-[4px] px-4 italic" onClick={
                                     () => {
                                         const today = new Date();
-                                        const date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-                                        console.log(date);
+                                        const date = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+                                        setDate(date);
                                     }
                                 }>Today</button>
                             </div>
@@ -81,7 +104,7 @@ const UploadSpot = ({ make, model }: SpotProps) => {
                 </div>
                 <button  
                 className="rounded-sm bg-[#9ca3af] text-black py-1 px-4 mt-1 italic" 
-                onClick={() => setUploadButton(!uploadButton)}>Upload</button>
+                onClick={() => setUploadButton(true)}>Upload</button>
             </div>
         </div>
     );

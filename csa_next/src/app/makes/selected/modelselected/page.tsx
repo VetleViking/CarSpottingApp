@@ -49,7 +49,6 @@ function MakesComponent() {
 
             const fetchData = async () => {
                 const data = await get_spotted_images(make as string, model as string, username);
-
                 setData(data);
             };
 
@@ -71,7 +70,7 @@ function MakesComponent() {
                 <div className='flex flex-col items-center gap-2'>
                     {data.map((item: any, id) => (
                         <div key={id}>
-                            <Spotimage image={item.url} deletedata={{ make: make as string, model: model as string, key: item.key, isOwner: isOwner }}/>
+                            <Spotimage image={item.url} notes={item.notes? item.notes : null} date={item.date? item.date : null} deletedata={{ make: make as string, model: model as string, key: item.key, isOwner: isOwner }}/>
                         </div> 
                     ))}
                 </div>

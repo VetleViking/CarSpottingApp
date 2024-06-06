@@ -41,22 +41,21 @@ const UploadSpot = ({ make, model }: SpotProps) => {
         setPreviewUrl(url);
     }, [file]);
 
-    useEffect(() => { 
-        // TODO: go to spots page
+
+    const upload = async () => {
         if (!file) {
             return;
         }
 
-        const upload = async () => {
-            const data: any = await upload_spot(make, model, file[0]);
-        
-            if (!data.error) {
-                window.location.href = `/makes/selected?username=${username}&make=${make}&model=${model}`;
-            }
-        };
-        
-        upload();
-    }, [uploadButton]);
+        const data = await upload_spot(make, model, file[0], notes, date);
+
+        if (data === null || data === undefined || data.error) {
+            return;
+        }
+
+        window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}&username=${username}`;
+    };
+
 
     return (
         <div className="flex justify-center">
@@ -104,7 +103,7 @@ const UploadSpot = ({ make, model }: SpotProps) => {
                 </div>
                 <button  
                 className="rounded-sm bg-[#9ca3af] text-black py-1 px-4 mt-1 italic" 
-                onClick={() => setUploadButton(true)}>Upload</button>
+                onClick={() => upload()}>Upload</button>
             </div>
         </div>
     );

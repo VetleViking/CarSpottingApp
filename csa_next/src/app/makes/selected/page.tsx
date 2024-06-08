@@ -1,6 +1,6 @@
 "use client";
 
-import { decode_jwt, get_models, get_spotted_models } from "@/api/api";
+import { add_model, decode_jwt, get_models, get_spotted_models } from "@/api/api";
 import Header from "@/components/Header";
 import ListComponent from "@/components/ListComponent";
 import { useSearchParams } from "next/navigation";
@@ -11,10 +11,14 @@ function MakeSelectedComponent() {
     const [search, setSearch] = useState('');
     const [data, setData] = useState<{ model: string; }[]>([]);
     const searchParams = useSearchParams();
-    const make = searchParams.get('make');
+    const make = searchParams.get('make') as string;
     const username = searchParams.get('username');
     const [altUsername, setAltUsername] = useState("");
+    const [newModel, setNewModel] = useState("");
 
+    function addModelHandler(model: string) {
+        add_model(make, model).then(() => window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}`);
+    }
     function selectedModel(make: string, model: string) {
         if (username) {
             window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}&username=${username}`;
@@ -64,6 +68,18 @@ function MakeSelectedComponent() {
             <Header search={search} setSearch={setSearch} username={altUsername as string}/>
             <p className="text-white text-center text-2xl mb-1 mt-4">Selected Make: {make}</p>
             <p className="text-white text-center text-xl mb-4">{username ? `${username}'s spots of ${make}'s:` : `${make}'s models:`}</p>
+            {!username &&<div className='w-full flex items-center justify-center gap-4 mb-4'>
+                <input
+                    className='font-ListComponent border border-black p-1 h-full rounded-md'
+                    type='text'
+                    placeholder='Other (add model)'
+                    value={newModel}
+                    onChange={(e) => setNewModel(e.target.value)}
+                />
+                <button
+                    className='bg-[#e72328] text-white py-2 px-2 border border-black italic'
+                    onClick={() => addModelHandler(newModel)}>Add new model</button>
+            </div>}
             {Array.isArray(data) && data.length > 0 ? (
                 data.map((item: any, id) => (
                     <div 
@@ -74,6 +90,7 @@ function MakeSelectedComponent() {
                 ))
             ) : (
                 <div className="text-white text-center">No models found</div>
+                
             )}
         </div>
     );

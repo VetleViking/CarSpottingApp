@@ -6,8 +6,13 @@ const router = Router();
 
 router.get('/makes', async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
+        
         const makesObject = await redisClient.hGetAll('makes');
-        const makesArray = Object.keys(makesObject).map(key => makesObject[key]);
+        const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}`);
+        const makesArray = Object.keys(makesObject).map(key => makesObject[key])
+                          .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
 
         res.status(200).json(makesArray);
         return;
@@ -20,9 +25,13 @@ router.get('/makes', async (req: Request, res: Response, next: NextFunction) => 
 router.get('/makes/:query', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { query } = req.params;
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
         
         const makesObject = await redisClient.hGetAll('makes');
-        const makesArray = Object.keys(makesObject).map(key => makesObject[key]);
+        const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}`);
+        const makesArray = Object.keys(makesObject).map(key => makesObject[key])
+                          .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
 
         const filteredMakes = makesArray.filter(make => make.toLowerCase().includes(query.toLowerCase()));
 
@@ -36,6 +45,9 @@ router.get('/makes/:query', async (req: Request, res: Response, next: NextFuncti
 
 router.get('/makes/unknown/models/', async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
+
         // if not searched bofore, save search and get from apininja instead
         const searchedBefore = await redisClient.hGet(`searched:unknown`, ' ');
 
@@ -70,13 +82,17 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
 
         // Else, get all makes from Redis
         const makesObject = await redisClient.hGetAll('makes');
-        const makesArray = Object.keys(makesObject).map(key => makesObject[key]);
+        const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}`);
+        const makesArray = Object.keys(makesObject).map(key => makesObject[key])
+                          .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
 
         let modelsArray: {make: string, model: string}[] = [];
 
         for (const make of makesArray) {
             const modelsObject = await redisClient.hGetAll(`make:${make}`);    
-            const models = Object.keys(modelsObject).map(key => modelsObject[key]);
+            const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}:${make}`);
+            const models = Object.keys(modelsObject).map(key => modelsObject[key])
+                          .concat(Object.keys(modelsObjectUser).map(key => modelsObjectUser[key]));
         
             const modelsWithMake = models.map(model => ({make, model}));
         
@@ -98,6 +114,8 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
 router.get('/makes/unknown/models/:query', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { query } = req.params;
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
 
         // if not searched bofore, save search and get from apininja instead
         const searchedBefore = await redisClient.hGet('searched:unknown', query);
@@ -125,7 +143,9 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
             );
 
             const makesObject = await redisClient.hGetAll('makes');
-            const makesArray = Object.keys(makesObject).map(key => makesObject[key]);
+            const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}`);
+            const makesArray = Object.keys(makesObject).map(key => makesObject[key])
+                            .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
 
             uniqueModels.forEach(async model => {
                 const make = makesArray.find(make => make.toLowerCase() === model.make.toLowerCase()) || 'other';
@@ -138,14 +158,18 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
 
         // Else, get all makes from Redis
         const makesObject = await redisClient.hGetAll('makes');
-        const makesArray = Object.keys(makesObject).map(key => makesObject[key]);
+        const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}`);
+        const makesArray = Object.keys(makesObject).map(key => makesObject[key])
+                          .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
         makesArray.push('other');
 
         let modelsArray: {make: string, model: string}[] = [];
 
         for (const make of makesArray) {
             const modelsObject = await redisClient.hGetAll(`make:${make}`);    
-            const models = Object.keys(modelsObject).map(key => modelsObject[key]);
+            const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}:${make}`);
+            const models = Object.keys(modelsObject).map(key => modelsObject[key])
+                          .concat(Object.keys(modelsObjectUser).map(key => modelsObjectUser[key]));
         
             const filteredModels = models.filter(model => model.toLowerCase().includes(query.toLowerCase()));
         
@@ -169,6 +193,8 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
 router.get('/makes/:make/models/', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make } = req.params;
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
         
         // if not searched bofore, save search and get from apininja instead
         const searchedBefore = await redisClient.hGet(`searched:${make}`, ' ');
@@ -205,7 +231,10 @@ router.get('/makes/:make/models/', async (req: Request, res: Response, next: Nex
 
         // Else, get all makes from Redis
         const modelsObject = await redisClient.hGetAll(`make:${make}`);
-        const modelsArray = Object.keys(modelsObject).map(key => ({make, model: modelsObject[key]}));
+        const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}:${make}`);
+        const modelsArray = Object.keys(modelsObject).map(key => ({make, model: modelsObject[key]}))
+                            .concat(Object.keys(modelsObjectUser).map(key => ({make, model: modelsObjectUser[key]})));
+
 
         if (modelsArray.length > 50) {
             res.status(200).json(modelsArray.slice(0, 50));
@@ -224,6 +253,9 @@ router.get('/makes/:make/models/', async (req: Request, res: Response, next: Nex
 router.get('/makes/:make/models/:query', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, query } = req.params;
+
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
         
         // if not searched bofore, save search and get from apininja instead
         const searchedBefore = await redisClient.hGet(`searched:${make}`, query);
@@ -260,7 +292,9 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
 
         // Else, get all makes from Redis
         const modelsObject = await redisClient.hGetAll(`make:${make}`);
-        const modelsArray = Object.keys(modelsObject).map(key => ({make, model: modelsObject[key]}));
+        const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}:${make}`);
+        const modelsArray = Object.keys(modelsObject).map(key => ({make, model: modelsObject[key]}))
+                            .concat(Object.keys(modelsObjectUser).map(key => ({make, model: modelsObjectUser[key]})));
 
         const filteredModels = modelsArray.filter(model => model.model.toLowerCase().includes(query.toLowerCase()));
 
@@ -272,6 +306,53 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
         res.status(269).json(filteredModels);
         return;
         
+    } catch(err) {
+        next(err);
+    }
+});
+
+router.post('/addmake', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { make } = req.body;
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
+        
+        const alreadyExists = await redisClient.hGet('makes', make);
+        const alreadyExistsUser = await redisClient.hGet(`makes:${decodedUser.username}`, make);
+
+        if (alreadyExists || alreadyExistsUser) {
+            res.status(400).json({ message: 'Make already exists' });
+            return;
+        }
+
+        await redisClient.hSet(`makes:${decodedUser.username}`, make, make);
+
+        res.status(201).json({ message: 'Make created' });
+        return;
+
+    } catch(err) {
+        next(err);
+    }
+});
+
+router.post('/addmodel', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { make, model } = req.body;
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
+        
+        const alreadyExists = await redisClient.hGet(`makes:${decodedUser.username}:${make}`, model);
+
+        if (alreadyExists) {
+            res.status(400).json({ message: 'Model already exists' });
+            return;
+        }
+
+        await redisClient.hSet(`makes:${decodedUser.username}:${make}`, model, model);
+
+        res.status(201).json({ message: 'Model created' });
+        return;
+
     } catch(err) {
         next(err);
     }

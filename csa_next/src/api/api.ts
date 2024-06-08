@@ -24,6 +24,32 @@ export async function get_makes(query?: string) {
     return await response.json();
 }
 
+export async function add_make(make: string) {
+    const response = await fetch(`http://localhost:4000/api/v1/cars/addmake`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: JSON.stringify({ make })
+    });
+
+    return await response.json();
+}
+
+export async function add_model(make: string, model: string) {
+    const response = await fetch(`http://localhost:4000/api/v1/cars/addmodel`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: JSON.stringify({ make, model })
+    });
+
+    return await response.json();
+}
+
 export async function upload_spot(make: string, model: string, image: File, notes?: string, date?: string) {
     const formData = new FormData();
     formData.append('make', make);

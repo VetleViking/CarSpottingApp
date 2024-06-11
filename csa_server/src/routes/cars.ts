@@ -311,6 +311,41 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
     }
 });
 
+router.get('/spots/:make/percentage', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { make } = req.params;
+        const username = req.query.username;
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
+
+        const modelsObject = await redisClient.hGetAll(`make:${make}`);
+        const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}:${make}`);
+        const modelsArray = Object.keys(modelsObject).map(key => ({make, model: modelsObject[key]}))
+                            .concat(Object.keys(modelsObjectUser).map(key => ({make, model: modelsObjectUser[key]})));
+
+        console.log(modelsArray);
+        console.log(modelsArray.length);
+
+        let totalSpots = 0;
+        let totalModels = 0;
+
+        for (const model of modelsArray) {
+            totalSpots += Object.keys(spots).length;
+            totalModels++;
+        }
+
+        const percentage = totalSpots / totalModels * 100;
+
+        console.log(totalSpots, totalModels);
+
+        console.log(percentage);
+
+        res.status(200).json({ percentage });
+    } catch(err) {
+        next(err);
+    }
+});
+
 router.post('/addmake', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make } = req.body;

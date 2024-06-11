@@ -107,6 +107,18 @@ export async function get_spotted_models(make?: string, query?: string, username
     return await response.json()
 }
 
+export async function get_spotted_make_percentage(make: string, username?: string) {
+    const response = await fetch(`http://localhost:4000/api/v1/cars/spots/${make}/percentage${username ? '?username=' + username : ''}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + localStorage.getItem('token')
+        }
+    });
+
+    return await response.json()
+}
+
 export async function get_spotted_images(make: string, model: string, username?: string) {
     const response = await fetch(`http://localhost:4000/api/v1/cars/getspots/${make}/${model}${username ? '?username=' + username : ''}`, {
         method: 'GET',

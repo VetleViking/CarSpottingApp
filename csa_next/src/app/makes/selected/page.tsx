@@ -1,6 +1,6 @@
 "use client";
 
-import { add_model, decode_jwt, get_models, get_spotted_models } from "@/api/api";
+import { add_model, decode_jwt, get_models, get_spotted_make_percentage, get_spotted_models } from "@/api/api";
 import Header from "@/components/Header";
 import ListComponent from "@/components/ListComponent";
 import { useSearchParams } from "next/navigation";
@@ -36,6 +36,9 @@ function MakeSelectedComponent() {
         const fetchData = async () => {            
             const decoded = await decode_jwt(encodedUsername as string);
             setAltUsername(decoded as string);
+
+            const data = await get_spotted_make_percentage(make);
+            console.log(data);
         };
 
         fetchData();

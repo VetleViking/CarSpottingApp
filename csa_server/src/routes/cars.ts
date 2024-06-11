@@ -323,24 +323,12 @@ router.get('/spots/:make/percentage', async (req: Request, res: Response, next: 
         const modelsArray = Object.keys(modelsObject).map(key => ({make, model: modelsObject[key]}))
                             .concat(Object.keys(modelsObjectUser).map(key => ({make, model: modelsObjectUser[key]})));
 
-        console.log(modelsArray);
-        console.log(modelsArray.length);
+        const spotsKeys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:*`);
 
-        let totalSpots = 0;
-        let totalModels = 0;
+        const percentage = Math.floor(spotsKeys.length / modelsArray.length * 100);
 
-        for (const model of modelsArray) {
-            totalSpots += Object.keys(spots).length;
-            totalModels++;
-        }
 
-        const percentage = totalSpots / totalModels * 100;
-
-        console.log(totalSpots, totalModels);
-
-        console.log(percentage);
-
-        res.status(200).json({ percentage });
+        res.status(200).json({ percentage: percentage, numSpots: spotsKeys.length, numModels: modelsArray.length });
     } catch(err) {
         next(err);
     }
@@ -438,8 +426,10 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
         const { make, model, key } = req.body;
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
+
+        console.log(make, model, key);
         
-        if (!make || !model || !key) {
+        if (!make || !model || (!key && key !== 0)) {
             res.status(400).json({ message: 'Make, model, and key are required' });
             return;
         }
@@ -450,10 +440,21 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
         const spotNotes = allSpots[`notes${key}`];
         const spotDate = allSpots[`date${key}`];
 
+        //console.log(spotImage, spotNotes, spotDate);
+
         if (!spotImage && !spotNotes && !spotDate) {
             res.status(404).json({ message: 'Spot not found' });
             return;
         }
+
+        const data = {
+            [`image${key}`]: spotImage,
+            [`notes${key}`]: spotNotes,
+            [`date${key}`]: spotDate,
+        };
+
+        if (!allSpots[`notes${key}`]) delete data[`notes${key}`];
+        if (!allSpots[`date${key}`]) delete data[`date${key}`];
 
         await redisClient.hDel(`spots:${decodedUser.username}:${make}:${model}`, [`image${key}`, `notes${key}`, `date${key}`]);
 
@@ -478,17 +479,29 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
 
         const allSpots = await redisClient.hGetAll(`spots:${username || decodedUser.username}:${make}:${model}`);
 
-        const spots = [];
+        console.log(allSpots);
+
         
-        let i = 0;
-        while (allSpots[`image${i}`] !== undefined) {
+        const images = Object.keys(allSpots).filter(key => key.includes('image'));
+        
+        // Sort images by number
+        images.sort((a, b) => {
+            const aNum = parseInt(a.split('image')[1]);
+            const bNum = parseInt(b.split('image')[1]);
+            return aNum - bNum;
+        });
+        
+        const spots = [];
+            
+        // Get image, notes, and date for each image
+        for (const image of images) {
+            const i = image.split('image')[1];
+
             const imageBase64 = allSpots[`image${i}`];
             const notes = allSpots[`notes${i}`];
             const date = allSpots[`date${i}`];
             const imageBuffer = imageBase64 ? Buffer.from(imageBase64, 'base64') : null;
             spots.push({ key: i, image: imageBuffer, notes, date });
-
-            i++;
         }
 
         res.status(200).json(spots);
@@ -505,7 +518,7 @@ router.get('/spots/makes/', async (req: Request, res: Response, next: NextFuncti
 
         const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
 
-        const makesArray = keys.map(key => key.split(':')[2]);
+        const makesArray = keys.map(key => key.split(':')[2]).filter((item, index, self) => self.indexOf(item) === index);
 
         res.status(200).json(makesArray);
         return;
@@ -525,9 +538,9 @@ router.get('/spots/makes/:query', async (req: Request, res: Response, next: Next
 
         const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
 
-        const makesArray = keys.map(key => key.split(':')[2]);
+        const makesArray = keys.map(key => key.split(':')[2]).filter((item, index, self) => self.indexOf(item) === index);
 
-        const filteredMakes = makesArray.filter(make => make.toLowerCase().includes((query as string).toLowerCase()));
+        const filteredMakes = Array.from(makesArray).filter(make => make.toLowerCase().includes((query as string).toLowerCase()));
 
         res.status(200).json(filteredMakes);
         return;

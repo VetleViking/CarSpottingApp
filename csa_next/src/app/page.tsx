@@ -2,26 +2,12 @@
 import { decode_jwt } from "@/api/api";
 import Header from "@/components/Header";
 import { useEffect, useState } from "react";
+import { ensure_login } from "./functions/functions";
 
 export default function Home() {
   const [username, setUsername] = useState('');
 
-  useEffect(() => {
-    const encodedUsername = localStorage.getItem('token');
-
-    const decode = async () => {
-      const decoded = await decode_jwt(encodedUsername as string);
-
-      if (decoded.error) {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
-      }
-
-      setUsername(decoded as string);
-    };
-
-    decode();
-  }, []);
+  ensure_login().then((username) => setUsername(username));
 
   if (!username) {
     return (

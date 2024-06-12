@@ -7,6 +7,7 @@ import { decode_jwt, get_spotted_images } from '@/api/api';
 import Spotimage from '@/components/Spotimage';
 import Header from '@/components/Header';
 import { Suspense } from 'react'
+import { ensure_login } from '@/app/functions/functions';
 
 function MakesComponent() {
     const [data, setData] = useState<{ name: string; }[]>([]);
@@ -19,33 +20,12 @@ function MakesComponent() {
     const [altUsername, setAltUsername] = useState("");
 
     useEffect(() => {
-        if (altUsername) {
-            return;
-        }
-        const encodedUsername = localStorage.getItem('token');
-
-        const fetchData = async () => {            
-            const decoded = await decode_jwt(encodedUsername as string);
-            setAltUsername(decoded as string);
-        };
-
-        fetchData();
-    });
-
-    useEffect(() => {
         if (username) {
-            const encodedUsername = localStorage.getItem('token');
-
-            if (!encodedUsername) {
-                window.location.href = '/login';
-            }
             
-            const decode = async () => {
-                const decoded = await decode_jwt(encodedUsername as string);
-                setIsOwner(decoded === username);
-            };
-
-            decode();
+            ensure_login().then((user) => {
+                setAltUsername(user as string);
+                setIsOwner(username === user as string);
+            });
 
             const fetchData = async () => {
                 const data = await get_spotted_images(make as string, model as string, username);
@@ -56,7 +36,7 @@ function MakesComponent() {
         }
     }, [make, model, username]);
 
-    if (!data) {
+    if (!data || !altUsername) {
         return (
             <div className="text-white">Loading...</div>
         );

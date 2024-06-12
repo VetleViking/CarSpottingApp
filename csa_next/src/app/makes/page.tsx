@@ -6,6 +6,7 @@ import ListComponent from '@/components/ListComponent';
 import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import { Suspense } from 'react'
+import { ensure_login } from '../functions/functions';
 
 function MakesComponent() {
     const searchParams = useSearchParams();
@@ -27,21 +28,8 @@ function MakesComponent() {
         add_make(make).then(() => window.location.href = `/makes/selected?make=${make}`);
     }
 
-    useEffect(() => {
-        if (altUsername) {
-            return;
-        }
-        const encodedUsername = localStorage.getItem('token');
-
-        const fetchData = async () => {            
-            const decoded = await decode_jwt(encodedUsername as string);
-            setAltUsername(decoded as string);
-        };
-
-        fetchData();
-    });
+    ensure_login().then((username) => setAltUsername(username));
     
-
     useEffect(() => {
         const fetchData = async () => {
             if (username) {
@@ -56,7 +44,7 @@ function MakesComponent() {
         fetchData();
     }, [search, username]);
 
-    if (!data) {
+    if (!data || !altUsername) {
         return (
             <div className="text-white">Loading...</div>
         );

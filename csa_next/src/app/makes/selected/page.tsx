@@ -1,6 +1,7 @@
 "use client";
 
 import { add_model, decode_jwt, get_models, get_spotted_make_percentage, get_spotted_models } from "@/api/api";
+import { ensure_login } from "@/app/functions/functions";
 import Header from "@/components/Header";
 import ListComponent from "@/components/ListComponent";
 import { useSearchParams } from "next/navigation";
@@ -28,20 +29,8 @@ function MakeSelectedComponent() {
         }
     }
 
-    useEffect(() => {
-        if (altUsername) {
-            return;
-        }
-        const encodedUsername = localStorage.getItem('token');
+    ensure_login().then((username) => setAltUsername(username));
 
-        const fetchData = async () => {            
-            const decoded = await decode_jwt(encodedUsername as string);
-            setAltUsername(decoded as string);
-        };
-
-        fetchData();
-    });
-    
     useEffect(() => {
         const fetchData = async () => {
             let data = [];
@@ -62,7 +51,7 @@ function MakeSelectedComponent() {
         fetchData();
     }, [search, make, username]);
 
-    if (!data) {
+    if (!data || !altUsername) {
         return (
             <div>Loading...</div>
         );

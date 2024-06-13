@@ -6,7 +6,7 @@ import ListComponent from '@/components/ListComponent';
 import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import { Suspense } from 'react'
-import { ensure_login } from '../functions/functions';
+import { ensure_login } from '@/functions/functions';
 
 function MakesComponent() {
     const searchParams = useSearchParams();

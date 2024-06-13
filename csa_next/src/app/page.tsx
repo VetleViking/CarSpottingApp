@@ -2,7 +2,7 @@
 import { decode_jwt } from "@/api/api";
 import Header from "@/components/Header";
 import { useEffect, useState } from "react";
-import { ensure_login } from "./functions/functions";
+import { ensure_login } from "@/functions/functions";
 
 export default function Home() {
   const [username, setUsername] = useState('');

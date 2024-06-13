@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from "next/navigation";
 import UploadSpot from '@/components/UploadSpot';
-import { decode_jwt, get_spotted_images } from '@/api/api';
+import { get_spotted_images } from '@/api/api';
 import Spotimage from '@/components/Spotimage';
 import Header from '@/components/Header';
 import { Suspense } from 'react'
-import { ensure_login } from '@/app/functions/functions';
+import { ensure_login } from '@/functions/functions';
 
 function MakesComponent() {
     const [data, setData] = useState<{ name: string; }[]>([]);

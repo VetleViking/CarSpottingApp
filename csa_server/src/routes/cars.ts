@@ -73,6 +73,8 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
             );
 
             uniqueModels.forEach(async model => {
+                const make = makesArray.find(make => make.toLowerCase() === model.make.toLowerCase()) || 'other';
+                model.make = make;
                 redisClient.hSet(`make:${model.make}`, model.model, model.model);
             });
 
@@ -95,7 +97,7 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
                           .concat(Object.keys(modelsObjectUser).map(key => modelsObjectUser[key]));
         
             const modelsWithMake = models.map(model => ({make, model}));
-        
+            
             modelsArray = modelsArray.concat(modelsWithMake);
         
             if (modelsArray.length > 50) {
@@ -149,12 +151,9 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
 
             uniqueModels.forEach(async model => {
                 const make = makesArray.find(make => make.toLowerCase() === model.make.toLowerCase()) || 'other';
-                console.log(make);
                 model.make = make;
                 redisClient.hSet(`make:${make}`, model.model, model.model);
             });
-
-            console.log(uniqueModels);
 
             res.status(200).json(uniqueModels);
             return;
@@ -226,6 +225,7 @@ router.get('/makes/:make/models/', async (req: Request, res: Response, next: Nex
             );
 
             uniqueModels.forEach(async model => {
+                model.make = make;
                 redisClient.hSet(`make:${make}`, model.model, model.model);
             });
 
@@ -287,6 +287,7 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
             );
 
             uniqueModels.forEach(async model => {
+                model.make = make;
                 redisClient.hSet(`make:${make}`, model.model, model.model);
             });
 
@@ -392,7 +393,6 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post('/addspot', upload.single('image'), async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model, notes, date } = req.body;
-        console.log(make, model, notes, date);
         const image = req.file;
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
@@ -431,8 +431,6 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
 
-        console.log(make, model, key);
-        
         if (!make || !model || (!key && key !== 0)) {
             res.status(400).json({ message: 'Make, model, and key are required' });
             return;
@@ -443,8 +441,6 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
         const spotImage = allSpots[`image${key}`];
         const spotNotes = allSpots[`notes${key}`];
         const spotDate = allSpots[`date${key}`];
-
-        //console.log(spotImage, spotNotes, spotDate);
 
         if (!spotImage && !spotNotes && !spotDate) {
             res.status(404).json({ message: 'Spot not found' });
@@ -483,9 +479,6 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
 
         const allSpots = await redisClient.hGetAll(`spots:${username || decodedUser.username}:${make}:${model}`);
 
-        console.log(allSpots);
-
-        
         const images = Object.keys(allSpots).filter(key => key.includes('image'));
         
         // Sort images by number

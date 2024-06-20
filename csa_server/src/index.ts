@@ -12,18 +12,7 @@ const PORT: number = parseInt(process.env.SERVER_PORT || "3000", 10);
 const HOST = process.env.SERVER_HOST || "localhost";
 
 app.use(
-  cors({
-    origin: [
-      "http://192.168.98.221:3000",
-      "http://localhost:3000",
-      "http://localhost:5173",
-      "http://169.254.211.60:4000",
-      "http://192.168.99.36:6969",
-      "http://192.168.98.95:6969",
-      "http://192.168.98.194:5173",
-    ],
-    credentials: true,
-  })
+  cors({})
 );
 
 app.use(

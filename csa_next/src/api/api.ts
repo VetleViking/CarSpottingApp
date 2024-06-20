@@ -24,6 +24,20 @@ export async function get_makes(query?: string) {
     return await response.json();
 }
 
+import makes from './makes.json';
+
+export async function upload_makes() {
+    makes.forEach(async (make) => {
+        await fetch(`http://localhost:4000/api/v1/cars/makes/${make.name}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'authorization': 'Bearer ' + localStorage.getItem('token')
+            },
+        });
+    });
+}
+
 export async function add_make(make: string) {
     const response = await fetch(`http://192.168.1.192:4000/api/v1/cars/addmake`, {
         method: 'POST',

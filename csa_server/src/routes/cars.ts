@@ -4,28 +4,6 @@ import { verify_jwt } from '../utils/user';
 
 const router = Router();
 
-router.post('/makes/upload/:make', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { make } = req.params;
-        
-        const alreadyExists = await redisClient.hGet('makes', make);
-
-        if (alreadyExists) {
-            res.status(400).json({ message: 'Make already exists' });
-            return;
-        }
-
-        await redisClient.hSet('makes', make, make);
-
-        res.status(201).json({ message: 'Make created' });
-        return;
-
-    } catch(err) {
-        next(err);
-    }
-});
-
-
 router.get('/makes', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const token = req.headers.authorization.split(' ')[1];

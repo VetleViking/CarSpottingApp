@@ -20,13 +20,15 @@ function MakesComponent() {
     const [altUsername, setAltUsername] = useState("");
 
     useEffect(() => {
-        if (username) {
-            
-            ensure_login().then((user) => {
-                setAltUsername(user as string);
-                setIsOwner(username === user as string);
-            });
+        ensure_login().then((user) => {
+            setAltUsername(user as string);
 
+            if (username) {
+                setIsOwner(username === user as string);
+            }
+        });
+
+        if (username) {
             const fetchData = async () => {
                 const data = await get_spotted_images(make as string, model as string, username);
                 setData(data);
@@ -36,7 +38,7 @@ function MakesComponent() {
         }
     }, [make, model, username]);
 
-    if (!data || !altUsername) {
+    if (!altUsername) {
         return (
             <div className="text-white">Loading...</div>
         );

@@ -153,6 +153,8 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
                 redisClient.hSet(`make:${make}`, model.model, model.model);
             });
 
+            console.log(uniqueModels);
+
             res.status(200).json(uniqueModels);
             return;
         }

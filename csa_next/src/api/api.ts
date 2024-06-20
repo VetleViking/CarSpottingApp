@@ -28,7 +28,7 @@ import makes from './makes.json';
 
 export async function upload_makes() {
     makes.forEach(async (make) => {
-        await fetch(`http://localhost:4000/api/v1/cars/makes/${make.name}`, {
+        await fetch(`http://localhost:4000/api/v1/cars/makes/upload/${make.name}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

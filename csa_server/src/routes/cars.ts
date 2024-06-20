@@ -150,6 +150,7 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
             uniqueModels.forEach(async model => {
                 const make = makesArray.find(make => make.toLowerCase() === model.make.toLowerCase()) || 'other';
                 console.log(make);
+                model.make = make;
                 redisClient.hSet(`make:${make}`, model.model, model.model);
             });
 

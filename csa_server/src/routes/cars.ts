@@ -4,7 +4,7 @@ import { verify_jwt } from '../utils/user';
 
 const router = Router();
 
-router.get('/makes/upload/:make', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/makes/upload/:make', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make } = req.params;
         

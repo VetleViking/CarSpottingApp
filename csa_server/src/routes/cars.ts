@@ -72,6 +72,11 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
                 ))
             );
 
+            const makesObject = await redisClient.hGetAll('makes');
+            const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}`);
+            const makesArray = Object.keys(makesObject).map(key => makesObject[key])
+                            .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
+
             uniqueModels.forEach(async model => {
                 const make = makesArray.find(make => make.toLowerCase() === model.make.toLowerCase()) || 'other';
                 model.make = make;

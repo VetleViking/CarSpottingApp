@@ -470,6 +470,18 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
     }
 });
 
+const sharp = require('sharp');
+
+// function to compress image
+const compressImage = async (base64Image) => {
+    const buffer = Buffer.from(base64Image, 'base64');
+    const compressedBuffer = await sharp(buffer)
+        .resize(384)
+        .jpeg({ quality: 80 }) 
+        .toBuffer();
+    return compressedBuffer.toString('base64');
+};
+
 router.get('/getspots/:make/:model', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model } = req.params;
@@ -485,32 +497,35 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
         const allSpots = await redisClient.hGetAll(`spots:${username || decodedUser.username}:${make}:${model}`);
 
         const images = Object.keys(allSpots).filter(key => key.includes('image'));
-        
+
         // Sort images by number
         images.sort((a, b) => {
             const aNum = parseInt(a.split('image')[1]);
             const bNum = parseInt(b.split('image')[1]);
             return aNum - bNum;
         });
-        
+
         const spots = [];
-            
+
         // Get image, notes, and date for each image
         for (const image of images) {
             const i = image.split('image')[1];
 
-            const imageBase64 = allSpots[`image${i}`];
+            let imageBase64 = allSpots[`image${i}`];
+            if (imageBase64) {
+                imageBase64 = await compressImage(imageBase64);
+            }
             const notes = allSpots[`notes${i}`];
             const date = allSpots[`date${i}`];
-            const imageBuffer = imageBase64 ? Buffer.from(imageBase64, 'base64') : null;
-            spots.push({ key: i, image: imageBuffer, notes, date });
+            spots.push({ key: i, image: imageBase64, notes, date });
         }
 
         res.status(200).json(spots);
-    } catch(err) {
+    } catch (err) {
         next(err);
     }
 });
+
 
 router.get('/spots/makes/', async (req: Request, res: Response, next: NextFunction) => {
     try {

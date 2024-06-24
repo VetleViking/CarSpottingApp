@@ -55,20 +55,20 @@ function MakesComponent() {
             <div>
                 <Header search={search} setSearch={setSearch} username={altUsername as string} />
                 <p className='text-center text-white text-3xl my-4'>Select the make</p>
-                <div className='flex gap-2 mb-4'>
+                <div className='flex gap-2 mb-4 flex-wrap md:flex-nowrap'>
                     <div onClick={() => selectedMake("unknown")} className='w-full'>
                         <ListComponent title="Dont know" />
                     </div>
-                    {!username && <div className='w-full flex items-center justify-center gap-4'>
+                    {!username && <div className='w-full flex items-center justify-center gap-4 mx-1'>
                         <input
-                            className='font-ListComponent border border-black p-1 h-full rounded-md'
+                            className='font-ListComponent border border-black p-1 w-full h-full rounded-md'
                             type='text'
                             placeholder='Other (add make)'
                             value={newMake}
                             onChange={(e) => setNewMake(e.target.value)}
                         />
                         <button
-                            className='bg-[#e72328] text-white py-2 px-2 border border-black italic'
+                            className='bg-[#e72328] text-white py-2 px-2 border border-black italic text-nowrap'
                             onClick={() => addMakeHandler(newMake)}>Add new make</button>
                     </div>}
                 </div>

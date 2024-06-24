@@ -8,7 +8,7 @@ type SearchProps = {
 const Search = ({ search, setSearch }: SearchProps) => {    
     return (
         <input
-            className="w-1/4 p-1 rounded-lg border border-black font-ListComponent"
+            className="w-full md:w-1/3 p-1 rounded-lg border border-black font-ListComponent"
             type="text"
             placeholder="Search..."
             value={search}

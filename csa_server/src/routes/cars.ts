@@ -476,8 +476,8 @@ const compressImage = async (base64Image) => {
     const buffer = Buffer.from(base64Image, 'base64');
     const compressedBuffer = await sharp(buffer)
         .rotate() 
-        .resize(800) 
-        .jpeg({ quality: 80 }) 
+        .resize(1080) 
+        .jpeg({ quality: 50 }) 
         .toBuffer();
     return compressedBuffer.toString('base64'); 
 };

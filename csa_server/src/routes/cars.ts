@@ -474,17 +474,12 @@ const sharp = require('sharp');
 
 // function to compress image
 const compressImage = async (base64Image) => {
-    try {
-        const buffer = Buffer.from(base64Image, 'base64');
-        const compressedBuffer = await sharp(buffer)
-            .resize(384)
-            .jpeg({ quality: 80 }) 
-            .toBuffer();
-        return compressedBuffer.toString('base64');
-    } catch (error) {
-        console.error('Error compressing image:', error);
-        throw error;
-    }
+    const buffer = Buffer.from(base64Image, 'base64');
+    const compressedBuffer = await sharp(buffer)
+        .resize(384)
+        .jpeg({ quality: 80 }) 
+        .toBuffer();
+    return compressedBuffer.toString('base64');
 };
 
 router.get('/getspots/:make/:model', async (req: Request, res: Response, next: NextFunction) => {

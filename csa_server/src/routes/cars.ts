@@ -472,14 +472,14 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
 
 const sharp = require('sharp');
 
-// function to compress image
 const compressImage = async (base64Image) => {
     const buffer = Buffer.from(base64Image, 'base64');
     const compressedBuffer = await sharp(buffer)
-        .resize(384)
+        .rotate() 
+        .resize(800) 
         .jpeg({ quality: 80 }) 
         .toBuffer();
-    return compressedBuffer.toString('base64');
+    return compressedBuffer.toString('base64'); 
 };
 
 router.get('/getspots/:make/:model', async (req: Request, res: Response, next: NextFunction) => {

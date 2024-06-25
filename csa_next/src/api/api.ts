@@ -50,11 +50,15 @@ export async function add_model(make: string, model: string) {
     return await response.json();
 }
 
-export async function upload_spot(make: string, model: string, image: File, notes?: string, date?: string) {
+export async function upload_spot(make: string, model: string, images: File[], notes?: string, date?: string) {
     const formData = new FormData();
     formData.append('make', make);
     formData.append('model', model);
-    formData.append('image', image);
+    
+    images.forEach(image => {
+        formData.append('images', image);
+    });
+
     if (notes) formData.append('notes', notes);
     if (date) formData.append('date', date);
 

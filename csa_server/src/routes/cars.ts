@@ -398,26 +398,41 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post('/addspot', upload.single('image'), async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model, notes, date } = req.body;
-        const image = req.file;
+        const images = req.files as Express.Multer.File[];
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
         
-        if (!make || !model || !image) {
+        if (!make || !model || !images) {
             res.status(400).json({ message: 'Make, model, and image are required' });
             return;
         }
 
         const allSpots = await redisClient.hGetAll(`spots:${decodedUser.username}:${make}:${model}`);
 
-        const offset = Object.keys(allSpots).length;
+        let offset = 0;
 
-        const imageBase64 = image.buffer.toString('base64');
+        Object.keys(allSpots).forEach(key => {
+            const match = key.match(/image(\d+)/); // This regex matches 'image' followed by any number of digits
+            if (match) {
+                const number = parseInt(match[1], 10); // Convert the matched number part to an integer
+                if (number > offset) {
+                    offset = number; // Update highestNumber if the current number is greater
+                }
+            }
+        });
+
+        offset++;
+
+        const imagesBase64 = images.map(image => image.buffer.toString('base64'));
 
         const data = {
-            [`image${offset}`]: imageBase64,
             [`notes${offset}`]: notes,
             [`date${offset}`]: date,
         };
+
+        imagesBase64.map(item, index => {
+            data[`${index}image${offset}`] = item;
+        })
 
         if (!notes) delete data[`notes${offset}`];
         if (!date) delete data[`date${offset}`];

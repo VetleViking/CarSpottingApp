@@ -1,6 +1,7 @@
 import { decode_jwt, upload_spot } from "@/api/api";
 import React, { useEffect, useState } from "react";
 import Spotimage from "./Spotimage";
+import { ensure_login } from "@/functions/functions";
 
 type SpotProps = {
     make: string;
@@ -8,46 +9,35 @@ type SpotProps = {
 };
 
 const UploadSpot = ({ make, model }: SpotProps) => {
-    const [uploadButton, setUploadButton] = useState(false);
-    const [file, setFile] = useState<FileList | null>(null);
-    const [previewUrl, setPreviewUrl] = useState('');
+    const [files, setFiles] = useState<FileList | null>(null);
+    const [previewUrls, setPreviewUrls] = useState<string[]>([]);
     const [notes, setNotes] = useState('');
     const [date, setDate] = useState('');
     const [username, setUsername] = useState('');
 
-    useEffect(() => {
-        const encodedUsername = localStorage.getItem('token');
-
-        const decode = async () => {
-            const decoded = await decode_jwt(encodedUsername as string);
-
-            if (decoded.error) {
-                localStorage.removeItem('token');
-                window.location.href = '/login';
-            }
-
-            setUsername(decoded as string);
-        };
-
-        decode();
-    }, []);
+    ensure_login().then((username) => setUsername(username));
     
     useEffect(() => {
-        if (!file) {
+        if (!files) {
             return;
         }
 
-        const url = URL.createObjectURL(file[0]);
-        setPreviewUrl(url);
-    }, [file]);
+        const urls = Array.from(files).map(file => URL.createObjectURL(file));
+        setPreviewUrls(urls);
+
+        return () => {
+            urls.forEach(url => URL.revokeObjectURL(url));
+        };
+    }, [files]);
 
 
     const upload = async () => {
-        if (!file) {
+        if (!files) {
             return;
         }
 
-        const data = await upload_spot(make, model, file[0], notes, date);
+        const fileArray = Array.from(files);
+        const data = await upload_spot(make, model, fileArray, notes, date);
 
         if (data === null || data === undefined || data.error) {
             return;
@@ -65,11 +55,14 @@ const UploadSpot = ({ make, model }: SpotProps) => {
                 className="rounded-sm bg-black p-1 mb-2 border border-[#9ca3af] text-[#9ca3af] font-ListComponent" 
                 type="file" 
                 accept="image/*" 
+                multiple
                 onChange={
                     (e) => {
-                        setFile(e.target.files);
+                        setFiles(e.target.files);
                     }}/>
-                {previewUrl && <Spotimage image={previewUrl} />}
+                 {previewUrls.map((url, index) => (
+                    <Spotimage key={index} image={url} />
+                ))}
                 <div className="border border-[#9ca3af] p-2 my-2 rounded-sm">
                     <p className="text-white text-center text-xl">Optional:</p>
                     <div>

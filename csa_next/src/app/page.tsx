@@ -21,6 +21,14 @@ export default function Home() {
           <p className="text-4xl text-white mb-2">Car Spotting App</p>
           <p className="text-xl text-white">Welcome, {username}</p>
       </div>
+      <div className="flex justify-around pt-12">
+        <button
+          className='bg-[#e72328] text-white p-4 text-2xl border border-black italic text-nowrap'
+          onClick={() => window.location.href = `/makes?username=${username}`}>My spots</button>
+        <button
+          className='bg-[#e72328] text-white text-2xl p-4 border border-black italic text-nowrap'
+          onClick={() => window.location.href = `/makes?username=${username}`}>Upload Spot</button>
+      </div>
     </div>
   );
 }

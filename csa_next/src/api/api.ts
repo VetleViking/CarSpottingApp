@@ -135,9 +135,12 @@ export async function get_spotted_images(make: string, model: string, username?:
     const data = await response.json();
     
     const images = data.map((item: any) => {
-        const url = item.image ? `data:image/jpeg;base64,${item.image}` : null;
-        console.log(url);
-        return { key: item.key, url, notes: item.notes, date: item.date };
+        console.log(item.images)
+
+        const urlArr = [''];
+
+        // const url = item.image ? `data:image/jpeg;base64,${item.image}` : null;
+        return { key: item.key, urlArr, notes: item.notes, date: item.date };
     });
 
     return images;

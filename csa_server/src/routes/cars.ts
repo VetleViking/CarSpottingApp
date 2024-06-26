@@ -412,11 +412,11 @@ router.post('/addspot', upload.single('image'), async (req: Request, res: Respon
         let offset = 0;
 
         Object.keys(allSpots).forEach(key => {
-            const match = key.match(/image(\d+)/); // This regex matches 'image' followed by any number of digits
+            const match = key.match(/1image(\d+)/) || key.match(/image(\d+)/);
             if (match) {
-                const number = parseInt(match[1], 10); // Convert the matched number part to an integer
+                const number = parseInt(match[1], 10); 
                 if (number > offset) {
-                    offset = number; // Update highestNumber if the current number is greater
+                    offset = number; 
                 }
             }
         });
@@ -430,7 +430,7 @@ router.post('/addspot', upload.single('image'), async (req: Request, res: Respon
             [`date${offset}`]: date,
         };
 
-        imagesBase64.map(item, index => {
+        imagesBase64.map((item, index) => {
             data[`${index}image${offset}`] = item;
         })
 
@@ -511,36 +511,45 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
 
         const allSpots = await redisClient.hGetAll(`spots:${username || decodedUser.username}:${make}:${model}`);
 
-        const images = Object.keys(allSpots).filter(key => key.includes('image'));
+        const imageKeys = Object.keys(allSpots).filter(key => key.match(/^(\d*)image\d+$/));
 
-        // Sort images by number
-        images.sort((a, b) => {
-            const aNum = parseInt(a.split('image')[1]);
-            const bNum = parseInt(b.split('image')[1]);
-            return aNum - bNum;
+        imageKeys.sort((a, b) => {
+            const [aImageNum, aSpotNum] = a.match(/^(\d*)image(\d+)$/).slice(1).map(Number);
+            const [bImageNum, bSpotNum] = b.match(/^(\d*)image(\d+)$/).slice(1).map(Number);
+            return aSpotNum === bSpotNum ? aImageNum - bImageNum : aSpotNum - bSpotNum;
         });
 
-        const spots = [];
+        const spots = {};
+        
+        for (const imageKey of imageKeys) {
+            const [imageNum, spotNum] = imageKey.match(/^(\d*)image(\d+)$/).slice(1).map(Number);
 
-        // Get image, notes, and date for each image
-        for (const image of images) {
-            const i = image.split('image')[1];
+            if (!spots[spotNum]) {
+                spots[spotNum] = {
+                    images: [],
+                    notes: allSpots[`notes${spotNum}`],
+                    date: allSpots[`date${spotNum}`],
+                };
+            }
 
-            let imageBase64 = allSpots[`image${i}`];
+            let imageBase64 = allSpots[imageKey];
             if (imageBase64) {
                 imageBase64 = await compressImage(imageBase64);
             }
-            const notes = allSpots[`notes${i}`];
-            const date = allSpots[`date${i}`];
-            spots.push({ key: i, image: imageBase64, notes, date });
+
+            spots[spotNum].images.push({ key: imageNum, image: imageBase64 });
         }
 
-        res.status(200).json(spots);
+        const spotArray = Object.keys(spots).map(spotNum => ({
+            spotNum,
+            ...spots[spotNum],
+        }));
+
+        res.status(200).json(spotArray);
     } catch (err) {
         next(err);
     }
 });
-
 
 router.get('/spots/makes/', async (req: Request, res: Response, next: NextFunction) => {
     try {

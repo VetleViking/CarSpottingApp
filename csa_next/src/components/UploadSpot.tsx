@@ -15,7 +15,9 @@ const UploadSpot = ({ make, model }: SpotProps) => {
     const [date, setDate] = useState('');
     const [username, setUsername] = useState('');
 
-    ensure_login().then((username) => setUsername(username));
+    if (!username) {
+        ensure_login().then((username) => setUsername(username));
+    }
     
     useEffect(() => {
         if (!files) {
@@ -60,9 +62,7 @@ const UploadSpot = ({ make, model }: SpotProps) => {
                     (e) => {
                         setFiles(e.target.files);
                     }}/>
-                 {previewUrls.map((url, index) => (
-                    <Spotimage key={index} image={url} />
-                ))}
+                    <Spotimage images={previewUrls} />
                 <div className="border border-[#9ca3af] p-2 my-2 rounded-sm">
                     <p className="text-white text-center text-xl">Optional:</p>
                     <div>

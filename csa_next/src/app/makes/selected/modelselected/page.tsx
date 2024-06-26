@@ -19,7 +19,7 @@ function MakesComponent() {
     const [isOwner, setIsOwner] = useState(false);
     const [altUsername, setAltUsername] = useState("");
 
-    useEffect(() => {
+    if (!altUsername) {
         ensure_login().then((user) => {
             setAltUsername(user as string);
 
@@ -27,7 +27,9 @@ function MakesComponent() {
                 setIsOwner(username === user as string);
             }
         });
+    }
 
+    useEffect(() => {
         if (username) {
             const fetchData = async () => {
                 const data = await get_spotted_images(make as string, model as string, username);
@@ -36,7 +38,7 @@ function MakesComponent() {
 
             fetchData();
         }
-    }, [make, model, username]);
+    }, [username, make, model]);
 
     if (!altUsername) {
         return (
@@ -52,7 +54,7 @@ function MakesComponent() {
                 <div className='flex flex-col items-center gap-2'>
                     {data.map((item: any, id) => (
                         <div key={id}>
-                            <Spotimage image={item.url} notes={item.notes? item.notes : null} date={item.date? item.date : null} deletedata={{ make: make as string, model: model as string, key: item.key, isOwner: isOwner }}/>
+                            <Spotimage images={item.urlArr} notes={item.notes? item.notes : null} date={item.date? item.date : null} deletedata={{ make: make as string, model: model as string, key: item.key, isOwner: isOwner }}/>
                         </div> 
                     ))}
                 </div>

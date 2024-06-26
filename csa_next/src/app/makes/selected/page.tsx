@@ -29,7 +29,9 @@ function MakeSelectedComponent() {
         }
     }
 
-    ensure_login().then((username) => setAltUsername(username));
+    if (!altUsername) {
+        ensure_login().then((username) => setAltUsername(username));
+    }
 
     useEffect(() => {
         const fetchData = async () => {

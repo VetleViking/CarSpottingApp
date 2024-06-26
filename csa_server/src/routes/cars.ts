@@ -395,15 +395,15 @@ import multer from 'multer';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.post('/addspot', upload.single('image'), async (req: Request, res: Response, next: NextFunction) => {
+router.post('/addspot', upload.array('images', 10), async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model, notes, date } = req.body;
         const images = req.files as Express.Multer.File[];
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
         
-        if (!make || !model || !images) {
-            res.status(400).json({ message: 'Make, model, and image are required' });
+        if (!make || !model || images.length === 0) {
+            res.status(400).json({ message: 'Make, model, and at least one image are required' });
             return;
         }
 
@@ -412,7 +412,7 @@ router.post('/addspot', upload.single('image'), async (req: Request, res: Respon
         let offset = 0;
 
         Object.keys(allSpots).forEach(key => {
-            const match = key.match(/1image(\d+)/) || key.match(/image(\d+)/);
+            const match = key.match(/0image(\d+)/) || key.match(/image(\d+)/);
             if (match) {
                 const number = parseInt(match[1], 10); 
                 if (number > offset) {
@@ -425,14 +425,14 @@ router.post('/addspot', upload.single('image'), async (req: Request, res: Respon
 
         const imagesBase64 = images.map(image => image.buffer.toString('base64'));
 
-        const data = {
+        const data: Record<string, string> = {
             [`notes${offset}`]: notes,
             [`date${offset}`]: date,
         };
 
-        imagesBase64.map((item, index) => {
+        imagesBase64.forEach((item, index) => {
             data[`${index}image${offset}`] = item;
-        })
+        });
 
         if (!notes) delete data[`notes${offset}`];
         if (!date) delete data[`date${offset}`];
@@ -440,7 +440,7 @@ router.post('/addspot', upload.single('image'), async (req: Request, res: Respon
         await redisClient.hSet(`spots:${decodedUser.username}:${make}:${model}`, data);
 
         res.status(201).json({ message: 'Spot added' });
-    } catch(err) {
+    } catch (err) {
         next(err);
     }
 });
@@ -451,36 +451,31 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
 
-        if (!make || !model || (!key && key !== 0)) {
+        if (!make || !model || (key === undefined || key === null)) {
             res.status(400).json({ message: 'Make, model, and key are required' });
             return;
         }
 
-        const allSpots = await redisClient.hGetAll(`spots:${decodedUser.username}:${make}:${model}`);
-        
-        const spotImage = allSpots[`image${key}`];
-        const spotNotes = allSpots[`notes${key}`];
-        const spotDate = allSpots[`date${key}`];
+        const spotKeyPrefix = `spots:${decodedUser.username}:${make}:${model}`;
+        const allSpots = await redisClient.hGetAll(spotKeyPrefix);
 
-        if (!spotImage && !spotNotes && !spotDate) {
+        const imageKeys = Object.keys(allSpots).filter(k => k.endsWith(`image${key}`));
+        const spotNotesKey = `notes${key}`;
+        const spotDateKey = `date${key}`;
+
+        if (imageKeys.length === 0 && !allSpots[spotNotesKey] && !allSpots[spotDateKey]) {
             res.status(404).json({ message: 'Spot not found' });
             return;
         }
 
-        const data = {
-            [`image${key}`]: spotImage,
-            [`notes${key}`]: spotNotes,
-            [`date${key}`]: spotDate,
-        };
+        const keysToDelete = imageKeys;
+        if (allSpots[spotNotesKey]) keysToDelete.push(spotNotesKey);
+        if (allSpots[spotDateKey]) keysToDelete.push(spotDateKey);
 
-        if (!allSpots[`notes${key}`]) delete data[`notes${key}`];
-        if (!allSpots[`date${key}`]) delete data[`date${key}`];
-
-        await redisClient.hDel(`spots:${decodedUser.username}:${make}:${model}`, [`image${key}`, `notes${key}`, `date${key}`]);
-
+        await redisClient.hDel(spotKeyPrefix, keysToDelete);
 
         res.status(200).json({ message: 'Spot deleted' });
-    } catch(err) {
+    } catch (err) {
         next(err);
     }
 });
@@ -537,13 +532,17 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
                 imageBase64 = await compressImage(imageBase64);
             }
 
+            console.log(imageNum)
+
             spots[spotNum].images.push({ key: imageNum, image: imageBase64 });
         }
 
         const spotArray = Object.keys(spots).map(spotNum => ({
-            spotNum,
+            key: spotNum,
             ...spots[spotNum],
         }));
+
+        console.log(spotArray)
 
         res.status(200).json(spotArray);
     } catch (err) {

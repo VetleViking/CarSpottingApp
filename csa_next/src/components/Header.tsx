@@ -32,7 +32,7 @@ const Header = ({ search, setSearch, username }: HeaderProps) => {
                     <div className="flex gap-4">
                         <button
                             onClick={() => window.location.href = `/`}
-                            className="italic p-1 text-nowrap"
+                            className="italic p-1 text-nowrap hidden md:block"
                         >Home <span className="text-[#e72328]">page</span></button>
                         <button
                             onClick={() => window.location.href = `/profile`}
@@ -45,12 +45,20 @@ const Header = ({ search, setSearch, username }: HeaderProps) => {
                 <div className="md:hidden flex flex-col gap-4 px-4 py-3">
                     <button 
                         onClick={() => window.location.href = `/makes?username=${username}`} 
-                        className="italic font-medium p-1 text-nowrap w-max"
+                        className="italic p-1 text-nowrap w-max"
                     >My <span className="text-[#e72328]">spots</span></button>
                     <button 
                         onClick={() => window.location.href = `/makes`} 
-                        className=" italic font-medium p-1 text-nowrap w-max"
+                        className="italic p-1 text-nowrap w-max"
                     >Upload <span className="text-[#e72328]">spot</span></button>
+                    <button
+                        onClick={() => window.location.href = `/`}
+                        className="italic p-1 text-nowrap w-max"
+                    >Home <span className="text-[#e72328]">page</span></button>
+                    <button
+                        onClick={() => window.location.href = `/profile`}
+                        className="italic p-1 text-nowrap w-max"
+                    >Your <span className="text-[#e72328]">profile</span></button>
                 </div>
             )}
         </div>

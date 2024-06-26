@@ -395,15 +395,15 @@ import multer from 'multer';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.post('/addspot', upload.single('image'), async (req: Request, res: Response, next: NextFunction) => {
+router.post('/addspot', upload.array('images', 10), async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model, notes, date } = req.body;
         const images = req.files as Express.Multer.File[];
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
         
-        if (!make || !model || !images) {
-            res.status(400).json({ message: 'Make, model, and image are required' });
+        if (!make || !model || images.length === 0) {
+            res.status(400).json({ message: 'Make, model, and at least one image are required' });
             return;
         }
 
@@ -425,14 +425,14 @@ router.post('/addspot', upload.single('image'), async (req: Request, res: Respon
 
         const imagesBase64 = images.map(image => image.buffer.toString('base64'));
 
-        const data = {
+        const data: Record<string, string> = {
             [`notes${offset}`]: notes,
             [`date${offset}`]: date,
         };
 
-        imagesBase64.map((item, index) => {
+        imagesBase64.forEach((item, index) => {
             data[`${index}image${offset}`] = item;
-        })
+        });
 
         if (!notes) delete data[`notes${offset}`];
         if (!date) delete data[`date${offset}`];
@@ -440,7 +440,7 @@ router.post('/addspot', upload.single('image'), async (req: Request, res: Respon
         await redisClient.hSet(`spots:${decodedUser.username}:${make}:${model}`, data);
 
         res.status(201).json({ message: 'Spot added' });
-    } catch(err) {
+    } catch (err) {
         next(err);
     }
 });

@@ -1,29 +1,34 @@
 import { delete_spot } from "@/api/api";
 import React from "react";
+import Image from "next/image";
 
 type ImageProps = {
-    image: string;
+    images: string[];
     notes?: string;
     date?: string;
     deletedata?: { make: string; model: string; key: string; isOwner?: boolean;}
     alt?: string;
 };
 
-const Spotimage = ({ image, notes, date, alt, deletedata }: ImageProps) => {
+const Spotimage = ({ images, notes, date, alt, deletedata }: ImageProps) => {
 
 
     return (
         <div className="flex justify-center">
             <div className="max-w-96 bg-white p-1">
-                <img className="w-96 border border-black" src={image} alt={alt ? alt : "spot"} />
-                <div className="flex justify-between">
+                <div className="flex flex-col gap-1">
+                    {images.map((image, id) => (
+                        <Image key={id} src={image} alt={alt ?? ""} width={800} height={1000} className="w-full"/>
+                    ))}
+                </div>
+                <div className="flex justify-between gap-4">
                     <div className="flex flex-col items-start">
-                        <p className="text-black text-center font-ListComponent">{date ? "Notes:" : ""}</p>
-                        <p className="text-black text-center font-ListComponent">{notes ? notes : ""}</p>    
+                        <p className="text-black font-ListComponent">{date ? "Notes:" : ""}</p>
+                        <p className="text-black font-ListComponent break-all">{notes ? notes : ""}</p>    
                     </div>
-                    <div className="flex flex-col items-start">
-                        <p className="text-black text-center font-ListComponent">{date ? "Date spotted:" : ""}</p>
-                        <p className="text-black text-center font-ListComponent">{date ? date : ""}</p>
+                    <div className="flex flex-col items-start min-w-max">
+                        <p className="text-black font-ListComponent">{date ? "Date spotted:" : ""}</p>
+                        <p className="text-black font-ListComponent">{date ? date : ""}</p>
                     </div>
                 </div>                
                 {(deletedata && deletedata.isOwner) && <button 

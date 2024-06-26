@@ -27,7 +27,7 @@ export default function Home() {
           onClick={() => window.location.href = `/makes?username=${username}`}>My spots</button>
         <button
           className='bg-[#e72328] text-white text-2xl p-4 border border-black italic text-nowrap'
-          onClick={() => window.location.href = `/makes?username=${username}`}>Upload Spot</button>
+          onClick={() => window.location.href = `/makes`}>Upload Spot</button>
       </div>
     </div>
   );

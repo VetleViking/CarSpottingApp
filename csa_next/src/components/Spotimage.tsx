@@ -11,8 +11,6 @@ type ImageProps = {
 };
 
 const Spotimage = ({ images, notes, date, alt, deletedata }: ImageProps) => {
-
-
     return (
         <div className="flex justify-center">
             <div className="max-w-96 bg-white p-1">

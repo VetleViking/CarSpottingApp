@@ -8,6 +8,7 @@ import Button from '@/components/Button';
 
 function ProfileComponent() {
     const [username, setUsername] = useState("");
+    const [stats, setStats] = useState<{ total_spots: string; /* more here when implemented */ }[]>([]);   
 
     if (!username) {
         ensure_login().then((username) => setUsername(username));
@@ -21,6 +22,9 @@ function ProfileComponent() {
                     <p className='text-white text-2xl'>{username}</p>
                 </div>
                 <div>
+                    <div>
+                        <p className='text-white text-xl'>Stats:</p>
+                    </div>
                     <Button
                         onClick={() => {}}
                         text='Delete profile'

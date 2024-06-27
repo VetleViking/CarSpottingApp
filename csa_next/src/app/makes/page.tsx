@@ -55,7 +55,7 @@ function MakesComponent() {
     return (
         <Suspense fallback={<div>Loading...</div>}>
             <div>
-                <Header search={search} setSearch={setSearch} username={altUsername as string} />
+                <Header search={search} setSearch={setSearch} username={altUsername} />
                 <p className='text-center text-white text-3xl my-4'>Select the make</p>
                 <div className='flex gap-2 mb-4 flex-wrap md:flex-nowrap'>
                     <div onClick={() => selectedMake("unknown")} className='w-full'>

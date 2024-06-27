@@ -2,6 +2,7 @@
 import Header from "@/components/Header";
 import { useState } from "react";
 import { ensure_login } from "@/functions/functions";
+import Button from "@/components/Button";
 
 export default function Home() {
   const [username, setUsername] = useState('');
@@ -22,12 +23,16 @@ export default function Home() {
           <p className="text-xl text-white">Welcome, {username}</p>
       </div>
       <div className="flex justify-around pt-12">
-        <button
-          className='bg-[#e72328] text-white p-4 text-2xl border border-black italic text-nowrap'
-          onClick={() => window.location.href = `/makes?username=${username}`}>My spots</button>
-        <button
-          className='bg-[#e72328] text-white text-2xl p-4 border border-black italic text-nowrap'
-          onClick={() => window.location.href = `/makes`}>Upload Spot</button>
+        <Button
+          onClick={() => window.location.href = `/makes?username=${username}`}
+          text="My Spots"
+          className="text-2xl"
+        />
+        <Button
+          onClick={() => window.location.href = `/makes`}
+          text="Upload Spot"
+          className="text-2xl"
+          />
       </div>
     </div>
   );

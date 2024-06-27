@@ -70,7 +70,7 @@ function MakesComponent() {
                             onChange={(e) => setNewMake(e.target.value)}
                         />
                         <button
-                            className='bg-[#e72328] text-white py-2 px-2 border border-black italic text-nowrap'
+                            className='bg-[#e72328] text-white p-2 border border-black italic text-nowrap'
                             onClick={() => addMakeHandler(newMake)}>Add new make</button>
                     </div>}
                 </div>

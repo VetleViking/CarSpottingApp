@@ -1,4 +1,4 @@
-import { decode_jwt } from "@/api/api";
+import { decode_jwt } from "@/api/users";
 
 export async function ensure_login() {
     if (typeof window !== 'undefined') {

@@ -1,4 +1,4 @@
-import { decode_jwt, upload_spot } from "@/api/api";
+import { upload_spot } from "@/api/cars";
 import React, { useEffect, useState } from "react";
 import Spotimage from "./Spotimage";
 import { ensure_login } from "@/functions/functions";

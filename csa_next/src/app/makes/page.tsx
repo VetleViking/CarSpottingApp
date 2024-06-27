@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { add_make, get_makes, get_spotted_makes } from '@/api/api';
+import { add_make, get_makes, get_spotted_makes } from '@/api/cars';
 import ListComponent from '@/components/ListComponent';
 import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';

@@ -1,12 +1,12 @@
 "use client";
 
-import { add_model, get_models, get_spotted_make_percentage, get_spotted_models } from "@/api/api";
-import { ensure_login } from "@/functions/functions";
-import Header from "@/components/Header";
-import ListComponent from "@/components/ListComponent";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Suspense } from 'react'
+import { useSearchParams } from "next/navigation";
+import Header from "@/components/Header";
+import ListComponent from "@/components/ListComponent";
+import { ensure_login } from "@/functions/functions";
+import { add_model, get_models, get_spotted_make_percentage, get_spotted_models } from "@/api/cars";
 
 function MakeSelectedComponent() {
     const [search, setSearch] = useState('');

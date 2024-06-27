@@ -1,4 +1,4 @@
-import { login } from "@/api/api";
+import { login } from "@/api/users";
 import { useState } from "react";
 
 const LoginComponent = () => {   

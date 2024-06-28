@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { redisClient } from '../redis-source';
 import { verify_jwt } from '../utils/user';
+import dotenv from "dotenv";
+dotenv.config();
 
 const router = Router();
 
@@ -60,7 +62,7 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
         
             const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
                 headers: {
-                    'X-Api-Key': `9UKQbcg6KLGBNFl1N0I2Kw==pvGsAwuxi8RToxzi`
+                    'X-Api-Key': process.env.API_NINJAS_KEY
                 }
             });
         
@@ -137,7 +139,7 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
         
             const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
                 headers: {
-                    'X-Api-Key': `9UKQbcg6KLGBNFl1N0I2Kw==pvGsAwuxi8RToxzi`
+                    'X-Api-Key': process.env.API_NINJAS_KEY
                 }
             });
         
@@ -217,7 +219,7 @@ router.get('/makes/:make/models/', async (req: Request, res: Response, next: Nex
         
             const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
                 headers: {
-                    'X-Api-Key': `9UKQbcg6KLGBNFl1N0I2Kw==pvGsAwuxi8RToxzi`
+                    'X-Api-Key': process.env.API_NINJAS_KEY
                 }
             });
         
@@ -279,12 +281,12 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
         
             const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
                 headers: {
-                    'X-Api-Key': `9UKQbcg6KLGBNFl1N0I2Kw==pvGsAwuxi8RToxzi`
+                    'X-Api-Key': process.env.API_NINJAS_KEY
                 }
             });
         
             const data = await response.json();
-        
+
             const uniqueModels = data.filter((item: any, index: any, self: any) =>
                 index === self.findIndex((t: any) => (
                     t.model === item.model

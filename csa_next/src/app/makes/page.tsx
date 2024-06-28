@@ -46,12 +46,6 @@ function MakesComponent() {
         fetchData();
     }, [search, username]);
 
-    if (!data || !altUsername) {
-        return (
-            <div className="text-white">Loading...</div>
-        );
-    }
-
     return (
         <Suspense fallback={<div>Loading...</div>}>
             <div>
@@ -81,7 +75,7 @@ function MakesComponent() {
                     onClick={() => selectedMake(item)}>
                         <ListComponent  title={item} />
                     </div>
-                ))): (<></>)}
+                ))): (<p className='text-white font-ListComponent px-1 text-nowrap'>Loading...</p>)}
                 
                 
             </div>

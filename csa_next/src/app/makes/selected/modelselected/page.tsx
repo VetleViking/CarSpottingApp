@@ -40,12 +40,6 @@ function MakesComponent() {
         }
     }, [username, make, model]);
 
-    if (!altUsername) {
-        return (
-            <div className="text-white">Loading...</div>
-        );
-    }
-
     if (username) {
         return (
             <div>

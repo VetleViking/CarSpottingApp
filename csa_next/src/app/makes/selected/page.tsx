@@ -53,12 +53,6 @@ function MakeSelectedComponent() {
         fetchData();
     }, [search, make, username]);
 
-    if (!data || !altUsername) {
-        return (
-            <div>Loading...</div>
-        );
-    }
-
     return (
         <div>
             <Header search={search} setSearch={setSearch} username={altUsername as string}/>
@@ -85,10 +79,7 @@ function MakeSelectedComponent() {
                         <ListComponent title={make == "unknown" ? item.make + " " + item.model : item.model} />
                     </div>
                 ))
-            ) : (
-                <div className="text-white text-center">No models found</div>
-                
-            )}
+            ) : (<div className="text-white font-ListComponent px-1 text-nowrap text-center">No models found</div>)}
         </div>
     );
 };

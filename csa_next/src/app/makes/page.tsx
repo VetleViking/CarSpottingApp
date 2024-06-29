@@ -75,7 +75,7 @@ function MakesComponent() {
                     onClick={() => selectedMake(item)}>
                         <ListComponent  title={item} />
                     </div>
-                ))): (<p className='text-white font-ListComponent px-1 text-nowrap'>Loading...</p>)}
+                ))): (<p className='text-white font-ListComponent px-1 text-nowrap text-center'>No makes found.</p>)}
                 
                 
             </div>

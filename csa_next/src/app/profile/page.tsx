@@ -9,17 +9,27 @@ import { delete_user, get_stats } from '@/api/users';
 
 function ProfileComponent() {
     const [username, setUsername] = useState("");
-    const [stats, setStats] = useState<{ total_spots: string; /* more here when implemented */ }[]>([]);   
+    const [stats, setStats] = useState<any>();
+    const [delete_confirm, setDeleteConfirm] = useState(false); 
+    const [delete_message, setDeleteMessage] = useState('Delete profile');
 
     if (!username) {
         ensure_login().then((username) => setUsername(username));
     }
 
-    if (!stats) {
-        get_stats(username).then((stats) => setStats(stats));
+
+    if (!stats || stats.length === 0) {
+        if (username) {
+            get_stats(username).then((stats) => setStats(stats));
+        }
     }
 
     function deleteHandler() {
+        if (!delete_confirm) {
+            setDeleteMessage('Are you sure?');
+            setDeleteConfirm(true);
+            return;
+        }
         delete_user(username).then(() => window.location.href = '/login');
     }
 
@@ -33,10 +43,19 @@ function ProfileComponent() {
                 <div>
                     <div>
                         <p className='text-white text-xl'>Stats:</p>
+                        <p className='text-white text-xl'>Total spots: {stats?.total_spots}</p>
                     </div>
                     <Button
                         onClick={deleteHandler}
-                        text='Delete profile'
+                        text={delete_message}
+                        className='text-xl'
+                    />
+                    <Button
+                        onClick={() => {
+                            localStorage.removeItem('token');
+                            window.location.href = '/login';
+                        }}
+                        text='Logout'
                         className='text-xl'
                     />
                 </div>

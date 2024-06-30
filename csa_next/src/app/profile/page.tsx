@@ -41,14 +41,14 @@ function ProfileComponent() {
                     <p className='text-white text-2xl'>{username}</p>
                 </div>
                 <div>
-                    <div>
+                    <div className='m-4'>
                         <p className='text-white text-xl'>Stats:</p>
-                        <p className='text-white text-xl'>Total spots: {stats?.total_spots}</p>
+                        <p className='text-white font-ListComponent'>Total spots: {stats?.total_spots}</p>
                     </div>
                     <Button
                         onClick={deleteHandler}
                         text={delete_message}
-                        className='text-xl'
+                        className='text-xl mx-4'
                     />
                     <Button
                         onClick={() => {

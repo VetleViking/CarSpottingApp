@@ -1,7 +1,10 @@
+const apiIpCars = `http://${process.env.NEXT_PUBLIC_DATABASE_IP || "81.191.113.109"}:4000/api/v1/cars/`
+
+
 export async function get_models(make?: string, query?: string) {
     if (!make) make = 'unknown';
 
-    const response = await fetch(`http://${process.env.NEXT_PUBLIC_DATABASE_IP || "81.191.113.109"}:4000/api/v1/cars/makes/${make}/models/${query}` , {
+    const response = await fetch(`${apiIpCars}makes/${make}/models/${query}` , {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -13,7 +16,7 @@ export async function get_models(make?: string, query?: string) {
 }
 
 export async function get_makes(query?: string) {
-    const response = await fetch(`http://${process.env.NEXT_PUBLIC_DATABASE_IP || "81.191.113.109"}:4000/api/v1/cars/makes/${query}` , {
+    const response = await fetch(`${apiIpCars}makes/${query}` , {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -25,7 +28,7 @@ export async function get_makes(query?: string) {
 }
 
 export async function add_make(make: string) {
-    const response = await fetch(`http://${process.env.NEXT_PUBLIC_DATABASE_IP || "81.191.113.109"}:4000/api/v1/cars/addmake`, {
+    const response = await fetch(`${apiIpCars}addmake`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -38,7 +41,7 @@ export async function add_make(make: string) {
 }
 
 export async function add_model(make: string, model: string) {
-    const response = await fetch(`http://${process.env.NEXT_PUBLIC_DATABASE_IP || "81.191.113.109"}:4000/api/v1/cars/addmodel`, {
+    const response = await fetch(`${apiIpCars}addmodel`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -62,7 +65,7 @@ export async function upload_spot(make: string, model: string, images: File[], n
     if (notes) formData.append('notes', notes);
     if (date) formData.append('date', date);
 
-    const response = await fetch(`http://${process.env.NEXT_PUBLIC_DATABASE_IP || "81.191.113.109"}:4000/api/v1/cars/addspot`, {
+    const response = await fetch(`${apiIpCars}addspot`, {
         method: 'POST',
         headers: {
             'authorization': 'Bearer ' + localStorage.getItem('token')
@@ -74,7 +77,7 @@ export async function upload_spot(make: string, model: string, images: File[], n
 }
 
 export async function delete_spot(make: string, model: string, key: string) {
-    const response = await fetch(`http://${process.env.NEXT_PUBLIC_DATABASE_IP || "81.191.113.109"}:4000/api/v1/cars/deletespot`, {
+    const response = await fetch(`${apiIpCars}deletespot`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -87,7 +90,7 @@ export async function delete_spot(make: string, model: string, key: string) {
 }
 
 export async function get_spotted_makes(query?: string, username?: string) {
-    const response = await fetch(`http://${process.env.NEXT_PUBLIC_DATABASE_IP || "81.191.113.109"}:4000/api/v1/cars/spots/makes/${query}${username ? '?username=' + username : ''}`, {
+    const response = await fetch(`${apiIpCars}spots/makes/${query}${username ? '?username=' + username : ''}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -100,7 +103,7 @@ export async function get_spotted_makes(query?: string, username?: string) {
 
 export async function get_spotted_models(make?: string, query?: string, username?: string) {
     if (!make) make = 'unknown';
-    const response = await fetch(`http://${process.env.NEXT_PUBLIC_DATABASE_IP || "81.191.113.109"}:4000/api/v1/cars/spots/makes/${make}/models/${query}${username ? '?username=' + username : ''}`, {
+    const response = await fetch(`${apiIpCars}spots/makes/${make}/models/${query}${username ? '?username=' + username : ''}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -112,7 +115,7 @@ export async function get_spotted_models(make?: string, query?: string, username
 }
 
 export async function get_spotted_make_percentage(make: string, username?: string) {
-    const response = await fetch(`http://${process.env.NEXT_PUBLIC_DATABASE_IP || "81.191.113.109"}:4000/api/v1/cars/spots/${make}/percentage${username ? '?username=' + username : ''}`, {
+    const response = await fetch(`${apiIpCars}spots/${make}/percentage${username ? '?username=' + username : ''}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -124,7 +127,11 @@ export async function get_spotted_make_percentage(make: string, username?: strin
 }
 
 export async function get_spotted_images(make: string, model: string, username?: string) {
-    const response = await fetch(`http://${process.env.NEXT_PUBLIC_DATABASE_IP || "81.191.113.109"}:4000/api/v1/cars/getspots/${make}/${model}${username ? '?username=' + username : ''}`, {
+    const encodedMake = encodeURIComponent(make);
+    const encodedModel = encodeURIComponent(model);
+    const encodedUsername = username ? encodeURIComponent(username) : '';
+
+    const response = await fetch(`${apiIpCars}getspots/${encodedMake}/${encodedModel}${encodedUsername ? '?username=' + encodedUsername : ''}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -149,7 +156,7 @@ export async function get_spotted_images(make: string, model: string, username?:
 }
 
 export async function update_spots() {
-    const response = await fetch(`http://${process.env.NEXT_PUBLIC_DATABASE_IP || "81.191.113.109"}:4000/api/v1/cars/updatespots`, {
+    const response = await fetch(`${apiIpCars}updatespots`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

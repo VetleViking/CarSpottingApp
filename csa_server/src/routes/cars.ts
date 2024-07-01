@@ -508,6 +508,10 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
 
         const allSpots = await redisClient.hGetAll(`spots:${username || decodedUser.username}:${make}:${model}`);
 
+        console.log(req.params)
+        console.log(make, model)
+        console.log(allSpots)
+
         const imageKeys = Object.keys(allSpots).filter(key => key.match(/^(\d*)image\d+$/));
 
         imageKeys.sort((a, b) => {

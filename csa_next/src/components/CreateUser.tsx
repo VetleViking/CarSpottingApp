@@ -1,5 +1,5 @@
 "use client";
-import { create_user, login } from "@/api/api";
+import { create_user, login } from "@/api/users";
 import { useState } from "react";
 
 const CreateUser = () => {   

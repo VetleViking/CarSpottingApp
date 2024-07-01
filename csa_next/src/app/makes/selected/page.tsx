@@ -1,12 +1,12 @@
 "use client";
 
-import { add_model, get_models, get_spotted_make_percentage, get_spotted_models } from "@/api/api";
-import { ensure_login } from "@/functions/functions";
-import Header from "@/components/Header";
-import ListComponent from "@/components/ListComponent";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Suspense } from 'react'
+import { useSearchParams } from "next/navigation";
+import Header from "@/components/Header";
+import ListComponent from "@/components/ListComponent";
+import { ensure_login } from "@/functions/functions";
+import { add_model, get_models, get_spotted_make_percentage, get_spotted_models } from "@/api/cars";
 
 function MakeSelectedComponent() {
     const [search, setSearch] = useState('');
@@ -53,12 +53,6 @@ function MakeSelectedComponent() {
         fetchData();
     }, [search, make, username]);
 
-    if (!data || !altUsername) {
-        return (
-            <div>Loading...</div>
-        );
-    }
-
     return (
         <div>
             <Header search={search} setSearch={setSearch} username={altUsername as string}/>
@@ -85,10 +79,7 @@ function MakeSelectedComponent() {
                         <ListComponent title={make == "unknown" ? item.make + " " + item.model : item.model} />
                     </div>
                 ))
-            ) : (
-                <div className="text-white text-center">No models found</div>
-                
-            )}
+            ) : (<div className="text-white font-ListComponent px-1 text-nowrap text-center">No models found</div>)}
         </div>
     );
 };

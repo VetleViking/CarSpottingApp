@@ -1,4 +1,4 @@
-import { delete_spot } from "@/api/api";
+import { delete_spot } from "@/api/cars";
 import React from "react";
 import Image from "next/image";
 

@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { redisClient } from '../redis-source';
 import { verify_jwt } from '../utils/user';
+import dotenv from "dotenv";
+dotenv.config();
 
 const router = Router();
 
@@ -60,7 +62,7 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
         
             const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
                 headers: {
-                    'X-Api-Key': `9UKQbcg6KLGBNFl1N0I2Kw==pvGsAwuxi8RToxzi`
+                    'X-Api-Key': process.env.API_NINJAS_KEY
                 }
             });
         
@@ -137,7 +139,7 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
         
             const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
                 headers: {
-                    'X-Api-Key': `9UKQbcg6KLGBNFl1N0I2Kw==pvGsAwuxi8RToxzi`
+                    'X-Api-Key': process.env.API_NINJAS_KEY
                 }
             });
         
@@ -217,7 +219,7 @@ router.get('/makes/:make/models/', async (req: Request, res: Response, next: Nex
         
             const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
                 headers: {
-                    'X-Api-Key': `9UKQbcg6KLGBNFl1N0I2Kw==pvGsAwuxi8RToxzi`
+                    'X-Api-Key': process.env.API_NINJAS_KEY
                 }
             });
         
@@ -279,12 +281,12 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
         
             const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
                 headers: {
-                    'X-Api-Key': `9UKQbcg6KLGBNFl1N0I2Kw==pvGsAwuxi8RToxzi`
+                    'X-Api-Key': process.env.API_NINJAS_KEY
                 }
             });
         
             const data = await response.json();
-        
+
             const uniqueModels = data.filter((item: any, index: any, self: any) =>
                 index === self.findIndex((t: any) => (
                     t.model === item.model
@@ -699,6 +701,44 @@ router.post('/makes/:make', async (req: Request, res: Response, next: NextFuncti
         return;
 
     } catch(err) {
+        next(err);
+    }
+});
+
+router.post('/updatespots', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
+
+        const is_admin = await redisClient.hGet('admins', decodedUser.username) ? true : decodedUser.username === 'Vetle';
+
+        if (!is_admin) {
+            res.status(401).json({ message: 'Unauthorized' });
+            return;
+        }
+
+        const users = await redisClient.hGetAll('users');
+
+        for (const user of Object.keys(users)) {
+            const keys = await redisClient.keys(`spots:${user}:*`);
+
+            for (const key of keys) {
+                const allSpots = await redisClient.hGetAll(key);
+
+                for (const spotKey of Object.keys(allSpots)) {
+                    if (spotKey.startsWith('image')) {
+                        const index = spotKey.match(/image(\d+)/)[1];
+                        const spot = allSpots[spotKey];
+
+                        await redisClient.hDel(key, spotKey);
+                        await redisClient.hSet(key, `0image${index}`, spot);
+                    }
+                }
+            }
+        }
+
+        res.status(200).json({ message: 'Spots updated' });
+    } catch (err) {
         next(err);
     }
 });

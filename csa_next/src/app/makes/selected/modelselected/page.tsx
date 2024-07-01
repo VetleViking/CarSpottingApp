@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { Suspense } from 'react'
 import { useSearchParams } from "next/navigation";
 import UploadSpot from '@/components/UploadSpot';
-import { get_spotted_images } from '@/api/api';
 import Spotimage from '@/components/Spotimage';
 import Header from '@/components/Header';
-import { Suspense } from 'react'
+import { get_spotted_images } from '@/api/cars';
 import { ensure_login } from '@/functions/functions';
 
 function MakesComponent() {
@@ -39,12 +39,6 @@ function MakesComponent() {
             fetchData();
         }
     }, [username, make, model]);
-
-    if (!altUsername) {
-        return (
-            <div className="text-white">Loading...</div>
-        );
-    }
 
     if (username) {
         return (

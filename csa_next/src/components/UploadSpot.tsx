@@ -1,4 +1,4 @@
-import { decode_jwt, upload_spot } from "@/api/api";
+import { upload_spot } from "@/api/cars";
 import React, { useEffect, useState } from "react";
 import Spotimage from "./Spotimage";
 import { ensure_login } from "@/functions/functions";
@@ -54,14 +54,14 @@ const UploadSpot = ({ make, model }: SpotProps) => {
             <div className="flex items-center flex-col max-w-96 ">
                 <p className="text-white text-center text-2xl m-4">Upload a spot of {make} {model}:</p>
                 <input 
-                className="rounded-sm bg-black p-1 mb-2 border border-[#9ca3af] text-[#9ca3af] font-ListComponent" 
-                type="file" 
-                accept="image/*" 
-                multiple
-                onChange={
-                    (e) => {
-                        setFiles(e.target.files);
-                    }}/>
+                    className="rounded-sm bg-black p-1 mb-2 border border-[#9ca3af] text-[#9ca3af] font-ListComponent" 
+                    type="file" 
+                    accept="image/*" 
+                    multiple
+                    onChange={
+                        (e) => {
+                            setFiles(e.target.files);
+                        }}/>
                     <Spotimage images={previewUrls} />
                 <div className="border border-[#9ca3af] p-2 my-2 rounded-sm">
                     <p className="text-white text-center text-xl">Optional:</p>

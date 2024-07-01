@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { add_make, get_makes, get_spotted_makes } from '@/api/api';
+import { add_make, get_makes, get_spotted_makes } from '@/api/cars';
 import ListComponent from '@/components/ListComponent';
 import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
@@ -46,16 +46,10 @@ function MakesComponent() {
         fetchData();
     }, [search, username]);
 
-    if (!data || !altUsername) {
-        return (
-            <div className="text-white">Loading...</div>
-        );
-    }
-
     return (
         <Suspense fallback={<div>Loading...</div>}>
             <div>
-                <Header search={search} setSearch={setSearch} username={altUsername as string} />
+                <Header search={search} setSearch={setSearch} username={altUsername} />
                 <p className='text-center text-white text-3xl my-4'>Select the make</p>
                 <div className='flex gap-2 mb-4 flex-wrap md:flex-nowrap'>
                     <div onClick={() => selectedMake("unknown")} className='w-full'>
@@ -70,7 +64,7 @@ function MakesComponent() {
                             onChange={(e) => setNewMake(e.target.value)}
                         />
                         <button
-                            className='bg-[#e72328] text-white py-2 px-2 border border-black italic text-nowrap'
+                            className='bg-[#e72328] text-white p-2 border border-black italic text-nowrap'
                             onClick={() => addMakeHandler(newMake)}>Add new make</button>
                     </div>}
                 </div>
@@ -81,7 +75,7 @@ function MakesComponent() {
                     onClick={() => selectedMake(item)}>
                         <ListComponent  title={item} />
                     </div>
-                ))): (<></>)}
+                ))): (<p className='text-white font-ListComponent px-1 text-nowrap text-center'>No makes found.</p>)}
                 
                 
             </div>

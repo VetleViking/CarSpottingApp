@@ -705,4 +705,42 @@ router.post('/makes/:make', async (req: Request, res: Response, next: NextFuncti
     }
 });
 
+router.post('/updatespots', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
+
+        const is_admin = await redisClient.hGet('admins', decodedUser.username) ? true : decodedUser.username === 'Vetle';
+
+        if (!is_admin) {
+            res.status(401).json({ message: 'Unauthorized' });
+            return;
+        }
+
+        const users = await redisClient.hGetAll('users');
+
+        for (const user of Object.keys(users)) {
+            const keys = await redisClient.keys(`spots:${user}:*`);
+
+            for (const key of keys) {
+                const allSpots = await redisClient.hGetAll(key);
+
+                for (const spotKey of Object.keys(allSpots)) {
+                    if (spotKey.startsWith('image')) {
+                        const index = spotKey.match(/image(\d+)/)[1];
+                        const spot = allSpots[spotKey];
+
+                        await redisClient.hDel(key, spotKey);
+                        await redisClient.hSet(key, `0image${index}`, spot);
+                    }
+                }
+            }
+        }
+
+        res.status(200).json({ message: 'Spots updated' });
+    } catch (err) {
+        next(err);
+    }
+});
+
 export default router;

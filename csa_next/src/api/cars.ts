@@ -134,8 +134,6 @@ export async function get_spotted_images(make: string, model: string, username?:
 
     const data = await response.json();
 
-    console.log("test")
-    
     const images = data.map((item: any) => {
         const urlArr = [];
 
@@ -144,10 +142,20 @@ export async function get_spotted_images(make: string, model: string, username?:
             urlArr.push(url);
         }
 
-        console.log(urlArr)
-
         return { key: item.key, urlArr, notes: item.notes, date: item.date };
     });
 
     return images;
+}
+
+export async function update_spots() {
+    const response = await fetch(`http://${process.env.NEXT_PUBLIC_DATABASE_IP || "81.191.113.109"}:4000/api/v1/cars/updatespots`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + localStorage.getItem('token')
+        }
+    });
+
+    return await response.json();
 }

@@ -94,6 +94,23 @@ router.post('/deleteuser', async (req: Request, res: Response, next: NextFunctio
     }
 });
 
+router.get('/checkadmin/:username', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { username } = req.params;
+
+        const userExists = await redisClient.hGet('users', username);
+        if (!userExists) {
+            res.status(400).json({ message: 'User does not exist' });
+            return;
+        }
+
+        const isAdmin = await redisClient.hGet('admins', username) ? true : username === 'Vetle';
+        res.status(200).json({ is_admin: isAdmin });
+    } catch(err) {
+        next(err);
+    }
+});
+
 router.get('/getstats/:username', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { username } = req.params;

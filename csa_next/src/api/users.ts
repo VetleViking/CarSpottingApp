@@ -61,3 +61,15 @@ export async function delete_user(username: string) {
 
     return await response.json();
 }
+
+export async function check_admin(username: string) {
+    const response = await fetch(`${apiIpUsers}checkadmin/${username}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + localStorage.getItem('token')
+        }
+    });
+
+    return await response.json();
+}

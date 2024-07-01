@@ -43,7 +43,7 @@ function MakesComponent() {
     if (username) {
         return (
             <div>
-                <Header username={username as string} />
+                <Header username={altUsername as string} />
                 <p className="text-white text-center text-xl m-4">{(isOwner ? `Your` : `${username}'s`) + ` spots of ${make} ${model}:`}</p>
                 <div className='flex flex-col items-center gap-2'>
                     {data.map((item: any, id) => (

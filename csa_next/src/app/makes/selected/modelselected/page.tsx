@@ -32,7 +32,6 @@ function MakesComponent() {
     useEffect(() => {
         if (username) {
             const fetchData = async () => {
-                console.log("test1");
                 const data = await get_spotted_images(make as string, model as string, username);
                 setData(data);
             };

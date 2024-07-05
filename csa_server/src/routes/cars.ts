@@ -399,6 +399,8 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/addspot', upload.array('images', 10), async (req: Request, res: Response, next: NextFunction) => {
     try {
+        console.time('ExecutionTime');
+
         const { make, model, notes, date } = req.body;
         const images = req.files as Express.Multer.File[];
         const token = req.headers.authorization.split(' ')[1];
@@ -442,6 +444,8 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
         await redisClient.hSet(`spots:${decodedUser.username}:${make}:${model}`, data);
 
         res.status(201).json({ message: 'Spot added' });
+
+        console.timeEnd('ExecutionTime');
     } catch (err) {
         next(err);
     }

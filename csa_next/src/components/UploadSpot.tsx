@@ -18,7 +18,7 @@ const UploadSpot = ({ make, model }: SpotProps) => {
     const [username, setUsername] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
-    const [uploaded, setUploaded] = useState(false);
+    const [uploading, setUploading] = useState(false);
 
     if (!username) {
         ensure_login().then((username) => setUsername(username));
@@ -44,6 +44,7 @@ const UploadSpot = ({ make, model }: SpotProps) => {
         }
 
         setLoading(true);
+        setUploading(true);
         
         const fileArray = Array.from(files);
         const data = await upload_spot(make, model, fileArray, notes, date);
@@ -54,7 +55,6 @@ const UploadSpot = ({ make, model }: SpotProps) => {
             return;
         }
 
-        setUploaded(true);
         setMessage('Spot uploaded');
         setFiles(null);
         setPreviewUrls([]);
@@ -120,8 +120,7 @@ const UploadSpot = ({ make, model }: SpotProps) => {
                 </div>
             )}
             {message && <p className="text-white text-center text-2xl mt-6 mb-2 font-ListComponent">{message}</p>}
-            {uploaded && 
-
+            {uploading && 
                 <div className="flex gap-2 mt-2">
                     <Button
                         text="Upload another spot"

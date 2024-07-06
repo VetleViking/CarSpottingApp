@@ -75,7 +75,6 @@ router.post('/deleteuser', async (req: Request, res: Response, next: NextFunctio
       
         for (const pattern of userPatterns) {
           const keys = await redisClient.keys(pattern);
-          console.log(keys);
           keysToDelete = [...keysToDelete, ...keys];
         }
       
@@ -123,8 +122,6 @@ router.get('/getstats/:username', async (req: Request, res: Response, next: Next
 
         // find all spots that belong to user
         const keys = await redisClient.keys(`spots:${username}:*`);
-
-        console.log(keys);
 
         res.status(200).json({ total_spots: keys.length });
     } catch(err) {

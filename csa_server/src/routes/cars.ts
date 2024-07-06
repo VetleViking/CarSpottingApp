@@ -538,8 +538,6 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
                 imageBase64 = await compressImage(imageBase64);
             }
 
-            console.log(imageNum)
-
             spots[spotNum].images.push({ key: imageNum, image: imageBase64 });
         }
 
@@ -547,8 +545,6 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
             key: spotNum,
             ...spots[spotNum],
         }));
-
-        console.log(spotArray)
 
         res.status(200).json(spotArray);
     } catch (err) {

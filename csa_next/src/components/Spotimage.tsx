@@ -21,7 +21,7 @@ const Spotimage = ({ images, notes, date, alt, deletedata }: ImageProps) => {
                 </div>
                 <div className="flex justify-between gap-4">
                     <div className="flex flex-col items-start">
-                        <p className="text-black font-ListComponent">{date ? "Notes:" : ""}</p>
+                        <p className="text-black font-ListComponent">{notes ? "Notes:" : ""}</p>
                         <p className="text-black font-ListComponent break-all">{notes ? notes : ""}</p>    
                     </div>
                     <div className="flex flex-col items-start min-w-max">

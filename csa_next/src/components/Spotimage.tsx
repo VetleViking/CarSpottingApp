@@ -1,6 +1,7 @@
 import { delete_spot } from "@/api/cars";
 import React from "react";
 import Image from "next/image";
+import Button from "./Button";
 
 type ImageProps = {
     images: string[];
@@ -29,10 +30,11 @@ const Spotimage = ({ images, notes, date, alt, deletedata }: ImageProps) => {
                         <p className="text-black font-ListComponent">{date ? date : ""}</p>
                     </div>
                 </div>                
-                {(deletedata && deletedata.isOwner) && <button 
-                    className="bg-[#e72328] text-white py-1 px-2 mt-1 border border-black italic"
+                {(deletedata && deletedata.isOwner) && <Button 
+                    text="Delete"
+                    className="border border-black mt-1"
                     onClick={() => {delete_spot(deletedata.make, deletedata.model, deletedata.key).then(() => window.location.reload())}}
-                    >Delete</button>}
+                    />}
             </div>
         </div>
     );

@@ -1,5 +1,5 @@
 import { delete_spot } from "@/api/cars";
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Button from "./Button";
 
@@ -12,6 +12,8 @@ type ImageProps = {
 };
 
 const Spotimage = ({ images, notes, date, alt, deletedata }: ImageProps) => {
+    const [editing, setEditing] = useState(false);
+
     return (
         <div className="flex justify-center">
             <div className="max-w-96 bg-white p-1">
@@ -30,11 +32,14 @@ const Spotimage = ({ images, notes, date, alt, deletedata }: ImageProps) => {
                         <p className="text-black font-ListComponent">{date ? date : ""}</p>
                     </div>
                 </div>                
-                {(deletedata && deletedata.isOwner) && <Button 
-                    text="Delete"
-                    className="border border-black mt-1"
-                    onClick={() => {delete_spot(deletedata.make, deletedata.model, deletedata.key).then(() => window.location.reload())}}
-                    />}
+                {(deletedata && deletedata.isOwner) && <div>
+                    <Button 
+                        text="Delete"
+                        className="border border-black mt-1"
+                        onClick={() => {delete_spot(deletedata.make, deletedata.model, deletedata.key).then(() => window.location.reload())}}
+                    />
+                    {/* add edit button later */}
+                </div>}
             </div>
         </div>
     );

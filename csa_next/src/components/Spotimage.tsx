@@ -14,6 +14,10 @@ type ImageProps = {
 const Spotimage = ({ images, notes, date, alt, deletedata }: ImageProps) => {
     const [editing, setEditing] = useState(false);
 
+    async function uploadEdit() {
+        console.log("uploading edit");
+    }
+
     return (
         <div className="flex justify-center">
             <div className="max-w-96 bg-white p-1">
@@ -25,20 +29,39 @@ const Spotimage = ({ images, notes, date, alt, deletedata }: ImageProps) => {
                 <div className="flex justify-between gap-4">
                     <div className="flex flex-col items-start">
                         <p className="text-black font-ListComponent">{notes ? "Notes:" : ""}</p>
-                        <p className="text-black font-ListComponent break-all">{notes ? notes : ""}</p>    
+                        {editing ? 
+                            <input type="text" className="border border-black" value={date} onChange={(e) => date = e.target.value}/> 
+                        :     
+                            <p className="text-black font-ListComponent break-all">{notes ? notes : ""}</p>    
+                        }    
                     </div>
                     <div className="flex flex-col items-start min-w-max">
                         <p className="text-black font-ListComponent">{date ? "Date spotted:" : ""}</p>
-                        <p className="text-black font-ListComponent">{date ? date : ""}</p>
+                        {editing ? 
+                            <input type="date" className="border border-black" value={date} onChange={(e) => date = e.target.value}/> 
+                        :                    
+                            <p className="text-black font-ListComponent">{date ? date : ""}</p>
+                        }
                     </div>
                 </div>                
-                {(deletedata && deletedata.isOwner) && <div>
+                {(deletedata && deletedata.isOwner) && <div className="flex justify-between">
                     <Button 
                         text="Delete"
                         className="border border-black mt-1"
                         onClick={() => {delete_spot(deletedata.make, deletedata.model, deletedata.key).then(() => window.location.reload())}}
                     />
-                    {/* add edit button later */}
+                    {editing ? <Button
+                            text="Save"
+                            className="border border-black mt-1"
+                            onClick={() => {
+                                setEditing(false);
+                                uploadEdit().then(() => window.location.reload())}}
+                        /> : <Button
+                            text="Edit"
+                            className="border border-black mt-1"
+                            onClick={() => setEditing(true)}
+                        />
+                    }
                 </div>}
             </div>
         </div>

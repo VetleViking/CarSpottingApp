@@ -1,4 +1,4 @@
-import { delete_spot } from "@/api/cars";
+import { delete_spot, edit_spot } from "@/api/cars";
 import React, { useState } from "react";
 import Image from "next/image";
 import Button from "./Button";
@@ -7,15 +7,21 @@ type ImageProps = {
     images: string[];
     notes?: string;
     date?: string;
-    deletedata?: { make: string; model: string; key: string; isOwner?: boolean;}
+    spotdata?: { make: string; model: string; key: string; isOwner?: boolean;}
     alt?: string;
 };
 
-const Spotimage = ({ images, notes, date, alt, deletedata }: ImageProps) => {
+const Spotimage = ({ images, notes, date, alt, spotdata }: ImageProps) => {
     const [editing, setEditing] = useState(false);
+    const [newNotes, setNewNotes] = useState(notes || "");
+    const [newDate, setNewDate] = useState(date || "");
 
     async function uploadEdit() {
-        console.log("uploading edit");
+        if (spotdata) {
+            await edit_spot(spotdata.make, spotdata.model, spotdata.key, newNotes, newDate);
+
+            window.location.reload();
+        }
     }
 
     return (
@@ -28,27 +34,27 @@ const Spotimage = ({ images, notes, date, alt, deletedata }: ImageProps) => {
                 </div>
                 <div className="flex justify-between gap-4">
                     <div className="flex flex-col items-start">
-                        <p className="text-black font-ListComponent">{notes ? "Notes:" : ""}</p>
+                        <p className="text-black font-ListComponent">{(notes || editing) ? "Notes:" : ""}</p>
                         {editing ? 
-                            <input type="text" className="border border-black" value={date} onChange={(e) => date = e.target.value}/> 
+                            <input type="text" className="border border-black font-ListComponent" value={newNotes} alt="Notes:" onChange={(e) => setNewNotes(e.target.value)}/> 
                         :     
                             <p className="text-black font-ListComponent break-all">{notes ? notes : ""}</p>    
                         }    
                     </div>
                     <div className="flex flex-col items-start min-w-max">
-                        <p className="text-black font-ListComponent">{date ? "Date spotted:" : ""}</p>
+                        <p className="text-black font-ListComponent">{(date || editing) ? "Date spotted:" : ""}</p>
                         {editing ? 
-                            <input type="date" className="border border-black" value={date} onChange={(e) => date = e.target.value}/> 
+                            <input type="date" className="border border-black font-ListComponent" value={newDate} onChange={(e) => setNewDate(e.target.value)}/> 
                         :                    
                             <p className="text-black font-ListComponent">{date ? date : ""}</p>
                         }
                     </div>
                 </div>                
-                {(deletedata && deletedata.isOwner) && <div className="flex justify-between">
+                {(spotdata && spotdata.isOwner) && <div className="flex justify-between">
                     <Button 
                         text="Delete"
                         className="border border-black mt-1"
-                        onClick={() => {delete_spot(deletedata.make, deletedata.model, deletedata.key).then(() => window.location.reload())}}
+                        onClick={() => {delete_spot(spotdata.make, spotdata.model, spotdata.key).then(() => window.location.reload())}}
                     />
                     {editing ? <Button
                             text="Save"

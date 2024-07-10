@@ -76,6 +76,19 @@ export async function upload_spot(make: string, model: string, images: File[], n
     return await response.json();
 }
 
+export async function edit_spot(make: string, model: string, key: string, notes: string, date: string) {
+    const response = await fetch(`${apiIpCars}editspot`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: JSON.stringify({ make, model, key, notes, date })
+    });
+
+    return await response.json();
+}
+
 export async function delete_spot(make: string, model: string, key: string) {
     const response = await fetch(`${apiIpCars}deletespot`, {
         method: 'POST',

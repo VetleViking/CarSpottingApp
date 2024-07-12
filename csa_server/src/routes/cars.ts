@@ -451,6 +451,51 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
     }
 });
 
+router.post('/editspot', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { make, model, key, notes, date } = req.body;
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
+
+        if (!make || !model || (key === undefined || key === null)) {
+            res.status(400).json({ message: 'Make, model, and key are required' });
+            return;
+        }
+
+        const spotKeyPrefix = `spots:${decodedUser.username}:${make}:${model}`;
+        const allSpots = await redisClient.hGetAll(spotKeyPrefix);
+
+        const imageKeys = Object.keys(allSpots).filter(k => k.endsWith(`image${key}`));
+        const spotNotesKey = `notes${key}`;
+        const spotDateKey = `date${key}`;
+
+        if (imageKeys.length === 0 && !allSpots[spotNotesKey] && !allSpots[spotDateKey]) {
+            res.status(404).json({ message: 'Spot not found' });
+            return;
+        }
+
+        const data: Record<string, string> = {};
+
+        if (notes) {
+            data[spotNotesKey] = notes;
+        } else {
+            data[spotNotesKey] = '';
+        }
+
+        if (date) {
+            data[spotDateKey] = date;
+        } else {
+            data[spotDateKey] = '';
+        }
+
+        await redisClient.hSet(spotKeyPrefix, data);
+
+        res.status(200).json({ message: 'Spot edited' });
+    } catch (err) {
+        next(err);
+    }
+});
+
 router.post('/deletespot', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model, key } = req.body;

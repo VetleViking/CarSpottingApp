@@ -69,7 +69,9 @@ const UploadSpot = ({ make, model }: SpotProps) => {
     return (
         <div className="flex flex-col items-center">
             {loading ? (
-                <LoadingAnimation />
+                <LoadingAnimation
+                    text="Uploading spot"
+                />
             ) : (
                 <div className="flex items-center flex-col max-w-96 ">
                     <p className="text-white text-center text-2xl m-4">Upload a spot of {make} {model}:</p>

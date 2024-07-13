@@ -4,6 +4,8 @@ import Spotimage from "./Spotimage";
 import { ensure_login } from "@/functions/functions";
 import LoadingAnimation from "./LoadingAnim";
 import Button from "./Button";
+import down_arrow from "../images/down-arrow.svg";
+import Image from "next/image";
 
 type SpotProps = {
     make: string;
@@ -19,9 +21,23 @@ const UploadSpot = ({ make, model }: SpotProps) => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [group, setGroup] = useState('');
+    const [groupList, setGroupList] = useState<string[]>([]);
+    const [groupOpen, setGroupOpen] = useState(false);
 
     if (!username) {
         ensure_login().then((username) => setUsername(username));
+    }
+
+    if (!groupList.length) {
+        // const fetchData = async () => {
+        //     const data = await get_groups();
+        //     setGroupList(data);
+        // };
+
+        // fetchData();
+
+        setGroupList(['Group 1', 'Group 2', 'Group 3']);
     }
     
     useEffect(() => {
@@ -112,6 +128,13 @@ const UploadSpot = ({ make, model }: SpotProps) => {
                                             setDate(date);
                                         }
                                     }>Today</button>
+                                </div>
+                            </div>
+                            <div>
+                                <p className="text-white text-center font-ListComponent mb-1">Group</p>
+                                <div className="flex justify-between rounded-sm p-1 border border-[#9ca3af]">
+                                    <p className=" font-ListComponent text-[#9ca3af]">Select group(s)</p>
+                                    <Image src={down_arrow} alt="Down arrow" width={15} height={15}/>
                                 </div>
                             </div>
                         </div>

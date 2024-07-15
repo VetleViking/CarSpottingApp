@@ -1,4 +1,4 @@
-import { upload_spot } from "@/api/cars";
+import { get_tags, upload_spot } from "@/api/cars";
 import React, { useEffect, useState } from "react";
 import Spotimage from "./Spotimage";
 import { ensure_login } from "@/functions/functions";
@@ -30,14 +30,12 @@ const UploadSpot = ({ make, model }: SpotProps) => {
     }
 
     if (!tagList.length) {
-        // const fetchData = async () => {
-        //     const data = await get_tags();
-        //     setTagList(data);
-        // };
+        const fetchData = async () => {
+            const data = await get_tags();
+            setTagList(data);
+        };
 
-        // fetchData();
-
-        setTagList(['Tag 1', 'Tag 2', 'Tag 3']);
+        fetchData();
     }
     
     useEffect(() => {

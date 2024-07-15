@@ -393,6 +393,48 @@ router.post('/addmodel', async (req: Request, res: Response, next: NextFunction)
     }
 });
 
+router.post('/addtag', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { tag } = req.body;
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
+        
+        const alreadyExists = await redisClient.hGet('tags', tag);
+
+        if (alreadyExists) {
+            res.status(400).json({ message: 'Tag already exists' });
+            return;
+        }
+
+        await redisClient.hSet('tags', tag, tag);
+        await redisClient.hSet(`tags:${decodedUser.username}`, tag, tag);
+
+        res.status(201).json({ message: 'Tag created' });
+        return;
+
+    } catch(err) {
+        next(err);
+    }
+});
+
+router.get('/tags', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
+        
+        const tagsObject = await redisClient.hGetAll('tags');
+        const tagsObjectUser = await redisClient.hGetAll(`tags:${decodedUser.username}`);
+        const tagsArray = Object.keys(tagsObject).map(key => tagsObject[key])
+                          .concat(Object.keys(tagsObjectUser).map(key => tagsObjectUser[key]));
+
+        res.status(200).json(tagsArray);
+        return;
+        
+    } catch(err) {
+        next(err);
+    }
+});
+
 import multer from 'multer';
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -401,7 +443,9 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
     try {
         console.time('ExecutionTime');
 
-        const { make, model, notes, date } = req.body;
+        const { make, model, notes, date, tags } = req.body;
+
+        console.log(tags);
         const images = req.files as Express.Multer.File[];
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
@@ -437,6 +481,12 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
         imagesBase64.forEach((item, index) => {
             data[`${index}image${offset}`] = item;
         });
+
+        if (tags) {
+            tags.forEach((tag, index) => {
+                data[`${index}tag${offset}`] = tag;
+            });
+        }
 
         if (!notes) delete data[`notes${offset}`];
         if (!date) delete data[`date${offset}`];

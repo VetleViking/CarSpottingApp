@@ -1,9 +1,11 @@
-import { upload_spot } from "@/api/cars";
+import { get_tags, upload_spot } from "@/api/cars";
 import React, { useEffect, useState } from "react";
 import Spotimage from "./Spotimage";
 import { ensure_login } from "@/functions/functions";
 import LoadingAnimation from "./LoadingAnim";
 import Button from "./Button";
+import down_arrow from "../images/down-arrow.svg";
+import Image from "next/image";
 
 type SpotProps = {
     make: string;
@@ -19,9 +21,21 @@ const UploadSpot = ({ make, model }: SpotProps) => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [tags, setTags] = useState<string[]>([]);
+    const [tagList, setTagList] = useState<string[]>([]);
+    const [tagOpen, setTagOpen] = useState(false);
 
     if (!username) {
         ensure_login().then((username) => setUsername(username));
+    }
+
+    if (!tagList.length) {
+        const fetchData = async () => {
+            const data = await get_tags();
+            setTagList(data);
+        };
+
+        fetchData();
     }
     
     useEffect(() => {
@@ -39,6 +53,8 @@ const UploadSpot = ({ make, model }: SpotProps) => {
 
 
     const upload = async () => {
+        console.log(tags);
+
         if (!files) {
             return;
         }
@@ -113,6 +129,40 @@ const UploadSpot = ({ make, model }: SpotProps) => {
                                         }
                                     }>Today</button>
                                 </div>
+                            </div>
+                            <div>
+                                <p className="text-white text-center font-ListComponent mb-1">Tag</p>
+                                <div className="flex justify-between rounded-sm p-1 border border-[#9ca3af]" onClick={() => setTagOpen(!tagOpen)}>
+                                    <p className=" font-ListComponent text-[#9ca3af]">Select tag(s)</p>
+                                    <Image src={down_arrow} alt="Down arrow" width={15} height={15} className={tagOpen ? "transform rotate-180" : ""}/>
+                                </div>
+                                {tagOpen &&
+                                    <div className="flex flex-col gap-1 p-1 border border-[#9ca3af]">
+                                        <div className="flex justify-between">
+                                            <input type="text" className="rounded-sm bg-black p-1 border border-[#9ca3af] text-[#9ca3af] font-ListComponent w-36" placeholder="Add tag"/>
+                                            <button 
+                                                className="rounded-sm bg-[#9ca3af] text-black py-[4px] px-4 italic"
+                                                onClick={() => {
+                                                    // Upload tag, refresh tag list and add tag to tags
+                                                }}                    
+                                                >Add</button> 
+                                        </div>  
+                                        {tagList.map((tag, id) => (
+                                            <div key={id} className="flex justify-between items-center">
+                                                <p className="font-ListComponent text-[#9ca3af]">{tag}</p>
+                                                <input type="checkbox" 
+                                                    checked={tags.includes(tag)}
+                                                    onChange={() => {
+                                                        if (tags.includes(tag)) {
+                                                            setTags(tags.filter(item => item !== tag));
+                                                            return;
+                                                        }
+                                                        setTags([...tags, tag]);
+                                                    }}/>
+                                            </div>
+                                        ))}
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>

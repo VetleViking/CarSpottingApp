@@ -53,6 +53,31 @@ export async function add_model(make: string, model: string) {
     return await response.json();
 }
 
+export async function add_tag(tag: string) {
+    const response = await fetch(`${apiIpCars}addtag`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: JSON.stringify({ tag })
+    });
+
+    return await response.json();
+}
+
+export async function get_tags() {
+    const response = await fetch(`${apiIpCars}tags`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + localStorage.getItem('token')
+        }
+    });
+
+    return await response.json();
+}
+
 export async function upload_spot(make: string, model: string, images: File[], notes?: string, date?: string) {
     const formData = new FormData();
     formData.append('make', make);

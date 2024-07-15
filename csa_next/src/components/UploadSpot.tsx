@@ -1,4 +1,6 @@
-import { get_tags, upload_spot } from "@/api/cars";
+"use client";
+
+import { add_tag, get_tags, upload_spot } from "@/api/cars";
 import React, { useEffect, useState } from "react";
 import Spotimage from "./Spotimage";
 import { ensure_login } from "@/functions/functions";
@@ -24,18 +26,16 @@ const UploadSpot = ({ make, model }: SpotProps) => {
     const [tags, setTags] = useState<string[]>([]);
     const [tagList, setTagList] = useState<string[]>([]);
     const [tagOpen, setTagOpen] = useState(false);
+    const [newTag, setNewTag] = useState('');
 
     if (!username) {
         ensure_login().then((username) => setUsername(username));
     }
 
     if (!tagList.length) {
-        const fetchData = async () => {
-            const data = await get_tags();
-            setTagList(data);
-        };
-
-        fetchData();
+        if (typeof window !== 'undefined') {
+            get_tags().then((tags) => setTagList(tags));
+        }
     }
     
     useEffect(() => {
@@ -139,11 +139,23 @@ const UploadSpot = ({ make, model }: SpotProps) => {
                                 {tagOpen &&
                                     <div className="flex flex-col gap-1 p-1 border border-[#9ca3af]">
                                         <div className="flex justify-between">
-                                            <input type="text" className="rounded-sm bg-black p-1 border border-[#9ca3af] text-[#9ca3af] font-ListComponent w-36" placeholder="Add tag"/>
+                                            <input 
+                                                type="text" 
+                                                className="rounded-sm bg-black p-1 border border-[#9ca3af] text-[#9ca3af] font-ListComponent w-36" 
+                                                value={newTag}
+                                                onChange={(e) => setNewTag(e.target.value)}
+                                                placeholder="Add tag"/>
                                             <button 
                                                 className="rounded-sm bg-[#9ca3af] text-black py-[4px] px-4 italic"
                                                 onClick={() => {
-                                                    // Upload tag, refresh tag list and add tag to tags
+                                                    add_tag(newTag).then((res) => {
+                                                        if (res.message == 'Tag already exists') {
+                                                            setNewTag('');                                                            
+                                                            return;
+                                                        }
+                                                        setTagList([...tagList, newTag]);
+                                                        setNewTag('');
+                                                    });
                                                 }}                    
                                                 >Add</button> 
                                         </div>  

@@ -399,14 +399,13 @@ router.post('/addtag', async (req: Request, res: Response, next: NextFunction) =
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
         
-        const alreadyExists = await redisClient.hGet('tags', tag);
+        const alreadyExists = await redisClient.hGet('tags', tag) || await redisClient.hGet(`tags:${decodedUser.username}`, tag);
 
         if (alreadyExists) {
             res.status(400).json({ message: 'Tag already exists' });
             return;
         }
 
-        await redisClient.hSet('tags', tag, tag);
         await redisClient.hSet(`tags:${decodedUser.username}`, tag, tag);
 
         res.status(201).json({ message: 'Tag created' });

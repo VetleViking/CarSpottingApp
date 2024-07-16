@@ -444,7 +444,7 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
 
         const { make, model, notes, date, tags } = req.body;
 
-        console.log(tags);
+        const tagsArray = tags as string[];
         const images = req.files as Express.Multer.File[];
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
@@ -481,14 +481,17 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             data[`${index}image${offset}`] = item;
         });
 
-        if (tags) {
-            tags.forEach((tag, index) => {
+        if (tagsArray) {
+            tagsArray.forEach((tag, index) => {
+                redisClient.hSet(`tags:${decodedUser.username}:${tag}`, `spots:${decodedUser.username}:${make}:${model}`, offset); 
                 data[`${index}tag${offset}`] = tag;
             });
         }
 
         if (!notes) delete data[`notes${offset}`];
         if (!date) delete data[`date${offset}`];
+
+        console.log(data);
 
         await redisClient.hSet(`spots:${decodedUser.username}:${make}:${model}`, data);
 
@@ -515,6 +518,8 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
         const allSpots = await redisClient.hGetAll(spotKeyPrefix);
 
         const imageKeys = Object.keys(allSpots).filter(k => k.endsWith(`image${key}`));
+        const tagKeys = Object.keys(allSpots).filter(k => k.endsWith(`tag${key}`));
+        console.log(tagKeys);
         const spotNotesKey = `notes${key}`;
         const spotDateKey = `date${key}`;
 
@@ -560,6 +565,7 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
         const allSpots = await redisClient.hGetAll(spotKeyPrefix);
 
         const imageKeys = Object.keys(allSpots).filter(k => k.endsWith(`image${key}`));
+        const tagKeys = Object.keys(allSpots).filter(k => k.endsWith(`tag${key}`));
         const spotNotesKey = `notes${key}`;
         const spotDateKey = `date${key}`;
 
@@ -571,6 +577,7 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
         const keysToDelete = imageKeys;
         if (allSpots[spotNotesKey]) keysToDelete.push(spotNotesKey);
         if (allSpots[spotDateKey]) keysToDelete.push(spotDateKey);
+        keysToDelete.push(...tagKeys);
 
         await redisClient.hDel(spotKeyPrefix, keysToDelete);
 

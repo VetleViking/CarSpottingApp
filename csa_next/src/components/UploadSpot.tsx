@@ -63,7 +63,7 @@ const UploadSpot = ({ make, model }: SpotProps) => {
         setUploading(true);
         
         const fileArray = Array.from(files);
-        const data = await upload_spot(make, model, fileArray, notes, date);
+        const data = await upload_spot(make, model, fileArray, notes, date, tags);
 
         
         if (data === null || data === undefined || data.error) {
@@ -76,6 +76,7 @@ const UploadSpot = ({ make, model }: SpotProps) => {
         setPreviewUrls([]);
         setNotes('');
         setDate('');
+        setTags([]);
         setLoading(false);
 
         // window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}&username=${username}`;

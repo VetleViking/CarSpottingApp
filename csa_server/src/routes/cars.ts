@@ -634,6 +634,8 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
                 };
             }
 
+            // add tags
+
             let imageBase64 = allSpots[imageKey];
             if (imageBase64) {
                 imageBase64 = await compressImage(imageBase64);

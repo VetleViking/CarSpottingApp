@@ -505,9 +505,11 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
 
 router.post('/editspot', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { make, model, key, notes, date } = req.body;
+        const { make, model, key, notes, date, tags } = req.body;
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
+
+        const tagsArray = tags as string[];
 
         if (!make || !model || (key === undefined || key === null)) {
             res.status(400).json({ message: 'Make, model, and key are required' });
@@ -519,7 +521,10 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
 
         const imageKeys = Object.keys(allSpots).filter(k => k.endsWith(`image${key}`));
         const tagKeys = Object.keys(allSpots).filter(k => k.endsWith(`tag${key}`));
+        const tagsSpot = tagKeys.filter(key2 => key2.endsWith(`tag${key}`)).map(key => allSpots[key]);
         console.log(tagKeys);
+        console.log(tagsArray);
+        console.log(tagsSpot);
         const spotNotesKey = `notes${key}`;
         const spotDateKey = `date${key}`;
 
@@ -529,6 +534,10 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
         }
 
         const data: Record<string, string> = {};
+
+        if (tagsSpot !== tagsArray) {
+            // fix later
+        }
 
         if (notes) {
             data[spotNotesKey] = notes;
@@ -631,10 +640,14 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
                     images: [],
                     notes: allSpots[`notes${spotNum}`],
                     date: allSpots[`date${spotNum}`],
+                    tags: [],
                 };
             }
 
             // add tags
+            const tagKeys = Object.keys(allSpots).filter(key => key.match(/^(\d*)tag\d+$/)); // get all tag keys
+            const tags = tagKeys.filter(key => key.endsWith(`tag${spotNum}`)).map(key => allSpots[key]); // filter for tags for this spot and get the values from allSpots
+            spots[spotNum].tags = tags; // add tags to the spot
 
             let imageBase64 = allSpots[imageKey];
             if (imageBase64) {

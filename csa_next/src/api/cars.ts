@@ -78,14 +78,20 @@ export async function get_tags() {
     return await response.json();
 }
 
-export async function upload_spot(make: string, model: string, images: File[], notes?: string, date?: string) {
+export async function upload_spot(make: string, model: string, images: File[], notes?: string, date?: string, tags?: string[]) {
     const formData = new FormData();
     formData.append('make', make);
     formData.append('model', model);
-    
+
     images.forEach(image => {
         formData.append('images', image);
     });
+    
+    if (tags) {
+        tags.forEach(tag => {
+            formData.append('tags', tag);
+        });
+    }
 
     if (notes) formData.append('notes', notes);
     if (date) formData.append('date', date);
@@ -101,14 +107,14 @@ export async function upload_spot(make: string, model: string, images: File[], n
     return await response.json();
 }
 
-export async function edit_spot(make: string, model: string, key: string, notes: string, date: string) {
+export async function edit_spot(make: string, model: string, key: string, notes: string, date: string, tags?: string[]) {
     const response = await fetch(`${apiIpCars}editspot`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'authorization': 'Bearer ' + localStorage.getItem('token')
         },
-        body: JSON.stringify({ make, model, key, notes, date })
+        body: JSON.stringify({ make, model, key, notes, date, tags })
     });
 
     return await response.json();
@@ -187,7 +193,7 @@ export async function get_spotted_images(make: string, model: string, username?:
             urlArr.push(url);
         }
 
-        return { key: item.key, urlArr, notes: item.notes, date: item.date };
+        return { key: item.key, urlArr, notes: item.notes, date: item.date, tags: item.tags };
     });
 
     return images;

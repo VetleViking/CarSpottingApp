@@ -48,7 +48,7 @@ function MakesComponent() {
                 <div className='flex flex-col items-center gap-2'>
                     {data.map((item: any, id) => (
                         <div key={id}>
-                            <Spotimage images={item.urlArr} notes={item.notes? item.notes : null} date={item.date? item.date : null} spotdata={{ make: make as string, model: model as string, key: item.key, isOwner: isOwner }}/>
+                            <Spotimage images={item.urlArr} tags={item.tags} notes={item.notes? item.notes : null} date={item.date? item.date : null} spotdata={{ make: make as string, model: model as string, key: item.key, isOwner: isOwner }}/>
                         </div> 
                     ))}
                 </div>

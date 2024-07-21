@@ -536,7 +536,7 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
         const data: Record<string, string> = {};
 
         if (tagsSpot !== tagsArray) {
-            // fix later
+            // remove old tags and add new tags
         }
 
         if (notes) {
@@ -575,6 +575,7 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
 
         const imageKeys = Object.keys(allSpots).filter(k => k.endsWith(`image${key}`));
         const tagKeys = Object.keys(allSpots).filter(k => k.endsWith(`tag${key}`));
+        // fix for tags:${username}:${tag}
         const spotNotesKey = `notes${key}`;
         const spotDateKey = `date${key}`;
 

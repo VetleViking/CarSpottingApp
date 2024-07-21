@@ -575,7 +575,7 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
 
         const imageKeys = Object.keys(allSpots).filter(k => k.endsWith(`image${key}`));
         const tagKeys = Object.keys(allSpots).filter(k => k.endsWith(`tag${key}`));
-        // fix for tags:${username}:${tag}
+        // fix for tags:${username}:${tag} or change how they are stored
         const spotNotesKey = `notes${key}`;
         const spotDateKey = `date${key}`;
 

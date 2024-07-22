@@ -470,6 +470,8 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
 
         offset++;
 
+        // save spot with key spots:${username}:${make}:${model}:${offset} instead of end of name
+
         const imagesBase64 = images.map(image => image.buffer.toString('base64'));
 
         const data: Record<string, string> = {

@@ -7,7 +7,7 @@ import Button from "@/components/Button";
 export default function Home() {
   const [username, setUsername] = useState('');
 
-  ensure_login().then((username) => setUsername(username));
+  ensure_login().then(setUsername);
 
   if (!username) {
     return (

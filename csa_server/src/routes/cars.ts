@@ -458,11 +458,11 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
 
         let offset = 0;
 
-        console.log(allSpots);
+        // save spot with key spots:${username}:${make}:${model}:${offset} instead of end of name
+        console.log(allSpots); // find the highest offset
 
         offset++;
 
-        // save spot with key spots:${username}:${make}:${model}:${offset} instead of end of name
 
         const imagesBase64 = images.map(image => image.buffer.toString('base64'));
 

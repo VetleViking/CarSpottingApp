@@ -444,7 +444,11 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
 
         const { make, model, notes, date, tags } = req.body;
 
-        const tagsArray = tags as string[];
+        const tagsArray: string[] = Array.isArray(tags)
+            ? tags
+            : tags
+                ? [tags]
+                : [];
         const images = req.files as Express.Multer.File[];
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
@@ -454,12 +458,17 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             return;
         }
 
-        const allSpots = await redisClient.hGetAll(`spots:${decodedUser.username}:${make}:${model}`);
+        const allSpots = await redisClient.keys(`spots:${decodedUser.username}:${make}:${model}:*`);
 
         let offset = 0;
 
-        // save spot with key spots:${username}:${make}:${model}:${offset} instead of end of name
-        console.log(allSpots); // find the highest offset
+        allSpots.forEach(key => {
+            const spotNum = parseInt(key.split(":")[4], 10);
+
+            if (spotNum > offset) {
+                offset = spotNum;
+            }
+        });
 
         offset++;
 
@@ -475,7 +484,7 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             data[`image${index}`] = item;
         });
 
-        if (tagsArray) {
+        if (tagsArray && tagsArray.length > 0) {
             tagsArray.forEach((tag, index) => {
                 redisClient.hSet(`tags:${decodedUser.username}:${tag}`, `spots:${decodedUser.username}:${make}:${model}:${offset}`, index);
                 data[`tag${index}`] = tag;

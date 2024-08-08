@@ -444,7 +444,7 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
 
         const { make, model, notes, date, tags } = req.body;
 
-        const tagsArray: string[] = Array.isArray(tags)
+        const tagsArray = Array.isArray(tags)
             ? tags
             : tags
                 ? [tags]
@@ -512,46 +512,52 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
 
-        const tagsArray = tags as string[];
+        const tagsArray: string[] = Array.isArray(tags)
+            ? tags
+            : tags
+                ? [tags]
+                : [];
 
         if (!make || !model || (key === undefined || key === null)) {
             res.status(400).json({ message: 'Make, model, and key are required' });
             return;
         }
 
-        const spotKeyPrefix = `spots:${decodedUser.username}:${make}:${model}`;
+        const spotKeyPrefix = `spots:${decodedUser.username}:${make}:${model}:${key}`;
         const allSpots = await redisClient.hGetAll(spotKeyPrefix);
 
-        const imageKeys = Object.keys(allSpots).filter(k => k.endsWith(`image${key}`));
-        const tagKeys = Object.keys(allSpots).filter(k => k.endsWith(`tag${key}`));
-        const tagsSpot = tagKeys.filter(key2 => key2.endsWith(`tag${key}`)).map(key => allSpots[key]);
-        console.log(tagKeys);
-        console.log(tagsArray);
-        console.log(tagsSpot);
-        const spotNotesKey = `notes${key}`;
-        const spotDateKey = `date${key}`;
-
-        if (imageKeys.length === 0 && !allSpots[spotNotesKey] && !allSpots[spotDateKey]) {
+        if (!allSpots) {
             res.status(404).json({ message: 'Spot not found' });
             return;
         }
 
         const data: Record<string, string> = {};
 
-        if (tagsSpot !== tagsArray) {
-            // remove old tags and add new tags
+        if (tagsArray && tagsArray.length > 0) {
+            const allTagsData = await redisClient.hGetAll(`tags:${decodedUser.username}`);
+            const allTags: string[] = Array.isArray(allTagsData) ? allTagsData : []
+
+            console.log(allTags);
+
+            allTags.forEach(tag => {
+
+            });
+
+            tagsArray.forEach((tag, index) => {
+                data[`tag${index}`] = tag;
+            });
         }
 
         if (notes) {
-            data[spotNotesKey] = notes;
+            data[`notes`] = notes;
         } else {
-            data[spotNotesKey] = '';
+            data[``] = '';
         }
 
         if (date) {
-            data[spotDateKey] = date;
+            data[`date`] = date;
         } else {
-            data[spotDateKey] = '';
+            data[`date`] = '';
         }
 
         await redisClient.hSet(spotKeyPrefix, data);

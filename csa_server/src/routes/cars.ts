@@ -540,7 +540,6 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
             console.log(allTags);
 
             allTags.forEach(tag => {
-
             });
 
             tagsArray.forEach((tag, index) => {
@@ -559,6 +558,8 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
         } else {
             data[`date`] = '';
         }
+
+        console.log(data);
 
         await redisClient.hSet(spotKeyPrefix, data);
 
@@ -579,26 +580,9 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
             return;
         }
 
-        const spotKeyPrefix = `spots:${decodedUser.username}:${make}:${model}`;
-        const allSpots = await redisClient.hGetAll(spotKeyPrefix);
+        await redisClient.del(`spots:${decodedUser.username}:${make}:${model}:${key}`);
 
-        const imageKeys = Object.keys(allSpots).filter(k => k.endsWith(`image${key}`));
-        const tagKeys = Object.keys(allSpots).filter(k => k.endsWith(`tag${key}`));
-        // fix for tags:${username}:${tag} or change how they are stored
-        const spotNotesKey = `notes${key}`;
-        const spotDateKey = `date${key}`;
-
-        if (imageKeys.length === 0 && !allSpots[spotNotesKey] && !allSpots[spotDateKey]) {
-            res.status(404).json({ message: 'Spot not found' });
-            return;
-        }
-
-        const keysToDelete = imageKeys;
-        if (allSpots[spotNotesKey]) keysToDelete.push(spotNotesKey);
-        if (allSpots[spotDateKey]) keysToDelete.push(spotDateKey);
-        keysToDelete.push(...tagKeys);
-
-        await redisClient.hDel(spotKeyPrefix, keysToDelete);
+        // also delete tags
 
         res.status(200).json({ message: 'Spot deleted' });
     } catch (err) {
@@ -630,49 +614,29 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
             return;
         }
 
-        const allSpots = await redisClient.hGetAll(`spots:${username || decodedUser.username}:${make}:${model}`);
+        const allSpotsKeys = await redisClient.keys(`spots:${decodedUser.username}:${make}:${model}:*`);
 
-        const imageKeys = Object.keys(allSpots).filter(key => key.match(/^(\d*)image\d+$/));
+        const allSpots = [];
 
-        imageKeys.sort((a, b) => {
-            const [aImageNum, aSpotNum] = a.match(/^(\d*)image(\d+)$/).slice(1).map(Number);
-            const [bImageNum, bSpotNum] = b.match(/^(\d*)image(\d+)$/).slice(1).map(Number);
-            return aSpotNum === bSpotNum ? aImageNum - bImageNum : aSpotNum - bSpotNum;
-        });
+        for (const key of allSpotsKeys) {
+            const spot = await redisClient.hGetAll(key);
 
-        const spots = {};
+            const images = Object.keys(spot).filter(key => key.startsWith('image')).map(key => spot[key]);
 
-        for (const imageKey of imageKeys) {
-            const [imageNum, spotNum] = imageKey.match(/^(\d*)image(\d+)$/).slice(1).map(Number);
+            const compressedImages = await Promise.all(images.map(async image => await compressImage(image)));
 
-            if (!spots[spotNum]) {
-                spots[spotNum] = {
-                    images: [],
-                    notes: allSpots[`notes${spotNum}`],
-                    date: allSpots[`date${spotNum}`],
-                    tags: [],
-                };
-            }
+            const tags = Object.keys(spot).filter(key => key.startsWith('tag')).map(key => spot[key]);
 
-            // add tags
-            const tagKeys = Object.keys(allSpots).filter(key => key.match(/^(\d*)tag\d+$/)); // get all tag keys
-            const tags = tagKeys.filter(key => key.endsWith(`tag${spotNum}`)).map(key => allSpots[key]); // filter for tags for this spot and get the values from allSpots
-            spots[spotNum].tags = tags; // add tags to the spot
-
-            let imageBase64 = allSpots[imageKey];
-            if (imageBase64) {
-                imageBase64 = await compressImage(imageBase64);
-            }
-
-            spots[spotNum].images.push({ key: imageNum, image: imageBase64 });
+            allSpots.push({
+                key: key.split(':')[4],
+                notes: spot['notes'],
+                date: spot['date'],
+                images: compressedImages,
+                tags
+            });
         }
 
-        const spotArray = Object.keys(spots).map(spotNum => ({
-            key: spotNum,
-            ...spots[spotNum],
-        }));
-
-        res.status(200).json(spotArray);
+        res.status(200).json(allSpots);
     } catch (err) {
         next(err);
     }

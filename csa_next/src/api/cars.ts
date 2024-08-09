@@ -4,7 +4,7 @@ const apiIpCars = `http://${process.env.NEXT_PUBLIC_DATABASE_IP || "81.191.113.1
 export async function get_models(make?: string, query?: string) {
     if (!make) make = 'unknown';
 
-    const response = await fetch(`${apiIpCars}makes/${make}/models/${query}` , {
+    const response = await fetch(`${apiIpCars}makes/${make}/models/${query}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -16,7 +16,7 @@ export async function get_models(make?: string, query?: string) {
 }
 
 export async function get_makes(query?: string) {
-    const response = await fetch(`${apiIpCars}makes/${query}` , {
+    const response = await fetch(`${apiIpCars}makes/${query}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ export async function upload_spot(make: string, model: string, images: File[], n
     images.forEach(image => {
         formData.append('images', image);
     });
-    
+
     if (tags) {
         tags.forEach(tag => {
             formData.append('tags', tag);
@@ -185,18 +185,18 @@ export async function get_spotted_images(make: string, model: string, username?:
 
     const data = await response.json();
 
-    const images = data.map((item: any) => {
+    const dataImages = data.map((item: any) => {
         const urlArr = [];
 
         for (let i = 0; i < item.images.length; i++) {
-            const url = item.images[i].image ? `data:image/jpeg;base64,${item.images[i].image}` : null;
+            const url = item.images[i] ? `data:image/jpeg;base64,${item.images[i]}` : null;
             urlArr.push(url);
         }
 
         return { key: item.key, urlArr, notes: item.notes, date: item.date, tags: item.tags };
     });
 
-    return images;
+    return dataImages;
 }
 
 export async function update_spots() {

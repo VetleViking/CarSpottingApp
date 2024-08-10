@@ -582,7 +582,11 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
 
         await redisClient.del(`spots:${decodedUser.username}:${make}:${model}:${key}`);
 
-        // also delete tags
+        const tagsObject = await redisClient.hGetAll(`tags:${decodedUser.username}`);
+
+        for (const tag in tagsObject) {
+            await redisClient.hDel(`tags:${decodedUser.username}:${tag}`, `spots:${decodedUser.username}:${make}:${model}:${key}`);
+        }
 
         res.status(200).json({ message: 'Spot deleted' });
     } catch (err) {

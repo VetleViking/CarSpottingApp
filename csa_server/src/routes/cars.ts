@@ -640,6 +640,8 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
             });
         }
 
+        console.log(allSpots);
+
         res.status(200).json(allSpots);
     } catch (err) {
         next(err);

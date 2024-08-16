@@ -816,6 +816,8 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
         const users = await redisClient.hGetAll('users');
 
         for (const user of Object.keys(users)) {
+            // Update to new format from here
+
             const keys = await redisClient.keys(`spots:${user}:*`);
 
             for (const key of keys) {

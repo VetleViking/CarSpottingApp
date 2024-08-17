@@ -824,13 +824,7 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                 const allSpots = await redisClient.hGetAll(key);
 
                 for (const spotKey of Object.keys(allSpots)) {
-                    if (spotKey.startsWith('image')) {
-                        const index = spotKey.match(/image(\d+)/)[1];
-                        const spot = allSpots[spotKey];
-
-                        await redisClient.hDel(key, spotKey);
-                        await redisClient.hSet(key, `0image${index}`, spot);
-                    }
+                    console.log(spotKey);
                 }
             }
         }

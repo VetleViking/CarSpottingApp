@@ -609,7 +609,6 @@ const compressImage = async (base64Image) => {
 router.get('/getspots/:make/:model', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model } = req.params;
-        const username = req.query.username;
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
 

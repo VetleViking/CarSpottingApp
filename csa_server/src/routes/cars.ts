@@ -594,7 +594,7 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
     }
 });
 
-const sharp = require('sharp');
+import sharp from 'sharp';
 
 const compressImage = async (base64Image) => {
     const buffer = Buffer.from(base64Image, 'base64');

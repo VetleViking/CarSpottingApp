@@ -29,7 +29,7 @@ function MakesComponent() {
     }
 
     if (!altUsername) {
-        ensure_login().then((username) => setAltUsername(username));
+        ensure_login().then(setAltUsername);
     }
     
     useEffect(() => {

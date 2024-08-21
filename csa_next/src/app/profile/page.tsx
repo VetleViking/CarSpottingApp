@@ -14,7 +14,7 @@ function ProfileComponent() {
     const [delete_message, setDeleteMessage] = useState('Delete profile');
 
     if (!username) {
-        ensure_login().then((username) => setUsername(username));
+        ensure_login().then(setUsername);
     }
 
 

@@ -12,7 +12,7 @@ function AdminComponent() {
     const [username, setUsername] = useState("");
 
     if (!username) {
-        ensure_login().then((username) => setUsername(username));
+        ensure_login().then(setUsername);
     }
 
     if (username) {

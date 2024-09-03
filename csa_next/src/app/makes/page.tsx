@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import { Suspense } from 'react'
 import { ensure_login } from '@/functions/functions';
+import AskAi from '@/components/AskAi';
 
 function MakesComponent() {
     const searchParams = useSearchParams();
@@ -48,6 +49,7 @@ function MakesComponent() {
 
     return (
         <Suspense fallback={<div>Loading...</div>}>
+            <AskAi />
             <div>
                 <Header search={search} setSearch={setSearch} username={altUsername} />
                 <p className='text-center text-white text-3xl my-4'>Select the make</p>

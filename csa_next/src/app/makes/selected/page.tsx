@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import ListComponent from "@/components/ListComponent";
 import { ensure_login } from "@/functions/functions";
 import { add_model, get_models, get_spotted_make_percentage, get_spotted_models } from "@/api/cars";
+import AskAi from "@/components/AskAi";
 
 function MakeSelectedComponent() {
     const [search, setSearch] = useState('');
@@ -55,6 +56,7 @@ function MakeSelectedComponent() {
 
     return (
         <div>
+            <AskAi />
             <Header search={search} setSearch={setSearch} username={altUsername as string}/>
             <p className="text-white text-center text-2xl mb-1 mt-4">Selected Make: {make}</p>
             <p className="text-white text-center text-xl mb-4">{username ? `${username == altUsername ? "your" : username + "'s"} spots of ${make}'s:` : `${make}'s models:`}</p>

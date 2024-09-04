@@ -14,7 +14,6 @@ const AskAi = () => {
             return;
         }
 
-
         // setLoading(true);
         // setUploading(true);
     }

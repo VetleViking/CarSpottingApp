@@ -25,7 +25,7 @@ export default async function imageProcess(file: string, additionalInfo?: string
                         if you cant recognize all the details, leave the unknown parts with "cant recognize".
                         if either the make or model is unknown, set confidence to 0. 
                         Its preferred if you make an educated guess. 
-                        Dont make up cars that dont exist, and be very sure when you answer.
+                        Dont make up cars that dont exist.
                         ${additionalInfo ? "here is some additional info to help you recognize the car: " + additionalInfo : ""}`
                     },
                     {

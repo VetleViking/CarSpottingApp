@@ -21,9 +21,9 @@ export default async function imageProcess(file: string, additionalInfo?: string
                         text: `recognize the car in the image. send me JSON of the car details. 
                         the format should be like this, and nothing else:
                         { "make": "Toyota", "model": "Corolla", "confidence": 85 }
-                        the confidence is from 0 to 100.
+                        the confidence is from 0 to 100. 
                         if you cant recognize all the details, leave the unknown parts with "cant recognize".
-                        if either the make or model is unknown, set confidence to 0. 
+                        if either the make or model is unknown, set confidence to 0. Ensure that 'confidence' reflects the ypur certainty about the cars identification.
                         Its preferred if you make an educated guess. 
                         Dont make up cars that dont exist.
                         ${additionalInfo ? "here is some additional info to help you recognize the car: " + additionalInfo : ""}`

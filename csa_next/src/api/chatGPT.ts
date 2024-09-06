@@ -3,6 +3,7 @@ import { OpenAI } from "openai";
 export interface CarDetails {
     make: string;
     model: string;
+    confidence?: number;
 }
 
 export default async function imageProcess(file: string, additionalInfo?: string) {
@@ -19,8 +20,11 @@ export default async function imageProcess(file: string, additionalInfo?: string
                         type: "text",
                         text: `recognize the car in the image. send me JSON of the car details. 
                         the format should be like this, and nothing else:
-                        { "make": "Toyota", "model": "Corolla"}
-                        if you cant recognize all the details, leave the unknown parts with "cant recognize", although its preferred if you make an educated guess. 
+                        { "make": "Toyota", "model": "Corolla", "confidence": 85 }
+                        the confidence is from 0 to 100.
+                        if you cant recognize all the details, leave the unknown parts with "cant recognize".
+                        if either the make or model is unknown, set confidence to 0. 
+                        Its preferred if you make an educated guess. 
                         Dont make up cars that dont exist, and be very sure when you answer.
                         ${additionalInfo ? "here is some additional info to help you recognize the car: " + additionalInfo : ""}`
                     },
@@ -39,7 +43,8 @@ export default async function imageProcess(file: string, additionalInfo?: string
     if (!text.includes("```json")) {
         return {
             make: "cant recognize",
-            model: "cant recognize"
+            model: "cant recognize",
+            confidence: 0
         }
     }
 

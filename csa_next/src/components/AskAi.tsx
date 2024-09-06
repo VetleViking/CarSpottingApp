@@ -75,11 +75,16 @@ const AskAi = () => {
                         setPreviewUrls([])
                         }} text="Close" />
                     {loading ? <LoadingAnimation
-                        className="text-md"
+                        className="text-base"
                         text="Asking AI"
                     /> : <Button onClick={() => upload()} 
                     text="Ask AI"/>}
                 </div>        
+                {results && <div className="flex flex-col gap-2">
+                    <p className="text-white font-ListComponent">AI identified the car as:</p>
+                    <p className="text-white font-ListComponent">{results.make} {results.model}</p>
+                    <p className="text-white font-ListComponent">with a confidence of {results.confidence}</p>
+                </div>}
             </div> : <div >
                 <Button onClick={() => setOpen(true)} text="Ask AI" />
             </div>}

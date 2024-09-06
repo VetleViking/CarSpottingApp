@@ -3,7 +3,7 @@ import { OpenAI } from "openai";
 export interface CarDetails {
     make: string;
     model: string;
-    confidence?: number;
+    confidence: number;
 }
 
 export default async function imageProcess(file: string, additionalInfo?: string) {

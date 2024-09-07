@@ -3,6 +3,7 @@ import Button from "./Button";
 import Spotimage from "./Spotimage";
 import imageProcess, { CarDetails } from "@/api/chatGPT";
 import LoadingAnimation from "./LoadingAnim";
+import { get_models } from "@/api/cars";
 
 const AskAi = () => {
     const [open, setOpen] = React.useState(false);
@@ -12,6 +13,7 @@ const AskAi = () => {
     const [additional, setAdditional] = useState('');
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState<CarDetails | null>(null);
+    const [exists, setExists] = useState(false);
 
     const upload = async () => {
         if (!files) {
@@ -24,6 +26,12 @@ const AskAi = () => {
         reader.onload = async () => {
             const base64Data = reader.result as string;
             const text = await imageProcess(base64Data, additional) as CarDetails;
+
+            const exists = await ((text.make !== "cant recognize" && text.model !== "cant recognize") && get_models(text.make, text.model));
+
+            if (exists) {
+                setExists(true);
+            }
 
             setResults(text);
             console.log(text);
@@ -68,11 +76,22 @@ const AskAi = () => {
                         onChange={(e) => setAdditional(e.target.value)}
                     />
                 </div>
+                {results && <div className="flex flex-col gap-2">
+                    <p className="text-white font-ListComponent">AI identified the car as:</p>
+                    <p className="text-white font-ListComponent">{results.make} {results.model}</p>
+                    <p className="text-white font-ListComponent">with a confidence of {results.confidence}</p>
+                    {exists && <p className="text-white font-ListComponent">The car exists in the database</p>}
+                    {!exists && <p className="text-white font-ListComponent">The car does not exist in the database</p>}
+                    {exists ? <Button text="Upload" onClick={() => {}} /> : <Button text="Add to database and upload" onClick={() => {}} />}
+                </div>}
                 <div className="flex justify-between mt-2 w-full">
                     <Button onClick={() => {
                         setOpen(false)
                         setFiles(null)
                         setPreviewUrls([])
+                        setAdditional('')
+                        setResults(null)
+                        setExists(false)
                         }} text="Close" />
                     {loading ? <LoadingAnimation
                         className="text-base"
@@ -80,11 +99,7 @@ const AskAi = () => {
                     /> : <Button onClick={() => upload()} 
                     text="Ask AI"/>}
                 </div>        
-                {results && <div className="flex flex-col gap-2">
-                    <p className="text-white font-ListComponent">AI identified the car as:</p>
-                    <p className="text-white font-ListComponent">{results.make} {results.model}</p>
-                    <p className="text-white font-ListComponent">with a confidence of {results.confidence}</p>
-                </div>}
+                
             </div> : <div >
                 <Button onClick={() => setOpen(true)} text="Ask AI" />
             </div>}

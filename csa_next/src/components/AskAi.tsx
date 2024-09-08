@@ -57,13 +57,12 @@ const AskAi = () => {
     return (
         <div className="fixed bottom-0 right-0 bg-black border-t-[6px] border-l-[6px] border-white p-4">
             {open ? <div className=" flex flex-col gap-2 items-center">
-                <p className="text-white font-ListComponent">Here you can ask AI to identify a car from the chosen image(s)</p>
+                <p className="text-white font-ListComponent">Here you can ask AI to identify a car from the chosen image.</p>
                 <div className="flex items-center flex-col max-w-96 gap-2">
                     <input 
                         className="rounded-sm bg-black p-1 border border-[#9ca3af] text-[#9ca3af] font-ListComponent" 
                         type="file" 
                         accept="image/*" 
-                        multiple
                         onChange={
                             (e) => {
                                 setFiles(e.target.files);

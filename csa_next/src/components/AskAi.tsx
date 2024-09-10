@@ -29,7 +29,9 @@ const AskAi = () => {
 
             const exists = await ((text.make !== "cant recognize" && text.model !== "cant recognize") && get_models(text.make, text.model));
 
-            if (exists && exists.length) {
+            if (exists.length) {
+                console.log(exists); // debug
+
                 setExists(true);
             }
 
@@ -38,6 +40,10 @@ const AskAi = () => {
             setLoading(false);
         };
         reader.readAsDataURL(files[0]);
+    }
+
+    const uploadSpot = async () => {
+        
     }
 
     useEffect(() => {
@@ -80,7 +86,11 @@ const AskAi = () => {
                     <p className="text-white font-ListComponent">{results.make} {results.model}</p>
                     <p className="text-white font-ListComponent">with a confidence of {results.confidence}</p>
                     <p className="text-white font-ListComponent">{exists ? "The car exists in the database" : "The car does not exist in the database"}</p>
-                    {exists ? <Button text="Upload" onClick={() => {}} /> : <Button text="Add to database and upload" onClick={() => {}} />}
+                    {exists ? <Button text="Upload" onClick={() => {
+
+                    }} /> : <Button text="Add to database and upload" onClick={() => {
+                        
+                    }} />}
                 </div>}
                 <div className="flex justify-between mt-2 w-full">
                     <Button onClick={() => {

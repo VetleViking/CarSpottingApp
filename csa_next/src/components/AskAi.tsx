@@ -3,7 +3,7 @@ import Button from "./Button";
 import Spotimage from "./Spotimage";
 import imageProcess, { CarDetails } from "@/api/chatGPT";
 import LoadingAnimation from "./LoadingAnim";
-import { get_models } from "@/api/cars";
+import { add_make, add_model, get_models } from "@/api/cars";
 
 const AskAi = () => {
     const [open, setOpen] = React.useState(false);
@@ -27,9 +27,9 @@ const AskAi = () => {
             const base64Data = reader.result as string;
             const text = await imageProcess(base64Data, additional) as CarDetails;
 
-            const exists = await ((text.make !== "cant recognize" && text.model !== "cant recognize") && get_models(text.make, text.model));
+            const carExists = await ((text.make !== "cant recognize" && text.model !== "cant recognize") && get_models(text.make, text.model));
 
-            if (exists.length) {
+            if (carExists.length) {
                 console.log(exists); // debug
 
                 setExists(true);
@@ -42,8 +42,12 @@ const AskAi = () => {
         reader.readAsDataURL(files[0]);
     }
 
-    const uploadSpot = async () => {
-        
+    const uploadMissing = async () => {
+        if (!results) return;
+
+        add_make(results.make).then(() => {
+            add_model(results.make, results.model);
+        });
     }
 
     useEffect(() => {
@@ -81,15 +85,12 @@ const AskAi = () => {
                         onChange={(e) => setAdditional(e.target.value)}
                     />
                 </div>
-                {results && <div className="flex flex-col gap-2">
-                    <p className="text-white font-ListComponent">AI identified the car as:</p>
-                    <p className="text-white font-ListComponent">{results.make} {results.model}</p>
-                    <p className="text-white font-ListComponent">with a confidence of {results.confidence}</p>
-                    <p className="text-white font-ListComponent">{exists ? "The car exists in the database" : "The car does not exist in the database"}</p>
-                    {exists ? <Button text="Upload" onClick={() => {
-
-                    }} /> : <Button text="Add to database and upload" onClick={() => {
-                        
+                {exists ? <Button text="Go to page" onClick={() => {
+                        window.location.href = `/makes/selected/modelselected?make=${results.make}&model=${results.model}`;
+                    }} /> : <Button text="Add to database and go to page" onClick={() => {
+                        uploadMissing().then(() => {
+                            window.location.href = `/makes/selected/modelselected?make=${results.make}&model=${results.model}`;
+                        });
                     }} />}
                 </div>}
                 <div className="flex justify-between mt-2 w-full">

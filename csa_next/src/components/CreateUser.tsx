@@ -26,32 +26,26 @@ const CreateUser = () => {
 
 
     
-    return (
-       <div className="flex flex-col gap-2 w-48 p-2 bg-black border border-white">
-            <input 
-                className="font-ListComponent"
-                type="text" 
-                placeholder="username" 
-                value={username}
-                onChange={(e) => {
-                    setUsername(e.target.value);
-                }}/>
+    return <div className="flex flex-col gap-2 w-48 p-2 bg-black border border-white">
+        <input 
+            className="font-ListComponent"
+            type="text" 
+            placeholder="username" 
+            value={username}
+            onChange={e => setUsername(e.target.value)}/>
 
-            <input 
-                className="font-ListComponent"
-                type="password" 
-                placeholder="password"
-                value={password}
-                onChange={(e) => {
-                    setPassword(e.target.value);
-                }} />
-                
-            <button 
-                className="bg-white text-black py-1 px-2 mt-1 italic" 
-                onClick={() => {create_user_handler(username, password)}}>Create user</button>
-            <p className="text-[#e72328] text-center font-ListComponent">{errormessage}</p>
-        </div>
-    );
+        <input 
+            className="font-ListComponent"
+            type="password" 
+            placeholder="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)} />
+            
+        <button 
+            className="bg-white text-black py-1 px-2 mt-1 italic" 
+            onClick={() => create_user_handler(username, password)}>Create user</button>
+        <p className="text-[#e72328] text-center font-ListComponent">{errormessage}</p>
+    </div>
 };
 
 export default CreateUser;

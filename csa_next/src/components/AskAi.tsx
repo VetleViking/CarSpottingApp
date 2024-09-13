@@ -15,9 +15,7 @@ const AskAi = () => {
     const [exists, setExists] = useState(false);
 
     const upload = async () => {
-        if (!files) {
-            return;
-        }
+        if (!files) return;
 
         setLoading(true);
         
@@ -30,7 +28,6 @@ const AskAi = () => {
             carExists.length && setExists(carExists.some((car: string) => car.toLowerCase() === text.model.toLowerCase()));
 
             setResults(text);
-            console.log(text);
             setLoading(false);
         };
         reader.readAsDataURL(files[0]);
@@ -47,16 +44,12 @@ const AskAi = () => {
     }
 
     useEffect(() => {
-        if (!files) {
-            return;
-        }
+        if (!files) return;
 
         const urls = Array.from(files).map(file => URL.createObjectURL(file));
         setPreviewUrls(urls);
 
-        return () => {
-            urls.forEach(url => URL.revokeObjectURL(url));
-        };
+        return () => urls.forEach(url => URL.revokeObjectURL(url));
     }, [files]);
 
 

@@ -39,7 +39,10 @@ function MakesComponent() {
         }
     }, [username, make, model]);
 
-    if (!username) return null;
+    if (!username) return <div>
+        <Header username={altUsername as string} />
+        <UploadSpot make={make as string} model={model as string} />
+    </div>;
 
     return <div>
         <Header username={altUsername as string} />
@@ -51,12 +54,6 @@ function MakesComponent() {
                 </div> 
             ))}
         </div>
-    </div>
-
-
-    return <div>
-        <Header username={altUsername as string} />
-        <UploadSpot make={make as string} model={model as string} />
     </div>
 }
 

@@ -6,6 +6,7 @@ import { Suspense } from 'react'
 import { ensure_login } from '@/functions/functions';
 import Button from '@/components/Button';
 import { delete_user, get_stats } from '@/api/users';
+import LoadingAnimation from '@/components/LoadingAnim';
 
 function ProfileComponent() {
     const [username, setUsername] = useState("");
@@ -13,16 +14,10 @@ function ProfileComponent() {
     const [delete_confirm, setDeleteConfirm] = useState(false); 
     const [delete_message, setDeleteMessage] = useState('Delete profile');
 
-    if (!username) {
-        ensure_login().then(setUsername);
-    }
+    if (!username) ensure_login().then(setUsername)
 
 
-    if (!stats || stats.length === 0) {
-        if (username) {
-            get_stats(username).then((stats) => setStats(stats));
-        }
-    }
+    if (!stats || stats.length === 0 && username) get_stats(username).then((stats) => setStats(stats));
 
     function deleteHandler() {
         if (!delete_confirm) {
@@ -33,8 +28,7 @@ function ProfileComponent() {
         delete_user(username).then(() => window.location.href = '/login');
     }
 
-    return (
-        <div>
+    return <div>
             <Header username={username} />
             <div>
                 <div className='flex justify-center mt-4'> 
@@ -61,15 +55,10 @@ function ProfileComponent() {
                 </div>
             </div>
         </div>
-    );
 }
 
-// [#9ca3af]
-
 export default function Profile() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <ProfileComponent />
-        </Suspense>
-    );
+    return <Suspense fallback={<LoadingAnimation text='Loading' />}>
+        <ProfileComponent />
+    </Suspense>
 };

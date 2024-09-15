@@ -8,6 +8,7 @@ import Header from '@/components/Header';
 import { Suspense } from 'react'
 import { ensure_login } from '@/functions/functions';
 import AskAi from '@/components/AskAi';
+import LoadingAnimation from '@/components/LoadingAnim';
 
 function MakesComponent() {
     const searchParams = useSearchParams();
@@ -18,20 +19,16 @@ function MakesComponent() {
     const [newMake, setNewMake] = useState("");
 
     function selectedMake(make: string) {
-        if (username) {
-            window.location.href = `/makes/selected?make=${make}&username=${username}`;
-        } else {
-            window.location.href = `/makes/selected?make=${make}`;    
-        }
+        username
+            ? window.location.href = `/makes/selected?make=${make}&username=${username}`
+            : window.location.href = `/makes/selected?make=${make}`;    
     }
 
     function addMakeHandler(make: string) {
         add_make(make).then(() => window.location.href = `/makes/selected?make=${make}`);
     }
 
-    if (!altUsername) {
-        ensure_login().then(setAltUsername);
-    }
+    if (!altUsername) ensure_login().then(setAltUsername);
     
     useEffect(() => {
         const fetchData = async () => {
@@ -70,16 +67,11 @@ function MakesComponent() {
                             onClick={() => addMakeHandler(newMake)}>Add new make</button>
                     </div>}
                 </div>
-                {Array.isArray(data) && data.length > 0 ? (
-                    data.map((item: any, id) => (
-                    <div
-                    key={id}
-                    onClick={() => selectedMake(item)}>
+                {Array.isArray(data) && data.length > 0 ? data.map((item: any, id) => <div
+                        key={id}
+                        onClick={() => selectedMake(item)}>
                         <ListComponent  title={item} />
-                    </div>
-                ))): (<p className='text-white font-ListComponent px-1 text-nowrap text-center'>No makes found.</p>)}
-                
-                
+                    </div>) : <p className='text-white font-ListComponent px-1 text-nowrap text-center'>No makes found.</p>}
             </div>
         </Suspense>
     );
@@ -87,7 +79,7 @@ function MakesComponent() {
 
 export default function Makes() {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<LoadingAnimation text='Loading' />}>
             <MakesComponent />
         </Suspense>
     );

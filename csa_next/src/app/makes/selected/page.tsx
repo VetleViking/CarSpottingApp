@@ -8,6 +8,7 @@ import ListComponent from "@/components/ListComponent";
 import { ensure_login } from "@/functions/functions";
 import { add_model, get_models, get_spotted_make_percentage, get_spotted_models } from "@/api/cars";
 import AskAi from "@/components/AskAi";
+import LoadingAnimation from "@/components/LoadingAnim";
 
 function MakeSelectedComponent() {
     const [search, setSearch] = useState('');
@@ -22,6 +23,7 @@ function MakeSelectedComponent() {
     function addModelHandler(model: string) {
         add_model(make, model).then(() => window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}`);
     }
+
     function selectedModel(make: string, model: string) {
         if (username) {
             window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}&username=${username}`;
@@ -30,9 +32,7 @@ function MakeSelectedComponent() {
         }
     }
 
-    if (!altUsername) {
-        ensure_login().then(setAltUsername);
-    }
+    if (!altUsername) ensure_login().then(setAltUsername);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -54,42 +54,37 @@ function MakeSelectedComponent() {
         fetchData();
     }, [search, make, username]);
 
-    return (
-        <div>
-            <AskAi />
-            <Header search={search} setSearch={setSearch} username={altUsername as string}/>
-            <p className="text-white text-center text-2xl mb-1 mt-4">Selected Make: {make}</p>
-            <p className="text-white text-center text-xl mb-4">{username ? `${username == altUsername ? "your" : username + "'s"} spots of ${make}'s:` : `${make}'s models:`}</p>
-            {(username && percentageData) && <p className="text-white text-center mb-4 font-ListComponent">{username == altUsername ? "You" : username} have spotted {percentageData.numSpots} out of the {percentageData.numModels} models in the database, or {percentageData.percentage}%.</p>}
-            {!username &&<div className='w-full flex items-center justify-center gap-4 mb-4'>
-                <input
-                    className='font-ListComponent border border-black p-1 h-full rounded-md'
-                    type='text'
-                    placeholder='Other (add model)'
-                    value={newModel}
-                    onChange={(e) => setNewModel(e.target.value)}
-                />
-                <button
-                    className='bg-[#e72328] text-white py-2 px-2 border border-black italic'
-                    onClick={() => addModelHandler(newModel)}>Add new model</button>
-            </div>}
-            {Array.isArray(data) && data.length > 0 ? (
-                data.map((item: any, id) => (
-                    <div 
-                    key={id}
-                    onClick={() => {selectedModel(item.make, item.model)}}>
-                        <ListComponent title={make == "unknown" ? item.make + " " + item.model : item.model} />
-                    </div>
-                ))
-            ) : (<div className="text-white font-ListComponent px-1 text-nowrap text-center">No models found</div>)}
-        </div>
-    );
+    return <div>
+        <AskAi />
+        <Header search={search} setSearch={setSearch} username={altUsername as string}/>
+        <p className="text-white text-center text-2xl mb-1 mt-4">Selected Make: {make}</p>
+        <p className="text-white text-center text-xl mb-4">{username ? `${username == altUsername ? "your" : username + "'s"} spots of ${make}'s:` : `${make}'s models:`}</p>
+        {(username && percentageData) && <p className="text-white text-center mb-4 font-ListComponent">{username == altUsername ? "You" : username} have spotted {percentageData.numSpots} out of the {percentageData.numModels} models in the database, or {percentageData.percentage}%.</p>}
+        {!username &&<div className='w-full flex items-center justify-center gap-4 mb-4'>
+            <input
+                className='font-ListComponent border border-black p-1 h-full rounded-md'
+                type='text'
+                placeholder='Other (add model)'
+                value={newModel}
+                onChange={(e) => setNewModel(e.target.value)}
+            />
+            <button
+                className='bg-[#e72328] text-white py-2 px-2 border border-black italic'
+                onClick={() => addModelHandler(newModel)}>Add new model</button>
+        </div>}
+        {Array.isArray(data) && data.length > 0 
+            ? data.map((item: any, id) => <div 
+                key={id}
+                onClick={() => {selectedModel(item.make, item.model)}}>
+                    <ListComponent title={make == "unknown" ? item.make + " " + item.model : item.model} />
+                </div>
+            )
+            : <div className="text-white font-ListComponent px-1 text-nowrap text-center">No models found</div>}
+    </div>
 };
 
 export default function MakeSelected() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <MakeSelectedComponent />
-        </Suspense>
-    );
+    return <Suspense fallback={<LoadingAnimation text="Loading"/>}>
+        <MakeSelectedComponent />
+    </Suspense>
 }

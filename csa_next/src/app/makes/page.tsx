@@ -44,43 +44,39 @@ function MakesComponent() {
         fetchData();
     }, [search, username]);
 
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <AskAi />
-            <div>
-                <Header search={search} setSearch={setSearch} username={altUsername} />
-                <p className='text-center text-white text-3xl my-4'>Select the make</p>
-                <div className='flex gap-2 mb-4 flex-wrap md:flex-nowrap'>
-                    <div onClick={() => selectedMake("unknown")} className='w-full'>
-                        <ListComponent title="Dont know" />
-                    </div>
-                    {!username && <div className='w-full flex items-center justify-center gap-4 mx-1'>
-                        <input
-                            className='font-ListComponent border border-black p-1 w-full h-full rounded-md'
-                            type='text'
-                            placeholder='Other (add make)'
-                            value={newMake}
-                            onChange={(e) => setNewMake(e.target.value)}
-                        />
-                        <button
-                            className='bg-[#e72328] text-white p-2 border border-black italic text-nowrap'
-                            onClick={() => addMakeHandler(newMake)}>Add new make</button>
-                    </div>}
+    return <div>
+        <AskAi />
+        <div>
+            <Header search={search} setSearch={setSearch} username={altUsername} />
+            <p className='text-center text-white text-3xl my-4'>Select the make</p>
+            <div className='flex gap-2 mb-4 flex-wrap md:flex-nowrap'>
+                <div onClick={() => selectedMake("unknown")} className='w-full'>
+                    <ListComponent title="Dont know" />
                 </div>
-                {Array.isArray(data) && data.length > 0 ? data.map((item: any, id) => <div
-                        key={id}
-                        onClick={() => selectedMake(item)}>
-                        <ListComponent  title={item} />
-                    </div>) : <p className='text-white font-ListComponent px-1 text-nowrap text-center'>No makes found.</p>}
+                {!username && <div className='w-full flex items-center justify-center gap-4 mx-1'>
+                    <input
+                        className='font-ListComponent border border-black p-1 w-full h-full rounded-md'
+                        type='text'
+                        placeholder='Other (add make)'
+                        value={newMake}
+                        onChange={(e) => setNewMake(e.target.value)}
+                    />
+                    <button
+                        className='bg-[#e72328] text-white p-2 border border-black italic text-nowrap'
+                        onClick={() => addMakeHandler(newMake)}>Add new make</button>
+                </div>}
             </div>
-        </Suspense>
-    );
+            {Array.isArray(data) && data.length > 0 ? data.map((item: any, id) => <div
+                    key={id}
+                    onClick={() => selectedMake(item)}>
+                    <ListComponent  title={item} />
+                </div>) : <p className='text-white font-ListComponent px-1 text-nowrap text-center'>No makes found.</p>}
+        </div>
+    </div>
 }
 
 export default function Makes() {
-    return (
-        <Suspense fallback={<LoadingAnimation text='Loading' />}>
-            <MakesComponent />
-        </Suspense>
-    );
+    return <Suspense fallback={<LoadingAnimation text='Loading' />}>
+        <MakesComponent />
+    </Suspense>
 };

@@ -25,7 +25,7 @@ const AskAi = () => {
             const text = await imageProcess(base64Data, additional) as CarDetails;
 
             const carExists = await ((text.make !== "cant recognize" && text.model !== "cant recognize") && get_models(text.make, text.model));
-            carExists.length && setExists(carExists.some((car: string) => car.toLowerCase() === text.model.toLowerCase()));
+            carExists.length ? setExists(carExists.some((car: string) => car.toLowerCase() === text.model.toLowerCase())) : setExists(false);
 
             setResults(text);
             setLoading(false);

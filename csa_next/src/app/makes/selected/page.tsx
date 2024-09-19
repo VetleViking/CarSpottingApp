@@ -25,11 +25,8 @@ function MakeSelectedComponent() {
     }
 
     function selectedModel(make: string, model: string) {
-        if (username) {
-            window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}&username=${username}`;
-        } else {
-            window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}`;
-        }
+        if (username) window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}&username=${username}`;
+        else window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}`;
     }
 
     if (!altUsername) ensure_login().then(setAltUsername);
@@ -43,12 +40,10 @@ function MakeSelectedComponent() {
                 data = await get_spotted_models(make as string, search, username);
                 percentageData = await get_spotted_make_percentage(make as string, username);
                 setPercentageData(percentageData as { percentage: number; numSpots: number; numModels: number });
-            } else {
-                data = await get_models(make as string, search);
-            }
+            } else data = await get_models(make as string, search);
+            
 
             setData(data);
-
         };
 
         fetchData();
@@ -66,7 +61,7 @@ function MakeSelectedComponent() {
                 type='text'
                 placeholder='Other (add model)'
                 value={newModel}
-                onChange={(e) => setNewModel(e.target.value)}
+                onChange={e => setNewModel(e.target.value)}
             />
             <button
                 className='bg-[#e72328] text-white py-2 px-2 border border-black italic'
@@ -74,11 +69,10 @@ function MakeSelectedComponent() {
         </div>}
         {Array.isArray(data) && data.length > 0 
             ? data.map((item: any, id) => <div 
-                key={id}
-                onClick={() => {selectedModel(item.make, item.model)}}>
+                    key={id}
+                    onClick={() => {selectedModel(item.make, item.model)}}>
                     <ListComponent title={make == "unknown" ? item.make + " " + item.model : item.model} />
-                </div>
-            )
+                </div>)
             : <div className="text-white font-ListComponent px-1 text-nowrap text-center">No models found</div>}
     </div>
 };

@@ -11,7 +11,14 @@ import { ensure_login } from '@/functions/functions';
 import LoadingAnimation from '@/components/LoadingAnim';
 
 function MakesComponent() {
-    const [data, setData] = useState<{ name: string; }[]>([]);
+    const [data, setData] = useState<{ 
+        name: string;
+        urlArr: string[];
+        tags: string[];
+        notes: string;
+        date: string;
+        key: string;
+    }[]>([]);
     const searchParams = useSearchParams();
     const make = searchParams.get('make');
     const model = searchParams.get('model');
@@ -20,18 +27,16 @@ function MakesComponent() {
     const [isOwner, setIsOwner] = useState(false);
     const [altUsername, setAltUsername] = useState("");
 
-    if (!altUsername)  ensure_login().then((user) => {
-        setAltUsername(user as string);
+    if (!altUsername) ensure_login().then((user) => {
+        setAltUsername(user);
 
-        if (username) {
-            setIsOwner(username === user as string);
-        }
+        username && setIsOwner(username === user)
     });
 
     useEffect(() => {
-        if (username) {
+        if (username && make && model) {
             const fetchData = async () => {
-                const data = await get_spotted_images(make as string, model as string, username);
+                const data = await get_spotted_images(make, model, username);
                 setData(data);
             };
 
@@ -48,9 +53,11 @@ function MakesComponent() {
         <Header username={altUsername as string} />
         <p className="text-white text-center text-xl m-4">{(isOwner ? `Your` : `${username}'s`) + ` spots of ${make} ${model}:`}</p>
         <div className='flex flex-col items-center gap-2'>
-            {data.map((item: any, id) => (
+            {data.map((item, id) => (
                 <div key={id}>
-                    <Spotimage images={item.urlArr} tags={item.tags} notes={item.notes? item.notes : null} date={item.date? item.date : null} spotdata={{ make: make as string, model: model as string, key: item.key, isOwner: isOwner }}/>
+                    <Spotimage 
+                        images={item.urlArr} tags={item.tags} notes={item.notes} date={item.date} 
+                        spotdata={{ make: make || "", model: model || "", key: item.key, isOwner: isOwner }}/>
                 </div> 
             ))}
         </div>

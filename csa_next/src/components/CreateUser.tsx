@@ -16,12 +16,8 @@ const CreateUser = () => {
             if (loginData.token) {
                 localStorage.setItem('token', loginData.token);
                 window.location.href = '/';
-            } else {
-                setErrormessage(loginData.message);
-            }
-        } else {
-            setErrormessage(data.message);
-        }
+            } else setErrormessage(loginData.message);
+        } else setErrormessage(data.message);
     }
 
 

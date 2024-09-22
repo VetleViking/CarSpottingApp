@@ -3,7 +3,7 @@ import Button from "./Button";
 import Spotimage from "./Spotimage";
 import imageProcess, { CarDetails } from "@/api/chatGPT";
 import LoadingAnimation from "./LoadingAnim";
-import { add_make, add_model, get_models } from "@/api/cars";
+import { add_make, add_model, get_makes, get_models } from "@/api/cars";
 
 const AskAi = () => {
     const [open, setOpen] = React.useState(false);
@@ -36,11 +36,15 @@ const AskAi = () => {
     const uploadMissing = async () => {
         if (!results) return;
 
-        add_make(results.make).then(() => {
-            add_model(results.make, results.model).then(() => {
-                window.location.href = `/makes/selected/modelselected?make=${results.make}&model=${results.model}`;
-            })
-        });
+        const makeExists = await get_makes(results.make);
+        if (!makeExists.length || !makeExists.some((make: string) => make.toLowerCase() === results.make.toLowerCase())) {
+            add_make(results.make);
+        } 
+
+        const modelExists = await get_models(results.make, results.model);
+        if (!modelExists.length || !modelExists.some((model: string) => model.toLowerCase() === results.model.toLowerCase())) {
+            add_model(results.make, results.model);
+        }
     }
 
     useEffect(() => {

@@ -6,7 +6,7 @@ import Spotimage from "./Spotimage";
 import { ensure_login } from "@/functions/functions";
 import LoadingAnimation from "./LoadingAnim";
 import Button from "./Button";
-import down_arrow from "../images/down-arrow.svg";
+import down_arrow from "@/images/down_arrow.svg";
 import Image from "next/image";
 
 type SpotProps = {

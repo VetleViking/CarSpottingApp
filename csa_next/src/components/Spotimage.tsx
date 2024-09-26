@@ -2,7 +2,7 @@ import { add_tag, delete_spot, edit_spot, get_tags } from "@/api/cars";
 import React, { useState } from "react";
 import Image from "next/image";
 import Button from "./Button";
-import down_arrow from "../images/down_arrow.svg";
+import down_arrow from "@/images/down_arrow.svg";
 
 
 type ImageProps = {

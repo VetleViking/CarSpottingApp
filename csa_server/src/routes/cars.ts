@@ -836,16 +836,22 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                 const groupedSpots: { [index: string]: { [key: string]: string } } = {};
 
                 for (const spotKey of Object.keys(allSpots)) {
-                    const match = spotKey.match(/^(\d+)(\D+)(\d+)$/);
-                    if (match) {
-                        const firstIndex = match[1];
-                        const baseKey = match[2];
-                        const lastIndex = match[3];
-                        if (!groupedSpots[lastIndex]) {
-                            groupedSpots[lastIndex] = {};
+                    const index = spotKey.charAt(spotKey.length - 1);
+
+                    if (index) {
+                        if (!groupedSpots[index]) {
+                            groupedSpots[index] = {};
                         }
-                        groupedSpots[lastIndex][`${baseKey}${lastIndex}`] = allSpots[spotKey];
-                        groupedSpots[lastIndex]['index'] = firstIndex; // Save the first part as 'index'
+
+                        let newKey = spotKey.slice(0, -1);
+
+                        if (spotKey.endsWith('image')) {
+                            const imageIndex = spotKey.slice(0, 1);
+                        
+                            newKey = `image${imageIndex}`;
+                        }
+
+                        groupedSpots[index][newKey] = allSpots[spotKey];
                     }
                 }
 
@@ -857,7 +863,7 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                     spot['index'] = index; // Move the saved first part to the end
                     return spot;
                 });
-                
+
                 console.log(spotsArray);
             }
         }

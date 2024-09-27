@@ -74,9 +74,10 @@ const AskAi = () => {
                     onChange={e => setAdditional(e.target.value)}
                 />
             </div>
-            {exists ? <Button text="Go to page" onClick={() => {
+            {(results && exists) && <Button text="Go to page" onClick={() => {
                     window.location.href = `/makes/selected/modelselected?make=${results?.make}&model=${results?.model}`;
-                }} /> : <Button text="Add to database and go to page" onClick={() => {
+                }} />}
+            {(results && !exists && results.make !== "cant recognize" && results.model !== "cant recognize") && <Button text="Add to database and go to page" onClick={() => {
                     uploadMissing().then(() => window.location.href = `/makes/selected/modelselected?make=${results?.make}&model=${results?.model}`);
                 }} />}
             <div className="flex justify-between mt-2 w-full">

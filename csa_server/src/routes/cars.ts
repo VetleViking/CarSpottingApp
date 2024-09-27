@@ -831,10 +831,12 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                 }
                 console.log(key);
 
-                for (const spotKey of Object.keys(allSpots).entries()) {
-                    
-                    
+                for (const spotKey of Object.keys(allSpots)) {
                     console.log(spotKey);
+
+                    const spot = await redisClient.hGet(key, spotKey);
+
+                    console.log(spot);
                 }
             }
         }

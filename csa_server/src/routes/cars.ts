@@ -836,17 +836,17 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                 const groupedSpots: { [index: string]: { [key: string]: string } } = {};
 
                 for (const spotKey of Object.keys(allSpots)) {
-                    const match = spotKey.match(/(\D+)(\d+)$/);
+                    const match = spotKey.match(/^(\d+)(\D+)(\d+)$/);
                     if (match) {
-                        const baseKey = match[1];
-                        const index = match[2];
-                        if (!groupedSpots[index]) {
-                            groupedSpots[index] = {};
+                        const firstIndex = match[1];
+                        const baseKey = match[2];
+                        const lastIndex = match[3];
+                        if (!groupedSpots[firstIndex]) {
+                            groupedSpots[firstIndex] = {};
                         }
-                        groupedSpots[index][baseKey] = allSpots[spotKey];
+                        groupedSpots[firstIndex][`${baseKey}${lastIndex}`] = allSpots[spotKey];
                     }
                 }
-
                 console.log(groupedSpots);
             }
         }

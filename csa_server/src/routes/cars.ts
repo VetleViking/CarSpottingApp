@@ -494,8 +494,6 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
         if (!notes) delete data[`notes`];
         if (!date) delete data[`date`];
 
-        console.log(data);
-
         await redisClient.hSet(`spots:${decodedUser.username}:${make}:${model}:${offset}`, data);
 
         res.status(201).json({ message: 'Spot added' });
@@ -537,8 +535,6 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
             const allTagsData = await redisClient.hGetAll(`tags:${decodedUser.username}`);
             const allTags: string[] = Array.isArray(allTagsData) ? allTagsData : []
 
-            console.log(allTags);
-
             allTags.forEach(tag => {
             });
 
@@ -558,8 +554,6 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
         } else {
             data[`date`] = '';
         }
-
-        console.log(data);
 
         await redisClient.hSet(spotKeyPrefix, data);
 
@@ -619,8 +613,6 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
 
         const allSpotsKeys = await redisClient.keys(`spots:${decodedUser.username}:${make}:${model}:*`);
 
-        console.log(allSpotsKeys);
-
         const allSpots = [];
 
         for (const key of allSpotsKeys) {
@@ -640,8 +632,6 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
                 tags
             });
         }
-
-        console.log(allSpots);
 
         res.status(200).json(allSpots);
     } catch (err) {
@@ -821,17 +811,12 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
 
             const keys = await redisClient.keys(`spots:${user}:*`);
 
-            console.log(keys);
-
             for (const key of keys) {
                 const allSpots = await redisClient.hGetAll(key);
 
                 if (key.split(':').length === 5) {
                     //continue;
                 }
-                console.log(key);
-                console.log(allSpots);
-
 
                 const groupedSpots: [{ [key: string]: string }] = [{}];
 
@@ -858,8 +843,6 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                 const spotsArray = Object.keys(groupedSpots)
                     .map(index => groupedSpots[index])
                     .filter(spot => Object.keys(spot).length > 0);
-
-                console.log(spotsArray);
 
                 await redisClient.del(key);
                 for (let index = 0; index < spotsArray.length; index++) {

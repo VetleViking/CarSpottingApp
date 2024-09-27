@@ -74,6 +74,11 @@ const AskAi = () => {
                     onChange={e => setAdditional(e.target.value)}
                 />
             </div>
+            {results && <div className="flex flex-col gap-2 items-center">
+                <p className="text-white font-ListComponent">AI identified the car as:</p>
+                <p className="text-white font-ListComponent">{results.make} {results.model}</p>
+                <p className="text-white font-ListComponent">Confidence: {results.confidence}</p>
+            </div>}
             {(results && exists) && <Button text="Go to page" onClick={() => {
                     window.location.href = `/makes/selected/modelselected?make=${results?.make}&model=${results?.model}`;
                 }} />}

@@ -830,17 +830,24 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                     //continue;
                 }
                 console.log(key);
+                console.log(allSpots);
 
-                const spot = await redisClient.hGetAll(key);
 
-                console.log(spot);
+                const groupedSpots: { [index: string]: { [key: string]: string } } = {};
 
                 for (const spotKey of Object.keys(allSpots)) {
-                    //console.log(spotKey);
-
-
-                
+                    const match = spotKey.match(/(\D+)(\d+)$/);
+                    if (match) {
+                        const baseKey = match[1];
+                        const index = match[2];
+                        if (!groupedSpots[index]) {
+                            groupedSpots[index] = {};
+                        }
+                        groupedSpots[index][baseKey] = allSpots[spotKey];
+                    }
                 }
+
+                console.log(groupedSpots);
             }
         }
 

@@ -860,7 +860,13 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                     .filter(spot => Object.keys(spot).length > 0);
 
                 console.log(spotsArray);
-                console.log(groupedSpots);
+
+                await redisClient.del(key);
+                for (let index = 0; index < spotsArray.length; index++) {
+                    const spot = spotsArray[index];
+                    const newKey = `${key}:${index}`;
+                    await redisClient.hSet(newKey, spot);
+                }
             }
         }
 

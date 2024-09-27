@@ -841,13 +841,24 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                         const firstIndex = match[1];
                         const baseKey = match[2];
                         const lastIndex = match[3];
-                        if (!groupedSpots[firstIndex]) {
-                            groupedSpots[firstIndex] = {};
+                        if (!groupedSpots[lastIndex]) {
+                            groupedSpots[lastIndex] = {};
                         }
-                        groupedSpots[firstIndex][`${baseKey}${lastIndex}`] = allSpots[spotKey];
+                        groupedSpots[lastIndex][`${baseKey}${lastIndex}`] = allSpots[spotKey];
+                        groupedSpots[lastIndex]['index'] = firstIndex; // Save the first part as 'index'
                     }
                 }
+
                 console.log(groupedSpots);
+
+                // Convert groupedSpots to an array of objects
+                const spotsArray = Object.keys(groupedSpots).map(index => {
+                    const spot = groupedSpots[index];
+                    spot['index'] = index; // Move the saved first part to the end
+                    return spot;
+                });
+                
+                console.log(spotsArray);
             }
         }
 

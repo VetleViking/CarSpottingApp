@@ -833,7 +833,7 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                 console.log(allSpots);
 
 
-                const groupedSpots: { [index: string]: { [key: string]: string } } = {};
+                const groupedSpots: [{ [key: string]: string }] = [{}];
 
                 for (const spotKey of Object.keys(allSpots)) {
                     const index = spotKey.charAt(spotKey.length - 1);
@@ -845,8 +845,8 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
 
                         let newKey = spotKey.slice(0, -1);
 
-                        if (spotKey.endsWith('image')) {
-                            const imageIndex = spotKey.slice(0, 1);
+                        if (newKey.endsWith('image')) {
+                            const imageIndex = newKey.slice(0, 1);
                         
                             newKey = `image${imageIndex}`;
                         }
@@ -856,15 +856,6 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                 }
 
                 console.log(groupedSpots);
-
-                // Convert groupedSpots to an array of objects
-                const spotsArray = Object.keys(groupedSpots).map(index => {
-                    const spot = groupedSpots[index];
-                    spot['index'] = index; // Move the saved first part to the end
-                    return spot;
-                });
-
-                console.log(spotsArray);
             }
         }
 

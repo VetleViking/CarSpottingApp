@@ -11,9 +11,7 @@ const app: Application = express();
 const PORT: number = parseInt(process.env.SERVER_PORT || "3000", 10);
 const HOST = process.env.SERVER_HOST || "localhost";
 
-app.use(
-  cors({})
-);
+app.use(cors());
 
 app.use(
   helmet({

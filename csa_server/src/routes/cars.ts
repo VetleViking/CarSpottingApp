@@ -855,6 +855,11 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                     }
                 }
 
+                const spotsArray = Object.keys(groupedSpots)
+                    .map(index => groupedSpots[index])
+                    .filter(spot => Object.keys(spot).length > 0);
+
+                console.log(spotsArray);
                 console.log(groupedSpots);
             }
         }

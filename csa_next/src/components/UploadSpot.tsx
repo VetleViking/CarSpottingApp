@@ -27,18 +27,24 @@ const UploadSpot = ({ make, model }: SpotProps) => {
     const [tagList, setTagList] = useState<string[]>([]);
     const [tagOpen, setTagOpen] = useState(false);
     const [newTag, setNewTag] = useState('');
+    const [tagFetch, setTagFetch] = useState(false);
 
     if (!username) ensure_login().then((username) => setUsername(username));
 
-    if (!tagList.length && typeof window !== 'undefined') get_tags().then((tags) => setTagList(tags));
+    if (!tagFetch && typeof window !== 'undefined') get_tags().then((tags) => {
+        setTagList(tags)
+        setTagFetch(true);
+    });
     
     useEffect(() => {
         if (!files) return;
-        
+
         const urls = Array.from(files).map(file => URL.createObjectURL(file));
         setPreviewUrls(urls);
 
-        return urls.forEach(url => URL.revokeObjectURL(url));
+        return () => {
+            urls.forEach(url => URL.revokeObjectURL(url));
+        };
     }, [files]);
 
 

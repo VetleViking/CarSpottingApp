@@ -619,6 +619,8 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
 
         const allSpotsKeys = await redisClient.keys(`spots:${decodedUser.username}:${make}:${model}:*`);
 
+        console.log(allSpotsKeys);
+
         const allSpots = [];
 
         for (const key of allSpotsKeys) {
@@ -696,7 +698,7 @@ router.get('/spots/makes/unknown/models/', async (req: Request, res: Response, n
         const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
 
         const makesArray = keys.map(key => key.split(':')[2]);
-        const modelsArray = keys.map(key => key.split(':')[3]);
+        const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
 
         const combinedArray = modelsArray.map((model, index) => ({ make: makesArray[index], model }));
 
@@ -719,7 +721,7 @@ router.get('/spots/makes/unknown/models/:query', async (req: Request, res: Respo
         const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
 
         const makesArray = keys.map(key => key.split(':')[2]);
-        const modelsArray = keys.map(key => key.split(':')[3]);
+        const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
 
         const filteredModels = modelsArray.filter(model => model.toLowerCase().includes((query as string).toLowerCase()));
 
@@ -743,7 +745,7 @@ router.get('/spots/makes/:make/models/', async (req: Request, res: Response, nex
 
         const keys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:*`);
 
-        const modelsArray = keys.map(key => key.split(':')[3]);
+        const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
 
         const combinedArray = modelsArray.map(model => ({ make, model }));
 
@@ -765,7 +767,7 @@ router.get('/spots/makes/:make/models/:query', async (req: Request, res: Respons
 
         const keys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:*`);
 
-        const modelsArray = keys.map(key => key.split(':')[3]);
+        const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
 
         const filteredModels = modelsArray.filter(model => model.toLowerCase().includes((query as string).toLowerCase()));
 
@@ -818,6 +820,8 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
             // Update to new format from here
 
             const keys = await redisClient.keys(`spots:${user}:*`);
+
+            console.log(keys);
 
             for (const key of keys) {
                 const allSpots = await redisClient.hGetAll(key);

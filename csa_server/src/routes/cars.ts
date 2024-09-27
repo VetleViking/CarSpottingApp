@@ -815,7 +815,7 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                 const allSpots = await redisClient.hGetAll(key);
 
                 if (key.split(':').length === 5) {
-                    //continue;
+                    continue;
                 }
 
                 const groupedSpots: [{ [key: string]: string }] = [{}];
@@ -844,12 +844,15 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                     .map(index => groupedSpots[index])
                     .filter(spot => Object.keys(spot).length > 0);
 
+                /* // so that nothing gets messed up
                 await redisClient.del(key);
                 for (let index = 0; index < spotsArray.length; index++) {
                     const spot = spotsArray[index];
                     const newKey = `${key}:${index}`;
                     await redisClient.hSet(newKey, spot);
                 }
+
+                */
             }
         }
 

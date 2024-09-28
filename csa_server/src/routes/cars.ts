@@ -494,8 +494,6 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
         if (!notes) delete data[`notes`];
         if (!date) delete data[`date`];
 
-        console.log(data);
-
         await redisClient.hSet(`spots:${decodedUser.username}:${make}:${model}:${offset}`, data);
 
         res.status(201).json({ message: 'Spot added' });
@@ -537,8 +535,6 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
             const allTagsData = await redisClient.hGetAll(`tags:${decodedUser.username}`);
             const allTags: string[] = Array.isArray(allTagsData) ? allTagsData : []
 
-            console.log(allTags);
-
             allTags.forEach(tag => {
             });
 
@@ -558,8 +554,6 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
         } else {
             data[`date`] = '';
         }
-
-        console.log(data);
 
         await redisClient.hSet(spotKeyPrefix, data);
 
@@ -639,8 +633,6 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
             });
         }
 
-        console.log(allSpots);
-
         res.status(200).json(allSpots);
     } catch (err) {
         next(err);
@@ -696,7 +688,7 @@ router.get('/spots/makes/unknown/models/', async (req: Request, res: Response, n
         const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
 
         const makesArray = keys.map(key => key.split(':')[2]);
-        const modelsArray = keys.map(key => key.split(':')[3]);
+        const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
 
         const combinedArray = modelsArray.map((model, index) => ({ make: makesArray[index], model }));
 
@@ -719,7 +711,7 @@ router.get('/spots/makes/unknown/models/:query', async (req: Request, res: Respo
         const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
 
         const makesArray = keys.map(key => key.split(':')[2]);
-        const modelsArray = keys.map(key => key.split(':')[3]);
+        const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
 
         const filteredModels = modelsArray.filter(model => model.toLowerCase().includes((query as string).toLowerCase()));
 
@@ -743,7 +735,7 @@ router.get('/spots/makes/:make/models/', async (req: Request, res: Response, nex
 
         const keys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:*`);
 
-        const modelsArray = keys.map(key => key.split(':')[3]);
+        const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
 
         const combinedArray = modelsArray.map(model => ({ make, model }));
 
@@ -765,7 +757,7 @@ router.get('/spots/makes/:make/models/:query', async (req: Request, res: Respons
 
         const keys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:*`);
 
-        const modelsArray = keys.map(key => key.split(':')[3]);
+        const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
 
         const filteredModels = modelsArray.filter(model => model.toLowerCase().includes((query as string).toLowerCase()));
 
@@ -822,9 +814,45 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
             for (const key of keys) {
                 const allSpots = await redisClient.hGetAll(key);
 
-                for (const spotKey of Object.keys(allSpots)) {
-                    console.log(spotKey);
+                if (key.split(':').length === 5) {
+                    continue;
                 }
+
+                const groupedSpots: [{ [key: string]: string }] = [{}];
+
+                for (const spotKey of Object.keys(allSpots)) {
+                    const index = spotKey.charAt(spotKey.length - 1);
+
+                    if (index) {
+                        if (!groupedSpots[index]) {
+                            groupedSpots[index] = {};
+                        }
+
+                        let newKey = spotKey.slice(0, -1);
+
+                        if (newKey.endsWith('image')) {
+                            const imageIndex = newKey.slice(0, 1);
+                        
+                            newKey = `image${imageIndex}`;
+                        }
+
+                        groupedSpots[index][newKey] = allSpots[spotKey];
+                    }
+                }
+
+                const spotsArray = Object.keys(groupedSpots)
+                    .map(index => groupedSpots[index])
+                    .filter(spot => Object.keys(spot).length > 0);
+
+                /* // so that nothing gets messed up
+                await redisClient.del(key);
+                for (let index = 0; index < spotsArray.length; index++) {
+                    const spot = spotsArray[index];
+                    const newKey = `${key}:${index}`;
+                    await redisClient.hSet(newKey, spot);
+                }
+
+                */
             }
         }
 

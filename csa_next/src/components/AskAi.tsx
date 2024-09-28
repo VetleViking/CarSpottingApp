@@ -74,9 +74,15 @@ const AskAi = () => {
                     onChange={e => setAdditional(e.target.value)}
                 />
             </div>
-            {exists ? <Button text="Go to page" onClick={() => {
+            {results && <div className="flex flex-col gap-2 items-center">
+                <p className="text-white font-ListComponent">AI identified the car as:</p>
+                <p className="text-white font-ListComponent">{results.make} {results.model}</p>
+                <p className="text-white font-ListComponent">Confidence: {results.confidence}</p>
+            </div>}
+            {(results && exists) && <Button text="Go to page" onClick={() => {
                     window.location.href = `/makes/selected/modelselected?make=${results?.make}&model=${results?.model}`;
-                }} /> : <Button text="Add to database and go to page" onClick={() => {
+                }} />}
+            {(results && !exists && results.make !== "cant recognize" && results.model !== "cant recognize") && <Button text="Add to database and go to page" onClick={() => {
                     uploadMissing().then(() => window.location.href = `/makes/selected/modelselected?make=${results?.make}&model=${results?.model}`);
                 }} />}
             <div className="flex justify-between mt-2 w-full">

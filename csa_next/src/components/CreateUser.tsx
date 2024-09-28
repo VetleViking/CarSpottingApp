@@ -20,7 +20,11 @@ const CreateUser = () => {
         } else setErrormessage(data.message);
     }
 
-
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && username && password) {
+            create_user_handler(username, password);
+        }
+    });
     
     return <div className="flex flex-col gap-2 w-48 p-2 bg-black border border-white">
         <input 

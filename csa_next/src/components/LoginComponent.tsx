@@ -17,6 +17,12 @@ const LoginComponent = () => {
         }
     }
 
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && username && password) {
+            login_handler(username, password);
+        }
+    });
+
     return <div className="flex flex-col gap-2 w-48 p-2 bg-black border border-white">
         <input 
             className="font-ListComponent"

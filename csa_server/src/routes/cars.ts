@@ -434,6 +434,24 @@ router.get('/tags', async (req: Request, res: Response, next: NextFunction) => {
     }
 });
 
+router.get('/regnr/:regnr', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { regnr } = req.params;
+
+        const response = await fetch(`https://www.vegvesen.no/ws/no/vegvesen/kjoretoy/felles/datautlevering/enkeltoppslag/kjoretoydata?kjennemerke=${regnr}`, {
+            headers: {
+                "SVV-Authorization": `ApiKey ${process.env.SVV_API_KEY}`
+            }
+        });
+
+        const data = await response.json();
+
+        res.status(200).json(data);
+    } catch (err) {
+        next(err);
+    }
+});
+
 import multer from 'multer';
 
 const upload = multer({ storage: multer.memoryStorage() });

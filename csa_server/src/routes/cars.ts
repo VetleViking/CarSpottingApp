@@ -2,6 +2,7 @@ import { NextFunction, Request, Response, Router } from 'express';
 import { redisClient } from '../redis-source';
 import { verify_jwt } from '../utils/user';
 import dotenv from "dotenv";
+import cors from 'cors';
 dotenv.config();
 
 const router = Router();
@@ -435,22 +436,41 @@ router.get('/tags', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 router.get('/regnr/:regnr', async (req: Request, res: Response, next: NextFunction) => {
+    const { regnr } = req.params;
+
+    const url = `https://akfell-datautlevering.atlas.vegvesen.no/enkeltoppslag/kjoretoydata?kjennemerke=${regnr}`;
+    const options = {
+        method: 'GET',
+        headers: {
+        'SVV-Authorization': `Apikey ${process.env.SVV_API_KEY}`,
+        },
+    };
+    
     try {
-        const { regnr } = req.params;
+        const response = await fetch(url, options);
 
-        const response = await fetch(`https://www.vegvesen.no/ws/no/vegvesen/kjoretoy/felles/datautlevering/enkeltoppslag/kjoretoydata?kjennemerke=${regnr}`, {
-            headers: {
-                "SVV-Authorization": `ApiKey ${process.env.SVV_API_KEY}`
-            }
-        });
+        let dataCar = {
+            make: undefined,
+            model: undefined,
+            error: undefined,
+        };
 
-        const data = await response.json();
+        if (response.status === 401) {
+            dataCar.error = 'Unauthorized: Invalid API key or missing authorization.';
+        } else if (response.status === 403) {
+            dataCar.error = 'Forbidden: API key not valid or user is blocked.';
+        } else if (response.status === 429) {
+            dataCar.error = 'Quota exceeded: Too many requests.';
+        } else if (response.status === 200) {
+            const data = await response.json();
 
-        console.log(data);
+            dataCar.make = data.kjoretoydataListe[0].godkjenning.tekniskGodkjenning.tekniskeData.generelt.merke[0].merke;
+            dataCar.model = data.kjoretoydataListe[0].godkjenning.tekniskGodkjenning.tekniskeData.generelt.handelsbetegnelse[0];
+        }
 
-        res.status(200).json(data);
-    } catch (err) {
-        next(err);
+        res.status(200).json(dataCar);
+    } catch (error) {
+        next(error);
     }
 });
 

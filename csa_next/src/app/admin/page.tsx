@@ -14,38 +14,6 @@ function AdminComponent() {
     const [regnr, setRegnr] = useState("");
     const [isAdmin, setIsAdmin] = useState(false);
 
-    const regnr_info_debug = async (regnr: string) => {
-        const response = await fetch(`https://www.vegvesen.no/ws/no/vegvesen/kjoretoy/felles/datautlevering/enkeltoppslag/kjoretoydata?kjennemerke=${regnr}`, {
-            method: 'GET',
-            headers: {
-                "SVV-Authorization": `ApiKey 81291eee-051f-4f30-bb64-c4b8a9558226`
-            }
-        });
-
-        console.log(response);
-    }
-
-    async function oppslag(kjennemerke: string) {
-        let kjoretoy = null;
-        let url = 'https://www.vegvesen.no/ws/no/vegvesen/kjoretoy/felles/datautlevering/enkeltoppslag/kjoretoydata?kjennemerke=' + kjennemerke;
-        let headers = {
-                "SVV-Authorization": "Apikey {key}"
-            };
-        ;
-    
-        console.log('Kaller REST-tjeneste: ' + url);
-        let response = await fetch(url, { method: "GET", headers: headers });
-    
-        console.log('HTTP Status: ' + response.status + ' (' + response.statusText + ')');
-    
-        if (response.status === 200) {
-            kjoretoy = await response.json();
-        }
-    
-        return kjoretoy;
-    }
-    
-
     if (!username) ensure_login().then(setUsername);
 
     if (username && !isAdmin) check_admin(username).then(res => {!res.is_admin ? window.location.href = '/' : setIsAdmin(true)});

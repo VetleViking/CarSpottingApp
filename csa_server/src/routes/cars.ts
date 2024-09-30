@@ -602,6 +602,7 @@ const compressImage = async (base64Image) => {
 
 router.get('/getspots/:make/:model', async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const username = req.query.username;
         const { make, model } = req.params;
         const token = req.headers.authorization.split(' ')[1];
         const decodedUser = await verify_jwt(token);
@@ -611,7 +612,7 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
             return;
         }
 
-        const allSpotsKeys = await redisClient.keys(`spots:${decodedUser.username}:${make}:${model}:*`);
+        const allSpotsKeys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:${model}:*`);
 
         const allSpots = [];
 

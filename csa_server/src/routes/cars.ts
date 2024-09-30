@@ -446,6 +446,8 @@ router.get('/regnr/:regnr', async (req: Request, res: Response, next: NextFuncti
 
         const data = await response.json();
 
+        console.log(data);
+
         res.status(200).json(data);
     } catch (err) {
         next(err);

@@ -6,11 +6,12 @@ import { Suspense } from 'react'
 import { ensure_login } from '@/functions/functions';
 import Button from '@/components/Button';
 import { check_admin } from '@/api/users';
-import { update_spots } from '@/api/cars';
+import { regnr_info, update_spots } from '@/api/cars';
 import LoadingAnimation from '@/components/LoadingAnim';
 
 function AdminComponent() {
     const [username, setUsername] = useState("");
+    const [regnr, setRegnr] = useState("");
 
     if (!username) ensure_login().then(setUsername);
 
@@ -23,6 +24,14 @@ function AdminComponent() {
             text='Update spots'
             className='text-xl m-4'
         />
+        <div className='flex flex-col w-min'>
+            <input type="text" placeholder='regnr' value={regnr} onChange={e => setRegnr(e.target.value)} />
+            <Button
+                onClick={() => regnr_info(regnr)}
+                text='Get regnr info'
+                className='text-xl m-4'
+            />
+        </div>
     </div>
 }
 

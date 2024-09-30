@@ -78,6 +78,18 @@ export async function get_tags() {
     return await response.json();
 }
 
+export async function regnr_info(regnr: string) {
+    const response = await fetch(`${apiIpCars}regnr/${regnr}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + localStorage.getItem('token')
+        }
+    });
+
+    return await response.json();
+}
+
 export async function upload_spot(make: string, model: string, images: File[], notes?: string, date?: string, tags?: string[]) {
     const formData = new FormData();
     formData.append('make', make);

@@ -518,6 +518,7 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
         const data: Record<string, string> = {
             [`notes`]: notes,
             [`date`]: date,
+            [`uploadDate`]: new Date().toISOString(),
         };
 
         imagesBase64.forEach((item, index) => {

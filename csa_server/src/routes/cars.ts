@@ -855,17 +855,18 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
             const keys = await redisClient.keys(`spots:${user}:*`);
 
             for (const key of keys) {
-                const allSpots = await redisClient.hGetAll(key);
+                const spot = await redisClient.hGetAll(key);
 
                 // from here you have all the spots for all users
+                // update one at a time
 
-                let newSpots = allSpots;
+                let newSpot = spot;
 
-                newSpots['uploadDate'] = newSpots['uploadDate'] || new Date().toISOString();
+                newSpot['uploadDate'] = newSpot['uploadDate'] || new Date().toISOString();
 
                 await redisClient.del(key);
 
-                await redisClient.hSet(key, newSpots);
+                await redisClient.hSet(key, newSpot);
             }
         }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { add_make, get_makes, get_spotted_makes } from '@/api/cars';
+import { add_make, get_makes, get_spotted_makes, regnr_info } from '@/api/cars';
 import ListComponent from '@/components/ListComponent';
 import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
@@ -9,6 +9,8 @@ import { Suspense } from 'react'
 import { ensure_login } from '@/functions/functions';
 import AskAi from '@/components/AskAi';
 import LoadingAnimation from '@/components/LoadingAnim';
+import Button from '@/components/Button';
+import SearchReg from '@/components/searchReg';
 
 function MakesComponent() {
     const searchParams = useSearchParams();
@@ -18,11 +20,13 @@ function MakesComponent() {
     const [altUsername, setAltUsername] = useState("");
     const [newMake, setNewMake] = useState("");
 
+
     function selectedMake(make: string) {
         username
             ? window.location.href = `/makes/selected?make=${make}&username=${username}`
             : window.location.href = `/makes/selected?make=${make}`;    
     }
+
 
     function addMakeHandler(make: string) {
         add_make(make).then(() => window.location.href = `/makes/selected?make=${make}`);
@@ -50,9 +54,6 @@ function MakesComponent() {
             <Header search={search} setSearch={setSearch} username={altUsername} />
             <p className='text-center text-white text-3xl my-4'>Select the make</p>
             <div className='flex gap-2 mb-4 flex-wrap md:flex-nowrap'>
-                <div onClick={() => selectedMake("unknown")} className='w-full'>
-                    <ListComponent title="Dont know" />
-                </div>
                 {!username && <div className='w-full flex items-center justify-center gap-4 mx-1'>
                     <input
                         className='font-ListComponent border border-black p-1 w-full h-full rounded-md'
@@ -61,10 +62,13 @@ function MakesComponent() {
                         value={newMake}
                         onChange={(e) => setNewMake(e.target.value)}
                     />
-                    <button
-                        className='bg-[#e72328] text-white p-2 border border-black italic text-nowrap'
-                        onClick={() => addMakeHandler(newMake)}>Add new make</button>
+                    <Button onClick={() => addMakeHandler(newMake)} 
+                        text="Add new make"/>
                 </div>}
+                <div onClick={() => selectedMake("unknown")} className='w-full'>
+                    <ListComponent title="Dont know" />
+                </div>
+                {!username && <SearchReg/>}
             </div>
             {Array.isArray(data) && data.length > 0 ? data.map((item: any, id) => <div
                     key={id}

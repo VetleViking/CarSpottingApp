@@ -670,6 +670,7 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
                 key: key.split(':')[4],
                 notes: spot['notes'],
                 date: spot['date'],
+                spotDate: spot['uploadDate'],
                 images: compressedImages,
                 tags
             });
@@ -856,45 +857,15 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
             for (const key of keys) {
                 const allSpots = await redisClient.hGetAll(key);
 
-                if (key.split(':').length === 5) {
-                    continue;
-                }
+                // from here you have all the spots for all users
 
-                const groupedSpots: [{ [key: string]: string }] = [{}];
+                let newSpots = allSpots;
 
-                for (const spotKey of Object.keys(allSpots)) {
-                    const index = spotKey.charAt(spotKey.length - 1);
+                newSpots['uploadDate'] = newSpots['uploadDate'] || new Date().toISOString();
 
-                    if (index) {
-                        if (!groupedSpots[index]) {
-                            groupedSpots[index] = {};
-                        }
-
-                        let newKey = spotKey.slice(0, -1);
-
-                        if (newKey.endsWith('image')) {
-                            const imageIndex = newKey.slice(0, 1);
-                        
-                            newKey = `image${imageIndex}`;
-                        }
-
-                        groupedSpots[index][newKey] = allSpots[spotKey];
-                    }
-                }
-
-                const spotsArray = Object.keys(groupedSpots)
-                    .map(index => groupedSpots[index])
-                    .filter(spot => Object.keys(spot).length > 0);
-
-                /* // so that nothing gets messed up
                 await redisClient.del(key);
-                for (let index = 0; index < spotsArray.length; index++) {
-                    const spot = spotsArray[index];
-                    const newKey = `${key}:${index}`;
-                    await redisClient.hSet(newKey, spot);
-                }
 
-                */
+                await redisClient.hSet(key, newSpots);
             }
         }
 

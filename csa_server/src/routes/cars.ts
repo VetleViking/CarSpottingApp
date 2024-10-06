@@ -814,6 +814,46 @@ router.get('/spots/makes/:make/models/:query', async (req: Request, res: Respons
     }
 });
 
+router.get('/discover', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
+
+        const page = parseInt(req.query.page as string) || 0;
+
+        const users = await redisClient.hGetAll('users');
+
+        let allSpots = [];
+
+        for (const user of Object.keys(users)) {
+
+            if (user === decodedUser.username) {
+                continue;
+            }
+
+            const keys = await redisClient.keys(`spots:${user}:*`);
+
+            for (const key of keys) {
+                const spot = await redisClient.hGetAll(key);
+
+                allSpots.push(spot);
+            }
+        }
+        
+        const allSpotsSorted = allSpots.sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime());
+
+        const spotsPerPage = 10;
+        const startIndex = page * spotsPerPage;
+        const endIndex = (page + 1) * spotsPerPage;
+
+        const spots = allSpotsSorted.slice(startIndex, endIndex);
+
+        res.status(200).json(spots);
+    } catch (err) {
+        next(err);
+    }
+});
+
 router.post('/makes/:make', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make } = req.params;

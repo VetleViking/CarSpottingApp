@@ -1,7 +1,7 @@
 import { login } from "@/api/users";
 import { useState } from "react";
 
-const LoginComponent = () => {   
+const LoginComponent = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errormessage, setErrormessage] = useState('');
@@ -18,22 +18,22 @@ const LoginComponent = () => {
     }
 
     return <div className="flex flex-col gap-2 w-48 p-2 bg-black border border-white">
-        <input 
+        <input
             className="font-ListComponent"
-            type="text" 
-            placeholder="username" 
+            type="text"
+            placeholder="username"
             value={username}
-            onChange={e => setUsername(e.target.value)}/>
+            onChange={e => setUsername(e.target.value)} />
 
-        <input 
+        <input
             className="font-ListComponent"
-            type="password" 
+            type="password"
             placeholder="password"
             value={password}
             onChange={e => setPassword(e.target.value)} />
 
-        <button 
-            className="bg-white text-black py-1 px-2 mt-1 italic" 
+        <button
+            className="bg-white text-black py-1 px-2 mt-1 italic"
             onClick={() => login_handler(username, password)}>Log in</button>
         <p className="text-[#e72328] text-center font-ListComponent">{errormessage}</p>
     </div>

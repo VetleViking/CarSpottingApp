@@ -11,7 +11,7 @@ import { ensure_login } from '@/functions/functions';
 import LoadingAnimation from '@/components/LoadingAnim';
 
 function MakesComponent() {
-    const [data, setData] = useState<{ 
+    const [data, setData] = useState<{
         name: string;
         urlArr: string[];
         tags: string[];
@@ -55,17 +55,17 @@ function MakesComponent() {
         <div className='flex flex-col items-center gap-2'>
             {data.map((item, id) => (
                 <div key={id}>
-                    <Spotimage 
-                        images={item.urlArr} tags={item.tags} notes={item.notes} date={item.date} 
-                        spotdata={{ make: make || "", model: model || "", key: item.key, isOwner: isOwner }}/>
-                </div> 
+                    <Spotimage
+                        images={item.urlArr} tags={item.tags} notes={item.notes} date={item.date}
+                        spotdata={{ make: make || "", model: model || "", key: item.key, isOwner: isOwner }} />
+                </div>
             ))}
         </div>
     </div>
 }
 
 export default function Makes() {
-    return <Suspense fallback={<LoadingAnimation text='Loading'/>}>
+    return <Suspense fallback={<LoadingAnimation text='Loading' />}>
         <MakesComponent />
     </Suspense>
 };

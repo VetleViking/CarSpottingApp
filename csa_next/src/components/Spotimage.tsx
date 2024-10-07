@@ -58,27 +58,27 @@ const Spotimage = ({ images, tags, notes, date, alt, spotdata }: ImageProps) => 
                                     text="Add"
                                     className="py-1 px-4"
                                     onClick={() => add_tag(newTag).then((res) => {
-                                            if (res.message == 'Tag already exists') {
-                                                setNewTag('');
-                                                return;
-                                            }
-                                            setTagList([...tagList, newTag]);
+                                        if (res.message == 'Tag already exists') {
                                             setNewTag('');
-                                        })}
+                                            return;
+                                        }
+                                        setTagList([...tagList, newTag]);
+                                        setNewTag('');
+                                    })}
                                 />
                             </div>
                             {tagList.map((tag, id) => <div key={id} className="flex justify-between items-center">
-                                    <p className="font-ListComponent">{tag}</p>
-                                    <input type="checkbox"
-                                        checked={newTags.includes(tag)}
-                                        onChange={() => {
-                                            if (newTags.includes(tag)) {
-                                                setNewTags(newTags.filter(item => item !== tag));
-                                                return;
-                                            }
-                                            setNewTags([...newTags, tag]);
-                                        }} />
-                                </div>
+                                <p className="font-ListComponent">{tag}</p>
+                                <input type="checkbox"
+                                    checked={newTags.includes(tag)}
+                                    onChange={() => {
+                                        if (newTags.includes(tag)) {
+                                            setNewTags(newTags.filter(item => item !== tag));
+                                            return;
+                                        }
+                                        setNewTags([...newTags, tag]);
+                                    }} />
+                            </div>
                             )}
                         </div>}
                 </div>}

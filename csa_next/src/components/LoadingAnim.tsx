@@ -5,7 +5,7 @@ type LoadingAnimationProps = {
     className?: string;
 };
 
-const LoadingAnimation = ({ text, className }: LoadingAnimationProps ) => {
+const LoadingAnimation = ({ text, className }: LoadingAnimationProps) => {
     return <div className={`flex justify-center items-center flex-col text-xl ${className}`}>
         <p className="text-white text-center m-2 font-ListComponent">
             {text}

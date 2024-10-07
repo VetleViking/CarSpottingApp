@@ -11,7 +11,7 @@ import LoadingAnimation from '@/components/LoadingAnim';
 function ProfileComponent() {
     const [username, setUsername] = useState("");
     const [stats, setStats] = useState<any>();
-    const [delete_confirm, setDeleteConfirm] = useState(false); 
+    const [delete_confirm, setDeleteConfirm] = useState(false);
     const [delete_message, setDeleteMessage] = useState('Delete profile');
 
     if (!username) ensure_login().then(setUsername)
@@ -29,32 +29,32 @@ function ProfileComponent() {
     }
 
     return <div>
-            <Header username={username} />
+        <Header username={username} />
+        <div>
+            <div className='flex justify-center mt-4'>
+                <p className='text-white text-2xl'>{username}</p>
+            </div>
             <div>
-                <div className='flex justify-center mt-4'> 
-                    <p className='text-white text-2xl'>{username}</p>
+                <div className='m-4'>
+                    <p className='text-white text-xl'>Stats:</p>
+                    <p className='text-white font-ListComponent'>Total spots: {stats?.total_spots}</p>
                 </div>
-                <div>
-                    <div className='m-4'>
-                        <p className='text-white text-xl'>Stats:</p>
-                        <p className='text-white font-ListComponent'>Total spots: {stats?.total_spots}</p>
-                    </div>
-                    <Button
-                        onClick={deleteHandler}
-                        text={delete_message}
-                        className='text-xl mx-4'
-                    />
-                    <Button
-                        onClick={() => {
-                            localStorage.removeItem('token');
-                            window.location.href = '/login';
-                        }}
-                        text='Logout'
-                        className='text-xl'
-                    />
-                </div>
+                <Button
+                    onClick={deleteHandler}
+                    text={delete_message}
+                    className='text-xl mx-4'
+                />
+                <Button
+                    onClick={() => {
+                        localStorage.removeItem('token');
+                        window.location.href = '/login';
+                    }}
+                    text='Logout'
+                    className='text-xl'
+                />
             </div>
         </div>
+    </div>
 }
 
 export default function Profile() {

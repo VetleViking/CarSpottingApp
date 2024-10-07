@@ -24,7 +24,7 @@ function MakesComponent() {
     function selectedMake(make: string) {
         username
             ? window.location.href = `/makes/selected?make=${make}&username=${username}`
-            : window.location.href = `/makes/selected?make=${make}`;    
+            : window.location.href = `/makes/selected?make=${make}`;
     }
 
 
@@ -33,14 +33,14 @@ function MakesComponent() {
     }
 
     if (!altUsername) ensure_login().then(setAltUsername);
-    
+
     useEffect(() => {
         const fetchData = async () => {
             if (username) {
                 const data = await get_spotted_makes(search, username);
                 setData(data);
             } else {
-                const data = await get_makes(search); 
+                const data = await get_makes(search);
                 setData(data);
             }
         };
@@ -62,19 +62,19 @@ function MakesComponent() {
                         value={newMake}
                         onChange={(e) => setNewMake(e.target.value)}
                     />
-                    <Button onClick={() => addMakeHandler(newMake)} 
-                        text="Add new make"/>
+                    <Button onClick={() => addMakeHandler(newMake)}
+                        text="Add new make" />
                 </div>}
                 <div onClick={() => selectedMake("unknown")} className='w-full'>
                     <ListComponent title="Dont know" />
                 </div>
-                {!username && <SearchReg/>}
+                {!username && <SearchReg />}
             </div>
             {Array.isArray(data) && data.length > 0 ? data.map((item: any, id) => <div
-                    key={id}
-                    onClick={() => selectedMake(item)}>
-                    <ListComponent  title={item} />
-                </div>) : <p className='text-white font-ListComponent px-1 text-nowrap text-center'>No makes found.</p>}
+                key={id}
+                onClick={() => selectedMake(item)}>
+                <ListComponent title={item} />
+            </div>) : <p className='text-white font-ListComponent px-1 text-nowrap text-center'>No makes found.</p>}
         </div>
     </div>
 }

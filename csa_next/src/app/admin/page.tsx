@@ -16,7 +16,7 @@ function AdminComponent() {
 
     if (!username) ensure_login().then(setUsername);
 
-    if (username && !isAdmin) check_admin(username).then(res => {!res.is_admin ? window.location.href = '/' : setIsAdmin(true)});
+    if (username && !isAdmin) check_admin(username).then(res => { !res.is_admin ? window.location.href = '/' : setIsAdmin(true) });
 
     return <div>
         <Header username={username} />
@@ -37,7 +37,7 @@ function AdminComponent() {
 }
 
 export default function Admin() {
-    return <Suspense fallback={<LoadingAnimation text='Loading'/>}>
+    return <Suspense fallback={<LoadingAnimation text='Loading' />}>
         <AdminComponent />
     </Suspense>
 };

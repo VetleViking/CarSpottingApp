@@ -28,7 +28,7 @@ export default function Home() {
                 onClick={() => window.location.href = `/makes`}
                 text="Upload Spot"
                 className="text-2xl"
-              />
+            />
         </div>
     </div>
 }

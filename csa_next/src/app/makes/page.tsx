@@ -10,7 +10,7 @@ import { ensure_login } from '@/functions/functions';
 import AskAi from '@/components/AskAi';
 import LoadingAnimation from '@/components/LoadingAnim';
 import Button from '@/components/Button';
-import SearchReg from '@/components/searchReg';
+import SearchReg from '@/components/SearchReg';
 
 function MakesComponent() {
     const searchParams = useSearchParams();

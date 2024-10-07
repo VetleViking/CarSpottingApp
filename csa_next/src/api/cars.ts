@@ -211,6 +211,18 @@ export async function get_spotted_images(make: string, model: string, username?:
     return dataImages;
 }
 
+export async function discover(page?: number) {
+    const response = await fetch(`${apiIpCars}discover${page && '?page=' + page}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + localStorage.getItem('token')
+        }
+    });
+
+    return await response.json()
+}
+
 export async function update_spots() {
     const response = await fetch(`${apiIpCars}updatespots`, {
         method: 'POST',

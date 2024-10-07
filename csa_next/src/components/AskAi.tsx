@@ -3,7 +3,8 @@ import Button from "./Button";
 import Spotimage from "./Spotimage";
 import imageProcess, { CarDetails } from "@/api/chatGPT";
 import LoadingAnimation from "./LoadingAnim";
-import { add_make, add_model, get_makes, get_models } from "@/api/cars";
+import { get_models } from "@/api/cars";
+import uploadMissing from "@/functions/uploadMissing";
 
 const AskAi = () => {
     const [open, setOpen] = React.useState(false);
@@ -18,14 +19,13 @@ const AskAi = () => {
         if (!files) return;
 
         setLoading(true);
-        
+
         const reader = new FileReader();
         reader.onload = async () => {
             const base64Data = reader.result as string;
             const text = await imageProcess(base64Data, additional) as CarDetails;
 
             const carExists = await ((text.make !== "cant recognize" && text.model !== "cant recognize") && get_models(text.make, text.model));
-            console.log(carExists);
             setExists(carExists.length > 0);
 
             setResults(text);
@@ -34,18 +34,10 @@ const AskAi = () => {
         reader.readAsDataURL(files[0]);
     }
 
-    const uploadMissing = async () => {
+    const uploadMissingHandler = async () => {
         if (!results) return;
 
-        const makeExists = await get_makes(results.make);
-        if (!makeExists.length || !makeExists.some((make: string) => make.toLowerCase() === results.make.toLowerCase())) {
-            add_make(results.make);
-        } 
-
-        const modelExists = await get_models(results.make, results.model);
-        if (!modelExists.length || !modelExists.some((model: string) => model.toLowerCase() === results.model.toLowerCase())) {
-            add_model(results.make, results.model);
-        }
+        uploadMissing(results.make, results.model);
     }
 
     useEffect(() => {
@@ -62,12 +54,12 @@ const AskAi = () => {
         {open ? <div className=" flex flex-col gap-2 items-center">
             <p className="text-white font-ListComponent">Here you can ask AI to identify a car from the chosen image.</p>
             <div className="flex items-center flex-col max-w-96 gap-2">
-                <input 
-                    className="rounded-sm bg-black p-1 border border-[#9ca3af] text-[#9ca3af] font-ListComponent" 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={e => setFiles(e.target.files)}/>
-                    {previewUrls.length && <Spotimage images={previewUrls} />}
+                <input
+                    className="rounded-sm bg-black p-1 border border-[#9ca3af] text-[#9ca3af] font-ListComponent"
+                    type="file"
+                    accept="image/*"
+                    onChange={e => setFiles(e.target.files)} />
+                {previewUrls.length && <Spotimage images={previewUrls} />}
                 <textarea
                     className="rounded-sm w-full bg-black p-1 mb-2 border border-[#9ca3af] text-[#9ca3af] font-ListComponent"
                     placeholder="Additional information"
@@ -81,11 +73,11 @@ const AskAi = () => {
                 <p className="text-white font-ListComponent">Confidence: {results.confidence}</p>
             </div>}
             {(results && exists) && <Button text="Go to page" onClick={() => {
-                    window.location.href = `/makes/selected/modelselected?make=${results?.make}&model=${results?.model}`;
-                }} />}
+                window.location.href = `/makes/selected/modelselected?make=${results?.make}&model=${results?.model}`;
+            }} />}
             {(results && !exists && results.make !== "cant recognize" && results.model !== "cant recognize") && <Button text="Add to database and go to page" onClick={() => {
-                    uploadMissing().then(() => window.location.href = `/makes/selected/modelselected?make=${results?.make}&model=${results?.model}`);
-                }} />}
+                uploadMissingHandler().then(() => window.location.href = `/makes/selected/modelselected?make=${results?.make}&model=${results?.model}`);
+            }} />}
             <div className="flex justify-between mt-2 w-full">
                 <Button onClick={() => {
                     setOpen(false)
@@ -94,14 +86,14 @@ const AskAi = () => {
                     setAdditional('')
                     setResults(null)
                     setExists(false)
-                    }} text="Close" />
+                }} text="Close" />
                 {loading ? <LoadingAnimation
                     className="text-base"
                     text="Asking AI"
-                /> : <Button onClick={() => upload()} 
-                text="Ask AI"/>}
-            </div>        
-            
+                /> : <Button onClick={() => upload()}
+                    text="Ask AI" />}
+            </div>
+
         </div> : <div >
             <Button onClick={() => setOpen(true)} text="Ask AI" />
         </div>}

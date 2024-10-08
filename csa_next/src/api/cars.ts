@@ -211,8 +211,8 @@ export async function get_spotted_images(make: string, model: string, username?:
     return dataImages;
 }
 
-export async function discover(page?: number) {
-    const response = await fetch(`${apiIpCars}discover${page && '?page=' + page}`, {
+export async function discover(page?: number, sort?: 'recent' | 'hot' | 'top') {
+    const response = await fetch(`${apiIpCars}discover${page && '?page=' + page}${sort ? '&sort=' + sort : ''}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

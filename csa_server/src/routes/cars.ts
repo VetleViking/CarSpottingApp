@@ -820,7 +820,7 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
         const decodedUser = await verify_jwt(token);
 
         const page = parseInt(req.query.page as string) || 0;
-        const sort = req.query.sort as string || 'recent'; // recent, hot, top
+        const sort = req.query.sort as 'recent' | 'hot' | 'top' || 'recent';
 
         const users = await redisClient.hGetAll('users');
 

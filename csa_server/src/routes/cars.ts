@@ -442,10 +442,10 @@ router.get('/regnr/:regnr', async (req: Request, res: Response, next: NextFuncti
     const options = {
         method: 'GET',
         headers: {
-        'SVV-Authorization': `Apikey ${process.env.SVV_API_KEY}`,
+            'SVV-Authorization': `Apikey ${process.env.SVV_API_KEY}`,
         },
     };
-    
+
     try {
         const response = await fetch(url, options);
 
@@ -820,6 +820,7 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
         const decodedUser = await verify_jwt(token);
 
         const page = parseInt(req.query.page as string) || 0;
+        const sort = req.query.sort as string || 'recent'; // recent, hot, top
 
         const users = await redisClient.hGetAll('users');
 
@@ -839,8 +840,16 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                 allSpots.push(spot);
             }
         }
-        
-        const allSpotsSorted = allSpots.sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime());
+
+        let allSpotsSorted = allSpots.sort((a, b) => {
+            if (sort === 'recent') {
+                return new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime();
+            } else if (sort === 'hot') { // make better later
+                return b.likes - a.likes;
+            } else if (sort === 'top') {
+                return b.likes - a.likes;
+            }
+        });
 
         const spotsPerPage = 10;
         const startIndex = page * spotsPerPage;

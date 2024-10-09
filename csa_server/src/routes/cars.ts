@@ -587,7 +587,7 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
         if (notes) {
             data[`notes`] = notes;
         } else {
-            data[``] = '';
+            data[`notes`] = '';
         }
 
         if (date) {
@@ -596,7 +596,14 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
             data[`date`] = '';
         }
 
-        await redisClient.hSet(spotKeyPrefix, data);
+        const validData = {};
+        for (const key in data) {
+            if (key && typeof key === 'string' && (typeof data[key] === 'string' || typeof data[key] === 'number' || Buffer.isBuffer(data[key]))) {
+                validData[key] = data[key];
+            }
+        }
+
+        await redisClient.hSet(spotKeyPrefix, validData);
 
         res.status(200).json({ message: 'Spot edited' });
     } catch (err) {
@@ -849,13 +856,15 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                     date: spot['date'],
                     spotDate: spot['uploadDate'],
                     images: compressedImages,
-                    tags
+                    tags,
+                    user: user,
+                    make: key.split(':')[2],
+                    model: key.split(':')[3],
+                    likes: spot['likes'] || 0, // temp remove later
+                    uploadDate: spot['uploadDate'] || new Date().toISOString(), // temp remove later
                 });
 
-                // spot['user'] = user;
-                // spot['make'] = key.split(':')[2];
-                // spot['model'] = key.split(':')[3];
-                // spot['key'] = key.split(':')[4];
+
             }
         }
 

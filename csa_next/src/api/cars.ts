@@ -212,7 +212,7 @@ export async function get_spotted_images(make: string, model: string, username?:
 }
 
 export async function discover(page?: number, sort?: 'recent' | 'hot' | 'top') {
-    const response = await fetch(`${apiIpCars}discover${page && '?page=' + page}${sort ? '&sort=' + sort : ''}`, {
+    const response = await fetch(`${apiIpCars}discover?page=${page || 0}&sort=${sort || 'recent'}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -220,7 +220,20 @@ export async function discover(page?: number, sort?: 'recent' | 'hot' | 'top') {
         }
     });
 
-    return await response.json()
+    const data = await response.json();
+
+    const dataFixed = data.map((item: any) => {
+        const urlArr = [];
+
+        for (let i = 0; i < item.images.length; i++) {
+            const url = item.images[i] ? `data:image/jpeg;base64,${item.images[i]}` : null;
+            urlArr.push(url);
+        }
+
+        return { ...item, images: urlArr };
+    });
+
+    return dataFixed;
 }
 
 export async function update_spots() {

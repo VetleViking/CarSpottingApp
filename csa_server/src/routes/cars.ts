@@ -837,7 +837,25 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
             for (const key of keys) {
                 const spot = await redisClient.hGetAll(key);
 
-                allSpots.push(spot);
+                const images = Object.keys(spot).filter(key => key.startsWith('image')).map(key => spot[key]);
+
+                const compressedImages = await Promise.all(images.map(async image => await compressImage(image)));
+
+                const tags = Object.keys(spot).filter(key => key.startsWith('tag')).map(key => spot[key]);
+
+                allSpots.push({
+                    key: key.split(':')[4],
+                    notes: spot['notes'],
+                    date: spot['date'],
+                    spotDate: spot['uploadDate'],
+                    images: compressedImages,
+                    tags
+                });
+
+                // spot['user'] = user;
+                // spot['make'] = key.split(':')[2];
+                // spot['model'] = key.split(':')[3];
+                // spot['key'] = key.split(':')[4];
             }
         }
 

@@ -829,6 +829,8 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
         const page = parseInt(req.query.page as string) || 0;
         const sort = req.query.sort as 'recent' | 'hot' | 'top' || 'recent';
 
+        console.time('ExecutionTime');
+
         const users = await redisClient.hGetAll('users');
 
         let allSpots = [];
@@ -884,6 +886,8 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
         const endIndex = (page + 1) * spotsPerPage;
 
         const spots = allSpotsSorted.slice(startIndex, endIndex);
+
+        console.timeEnd('ExecutionTime');
 
         res.status(200).json(spots);
     } catch (err) {

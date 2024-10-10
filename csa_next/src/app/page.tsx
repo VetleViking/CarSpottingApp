@@ -3,14 +3,11 @@ import Header from "@/components/Header";
 import { useState } from "react";
 import { ensure_login } from "@/functions/functions";
 import Button from "@/components/Button";
-import LoadingAnimation from "@/components/LoadingAnim";
 
 export default function Home() {
     const [username, setUsername] = useState('');
 
     ensure_login().then(setUsername);
-
-    if (!username) return <LoadingAnimation text="Loading" />
 
     return <div>
         <Header username={username} />

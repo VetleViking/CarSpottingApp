@@ -9,6 +9,8 @@ import { ensure_login } from "@/functions/functions";
 import { add_model, get_models, get_spotted_make_percentage, get_spotted_models } from "@/api/cars";
 import AskAi from "@/components/AskAi";
 import LoadingAnimation from "@/components/LoadingAnim";
+import AddNew from "@/components/AddNew";
+import SearchReg from "@/components/SearchReg";
 
 function MakeSelectedComponent() {
     const [search, setSearch] = useState('');
@@ -55,17 +57,9 @@ function MakeSelectedComponent() {
         <p className="text-white text-center text-2xl mb-1 mt-4">Selected Make: {make}</p>
         <p className="text-white text-center text-xl mb-4">{username ? `${username == altUsername ? "your" : username + "'s"} spots of ${make}'s:` : `${make}'s models:`}</p>
         {(username && percentageData) && <p className="text-white text-center mb-4 font-ListComponent">{username == altUsername ? "You" : username} have spotted {percentageData.numSpots} out of the {percentageData.numModels} models in the database, or {percentageData.percentage}%.</p>}
-        {!username && <div className='w-full flex items-center justify-center gap-4 mb-4'>
-            <input
-                className='font-ListComponent border border-black p-1 h-full rounded-md'
-                type='text'
-                placeholder='Other (add model)'
-                value={newModel}
-                onChange={e => setNewModel(e.target.value)}
-            />
-            <button
-                className='bg-[#e72328] text-white py-2 px-2 border border-black italic'
-                onClick={() => addModelHandler(newModel)}>Add new model</button>
+        {!username && <div className='flex gap-2 mx-1 mb-4 flex-wrap md:flex-nowrap'>
+            <AddNew type='model' make={make} />
+            <SearchReg />
         </div>}
         {Array.isArray(data) && data.length > 0
             ? data.map((item: any, id) => <div

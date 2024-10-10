@@ -11,6 +11,7 @@ import AskAi from '@/components/AskAi';
 import LoadingAnimation from '@/components/LoadingAnim';
 import Button from '@/components/Button';
 import SearchReg from '@/components/SearchReg';
+import AddNew from '@/components/AddNew';
 
 function MakesComponent() {
     const searchParams = useSearchParams();
@@ -18,18 +19,11 @@ function MakesComponent() {
     const [search, setSearch] = useState('');
     const [data, setData] = useState<{ name: string; }[]>([]);
     const [altUsername, setAltUsername] = useState("");
-    const [newMake, setNewMake] = useState("");
-
 
     function selectedMake(make: string) {
         username
             ? window.location.href = `/makes/selected?make=${make}&username=${username}`
             : window.location.href = `/makes/selected?make=${make}`;
-    }
-
-
-    function addMakeHandler(make: string) {
-        add_make(make).then(() => window.location.href = `/makes/selected?make=${make}`);
     }
 
     if (!altUsername) ensure_login().then(setAltUsername);
@@ -53,21 +47,11 @@ function MakesComponent() {
         <div>
             <Header search={search} setSearch={setSearch} username={altUsername} />
             <p className='text-center text-white text-3xl my-4'>Select the make</p>
-            <div className='flex gap-2 mb-4 flex-wrap md:flex-nowrap'>
-                {!username && <div className='w-full flex items-center justify-center gap-4 mx-1'>
-                    <input
-                        className='font-ListComponent border border-black p-1 w-full h-full rounded-md'
-                        type='text'
-                        placeholder='Other (add make)'
-                        value={newMake}
-                        onChange={(e) => setNewMake(e.target.value)}
-                    />
-                    <Button onClick={() => addMakeHandler(newMake)}
-                        text="Add new make" />
-                </div>}
-                <div onClick={() => selectedMake("unknown")} className='w-full'>
+            <div className='flex gap-2 mx-1 mb-4 flex-wrap md:flex-nowrap'>
+                <div onClick={() => selectedMake("unknown")} className='w-full mx-[-0.25rem]'>
                     <ListComponent title="Dont know" />
                 </div>
+                {!username && <AddNew type='make' />}
                 {!username && <SearchReg />}
             </div>
             {Array.isArray(data) && data.length > 0 ? data.map((item: any, id) => <div

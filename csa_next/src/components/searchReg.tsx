@@ -34,9 +34,9 @@ const SearchReg = () => {
         });
     }
 
-    return <div className="w-full">
+    return <div className="w-full cursor-pointer">
         <div className="flex justify-between rounded-sm p-1 border border-[#9ca3af]" onClick={() => setRegOpen(!regOpen)}>
-            <p className=" font-ListComponent text-[#9ca3af]">Search by reg</p>
+            <p className=" font-ListComponent text-[#9ca3af] my-1">Search by reg</p>
             <Image src={down_arrow} alt="Down arrow" width={15} height={15} className={regOpen ? "transform rotate-180" : ""} />
         </div>
         {regOpen && <div className='absolute bg-black border border-[#9ca3af] p-2'>
@@ -53,7 +53,7 @@ const SearchReg = () => {
             </div>
             <div>
                 {loading && <LoadingAnimation text="Loading" />}
-                {(regResult) && <div>
+                {(regResult.make && regResult.model) && <div>
                     <div>
                         <p className=" font-ListComponent text-[#9ca3af]">Results:</p>
                         <p className="font-ListComponent text-[#9ca3af]">make: {regResult.make} </p>

@@ -25,6 +25,11 @@ export default function Home() {
                 className="text-2xl"
             />
             <Button
+                onClick={() => window.location.href = `/discover`}
+                text="Discover"
+                className="text-2xl"
+            />
+            <Button
                 onClick={() => window.location.href = `/makes`}
                 text="Upload Spot"
                 className="text-2xl"

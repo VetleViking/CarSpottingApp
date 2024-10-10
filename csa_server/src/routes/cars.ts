@@ -835,26 +835,23 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
 
         let allSpots = [];
 
-        for (const user of Object.keys(users)) {
-
+        await Promise.all(Object.keys(users).map(async (user) => {
             if (user === decodedUser.username) {
-                continue;
+                return;
             }
 
             const keys = await redisClient.keys(`spots:${user}:*`);
 
-            for (const key of keys) {
+            const spots = await Promise.all(keys.map(async (key) => {
                 const spot = await redisClient.hGetAll(key);
 
                 const images = Object.keys(spot).filter(key => key.startsWith('image')).map(key => spot[key]);
-
                 const compressedImages = await Promise.all(images.map(async image => await compressImage(image)));
 
                 const tags = Object.keys(spot).filter(key => key.startsWith('tag')).map(key => spot[key]);
-
                 const likedByUser = await redisClient.hGet(`likes:${decodedUser.username}`, key);
 
-                allSpots.push({
+                return {
                     key: key.split(':')[4],
                     notes: spot['notes'],
                     date: spot['date'],
@@ -864,19 +861,20 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                     user: user,
                     make: key.split(':')[2],
                     model: key.split(':')[3],
-                    likes: Number(spot['likes'] || 0), // temp remove later
-                    uploadDate: spot['uploadDate'] || new Date().toISOString(), // temp remove later
+                    likes: Number(spot['likes'] || 0),
+                    uploadDate: spot['uploadDate'] || new Date().toISOString(),
                     likedByUser: !!likedByUser,
-                });
-            }
-        }
+                };
+            }));
 
+            allSpots.push(...spots);
+        }));
+
+        // Sort spots
         let allSpotsSorted = allSpots.sort((a, b) => {
             if (sort === 'recent') {
                 return new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime();
-            } else if (sort === 'hot') { // make better later
-                return b.likes - a.likes;
-            } else if (sort === 'top') {
+            } else if (sort === 'hot' || sort === 'top') {
                 return b.likes - a.likes;
             }
         });

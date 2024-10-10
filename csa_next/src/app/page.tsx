@@ -10,7 +10,7 @@ export default function Home() {
 
     ensure_login().then(setUsername);
 
-    if (!username) return <LoadingAnimation text="Loading..." />
+    if (!username) return <LoadingAnimation text="Loading" />
 
     return <div>
         <Header username={username} />

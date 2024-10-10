@@ -28,7 +28,7 @@ function Next() {
     <div>
       <Header search={search} setSearch={setSearch} />
       {data.map((item, id) => (
-        <div 
+        <div
           key={id}
           onClick={() => setSelected(item.name)}>
           <h3>{item.name}</h3>

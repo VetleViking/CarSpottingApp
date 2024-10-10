@@ -622,6 +622,9 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
             return;
         }
 
+        await redisClient.zRem('zset:spots:recent', `spots:${decodedUser.username}:${make}:${model}:${key}`);
+        await redisClient.zRem('zset:spots:likes', `spots:${decodedUser.username}:${make}:${model}:${key}`);
+
         await redisClient.del(`spots:${decodedUser.username}:${make}:${model}:${key}`);
 
         const tagsObject = await redisClient.hGetAll(`tags:${decodedUser.username}`);
@@ -828,62 +831,44 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
 
         const page = parseInt(req.query.page as string) || 0;
         const sort = req.query.sort as 'recent' | 'hot' | 'top' || 'recent';
+        const spotsPerPage = 10;
+        const startIndex = page * spotsPerPage;
+        const endIndex = (page + 1) * spotsPerPage - 1;
 
         console.time('ExecutionTime');
 
-        const users = await redisClient.hGetAll('users');
+        let sortedSpotIDs: string[] = [];
 
-        let allSpots = [];
+        if (sort === 'recent') {
+            sortedSpotIDs = await redisClient.zRange('zset:spots:recent', startIndex, endIndex, { 'REV': true });
+        } else if (sort === 'hot' || sort === 'top') {
+            sortedSpotIDs = await redisClient.zRange('zset:spots:likes', startIndex, endIndex, { 'REV': true });
+        }
 
-        await Promise.all(Object.keys(users).map(async (user) => {
-            if (user === decodedUser.username) {
-                return;
-            }
+        const spots = await Promise.all(
+            sortedSpotIDs.map(async spotID => {
+                const spot = await redisClient.hGetAll(`${spotID}`);
+                const likedByUser = await redisClient.hGet(`likes:${decodedUser.username}`, spotID);
 
-            const keys = await redisClient.keys(`spots:${user}:*`);
-
-            const spots = await Promise.all(keys.map(async (key) => {
-                const spot = await redisClient.hGetAll(key);
-
-                const images = Object.keys(spot).filter(key => key.startsWith('image')).map(key => spot[key]);
-                const compressedImages = await Promise.all(images.map(async image => await compressImage(image)));
-
-                const tags = Object.keys(spot).filter(key => key.startsWith('tag')).map(key => spot[key]);
-                const likedByUser = await redisClient.hGet(`likes:${decodedUser.username}`, key);
+                const compressedImages = await Promise.all(
+                    Object.keys(spot).filter(key => key.startsWith('image')).map(async imageKey => await compressImage(spot[imageKey]))
+                );
 
                 return {
-                    key: key.split(':')[4],
+                    key: spotID.split(':')[4],
                     notes: spot['notes'],
                     date: spot['date'],
-                    spotDate: spot['uploadDate'],
                     images: compressedImages,
-                    tags,
-                    user: user,
-                    make: key.split(':')[2],
-                    model: key.split(':')[3],
+                    tags: spot['tags'],
+                    user: spotID.split(':')[1],
+                    make: spotID.split(':')[2],
+                    model: spotID.split(':')[3],
                     likes: Number(spot['likes'] || 0),
                     uploadDate: spot['uploadDate'] || new Date().toISOString(),
                     likedByUser: !!likedByUser,
                 };
-            }));
-
-            allSpots.push(...spots);
-        }));
-
-        // Sort spots
-        let allSpotsSorted = allSpots.sort((a, b) => {
-            if (sort === 'recent') {
-                return new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime();
-            } else if (sort === 'hot' || sort === 'top') {
-                return b.likes - a.likes;
-            }
-        });
-
-        const spotsPerPage = 10;
-        const startIndex = page * spotsPerPage;
-        const endIndex = (page + 1) * spotsPerPage;
-
-        const spots = allSpotsSorted.slice(startIndex, endIndex);
+            })
+        );
 
         console.timeEnd('ExecutionTime');
 
@@ -892,6 +877,7 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
         next(err);
     }
 });
+
 
 router.post('/likespot', async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -916,11 +902,15 @@ router.post('/likespot', async (req: Request, res: Response, next: NextFunction)
             await redisClient.hDel(`likes:${decodedUser.username}`, spotKey);
             await redisClient.hSet(spotKey, 'likes', likes - 1);
 
+            await redisClient.zAdd('zset:spots:likes', { score: likes - 1, value: spotKey });
+
             res.status(200).json({ message: 'Spot unliked' });
             return;
         } else {
             await redisClient.hSet(`likes:${decodedUser.username}`, spotKey, spotKey);
             await redisClient.hSet(spotKey, 'likes', likes + 1);
+
+            await redisClient.zAdd('zset:spots:likes', { score: likes + 1, value: spotKey });
 
             res.status(200).json({ message: 'Spot liked' });
         }
@@ -975,14 +965,23 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                 // from here you have all the spots for all users
                 // update one at a time
 
-                let newSpot = spot;
+                // let newSpot = spot;
 
-                newSpot['likes'] = newSpot['likes'] || '0';
-                newSpot['uploadDate'] = newSpot['uploadDate'] || new Date().toISOString();
+                console.log(spot['uploadDate']);
+                console.log(new Date(spot['uploadDate']).getTime());
+                console.log(key);
+                console.log(spot['likes']);
+                console.log(parseInt(spot['likes']));
 
-                await redisClient.del(key);
+                await redisClient.zAdd('zset:spots:recent', { score: new Date(spot['uploadDate']).getTime(), value: key });
+                await redisClient.zAdd('zset:spots:likes', { score: parseInt(spot['likes']), value: key });
 
-                await redisClient.hSet(key, newSpot);
+                // newSpot['likes'] = newSpot['likes'] || '0';
+                // newSpot['uploadDate'] = newSpot['uploadDate'] || new Date().toISOString();
+
+                // await redisClient.del(key);
+
+                // await redisClient.hSet(key, newSpot);
             }
         }
 

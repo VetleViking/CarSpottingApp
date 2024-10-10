@@ -132,6 +132,19 @@ export async function edit_spot(make: string, model: string, key: string, notes:
     return await response.json();
 }
 
+export async function like_spot(make: string, model: string, key: string, user: string) {
+    const response = await fetch(`${apiIpCars}likespot`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: JSON.stringify({ make, model, key, user })
+    });
+
+    return await response.json();
+}
+
 export async function delete_spot(make: string, model: string, key: string) {
     const response = await fetch(`${apiIpCars}deletespot`, {
         method: 'POST',

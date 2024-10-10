@@ -850,6 +850,8 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
 
                 const tags = Object.keys(spot).filter(key => key.startsWith('tag')).map(key => spot[key]);
 
+                const likedByUser = await redisClient.hGet(`likes:${decodedUser.username}`, key);
+
                 allSpots.push({
                     key: key.split(':')[4],
                     notes: spot['notes'],
@@ -860,11 +862,10 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                     user: user,
                     make: key.split(':')[2],
                     model: key.split(':')[3],
-                    likes: spot['likes'] || 0, // temp remove later
+                    likes: Number(spot['likes'] || 0), // temp remove later
                     uploadDate: spot['uploadDate'] || new Date().toISOString(), // temp remove later
+                    likedByUser: !!likedByUser,
                 });
-
-
             }
         }
 
@@ -885,6 +886,42 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
         const spots = allSpotsSorted.slice(startIndex, endIndex);
 
         res.status(200).json(spots);
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.post('/likespot', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { make, model, key, user } = req.body;
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedUser = await verify_jwt(token);
+
+        const spotKey = `spots:${user}:${make}:${model}:${key}`;
+
+        const alreadyLiked = await redisClient.hGet(`likes:${decodedUser.username}`, spotKey);
+
+        const spot = await redisClient.hGetAll(spotKey);
+
+        if (!spot) {
+            res.status(404).json({ message: 'Spot not found' });
+            return;
+        }
+
+        const likes = parseInt(spot['likes']) || 0;
+
+        if (alreadyLiked) {
+            await redisClient.hDel(`likes:${decodedUser.username}`, spotKey);
+            await redisClient.hSet(spotKey, 'likes', likes - 1);
+
+            res.status(200).json({ message: 'Spot unliked' });
+            return;
+        } else {
+            await redisClient.hSet(`likes:${decodedUser.username}`, spotKey, spotKey);
+            await redisClient.hSet(spotKey, 'likes', likes + 1);
+
+            res.status(200).json({ message: 'Spot liked' });
+        }
     } catch (err) {
         next(err);
     }

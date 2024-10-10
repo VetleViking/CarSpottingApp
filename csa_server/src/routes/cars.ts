@@ -976,6 +976,7 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                 let newSpot = spot;
 
                 newSpot['likes'] = newSpot['likes'] || '0';
+                newSpot['uploadDate'] = newSpot['uploadDate'] || new Date().toISOString();
 
                 await redisClient.del(key);
 

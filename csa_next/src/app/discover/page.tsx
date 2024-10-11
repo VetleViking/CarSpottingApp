@@ -103,6 +103,12 @@ function ProfileComponent() {
                                         }));
                                     })
                                 }} />
+                                <Button text='View' className='py-1' onClick={() => {
+                                    window.open(`/spot/${item.make}/${item.model}/${item.key}`)
+                                }} />
+                                <Button text='share' className='py-1' onClick={() => {
+                                    navigator.clipboard.writeText(`https://csa-next.vercel.app/spot/${item.make}/${item.model}/${item.key}`)
+                                }} />
                             </div>
                         </div>
                     </div>

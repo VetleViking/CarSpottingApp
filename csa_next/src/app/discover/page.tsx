@@ -91,7 +91,9 @@ function ProfileComponent() {
                         </div>
                         <div>
                             <div className='flex'>
-                                <p className='p-1'>Uploaded by {item.user}</p>
+                                <p className='p-1'>
+                                    Uploaded by <a href={`http://spots.vest.li/makes?username=${item.user}`} target="_blank" rel="noopener noreferrer">{item.user}</a>
+                                </p>
                                 <p className='p-1'>•</p>
                                 <p className='p-1'>
                                     {sinceUpload.days > 0 ? `${sinceUpload.days} ${sinceUpload.days === 1 ? "day" : "days"}` :
@@ -112,10 +114,10 @@ function ProfileComponent() {
                                     })
                                 }} />
                                 <Button text='View' className='py-1' onClick={() => {
-                                    window.open(`/spot/${item.make}/${item.model}/${item.key}`)
+                                    window.open(`/makes/selected/modelselected?make=${item.make}&model=${item.model}username=${item.user}`)
                                 }} />
                                 <Button text='share' className='py-1' onClick={() => {
-                                    navigator.clipboard.writeText(`https://csa-next.vercel.app/spot/${item.make}/${item.model}/${item.key}`)
+                                    navigator.clipboard.writeText(`http://spots.vest.li/makes/selected/modelselected?make=${item.make}&model=${item.model}username=${item.user}`)
                                 }} />
                             </div>
                         </div>

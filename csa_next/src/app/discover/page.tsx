@@ -27,10 +27,17 @@ function ProfileComponent() {
     const [sort, setSort] = useState<'recent' | 'hot' | 'top'>("recent");
     const [prevPage, setPrevPage] = useState(0);
     const [reachEnd, setReachEnd] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     if (!username) ensure_login().then(setUsername);
 
     useEffect(() => {
+        setLoading(true) 
+       
+        if (page == prevPage) {
+            setSpots([])
+        }
+
         let active = true
         load()
         return () => { active = false }
@@ -48,6 +55,7 @@ function ProfileComponent() {
             } else {
                 setSpots(res)
             }
+            setLoading(false)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sort, page])
@@ -114,7 +122,7 @@ function ProfileComponent() {
                     </div>
                 })}
                     <div className='flex justify-center m-4'>
-                        {reachEnd ? <p className='text-white text-xl'>No more spots.</p> : <Button text='Load more' onClick={() => setPage(page + 1)} />}
+                        {reachEnd ? <p className='text-white text-xl'>No more spots.</p> : loading ? <LoadingAnimation text='Loading spots' /> : <Button text='Load more' onClick={() => setPage(page + 1)} />}
                     </div></> : <LoadingAnimation text='Loading spots' />}
             </div>
         </div>

@@ -109,7 +109,9 @@ function ProfileComponent() {
                                 <Button text={item.likedByUser ? "Remove like" : "Like"} className='py-1' onClick={() => {
                                     like_spot(item.make, item.model, item.key, item.user).then(() => {
                                         setSpots(spots.map(spot => {
-                                            return spot.key === item.key ? { ...spot, likedByUser: !spot.likedByUser, likes: spot.likedByUser ? spot.likes - 1 : spot.likes + 1 } : spot
+                                            return spot.make === item.make && spot.model === item.model && spot.key === item.key && spot.user === item.user
+                                                ? { ...spot, likedByUser: !spot.likedByUser, likes: spot.likedByUser ? spot.likes - 1 : spot.likes + 1 }
+                                                : spot;
                                         }));
                                     })
                                 }} />

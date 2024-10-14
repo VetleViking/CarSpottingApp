@@ -92,7 +92,7 @@ function ProfileComponent() {
                         <div>
                             <div className='flex'>
                                 <p className='p-1'>
-                                    Uploaded by <a href={`http://spots.vest.li/makes?username=${item.user}`} target="_blank" rel="noopener noreferrer">{item.user}</a>
+                                    Uploaded by <a href={`http://spots.vest.li/makes?username=${item.user}`} target="_blank" rel="noopener noreferrer" className='text-initial'>{item.user}</a>
                                 </p>
                                 <p className='p-1'>•</p>
                                 <p className='p-1'>
@@ -118,9 +118,9 @@ function ProfileComponent() {
                                 <Button text='View' className='py-1' onClick={() => {
                                     window.open(`/makes/selected/modelselected?make=${item.make}&model=${item.model}username=${item.user}`)
                                 }} />
-                                <Button text='share' className='py-1' onClick={() => {
-                                    navigator.clipboard.writeText(`http://spots.vest.li/makes/selected/modelselected?make=${item.make}&model=${item.model}username=${item.user}`)
-                                }} />
+                                {/*<Button text='share' className='py-1' onClick={() => { // not working until site is https
+                                    navigator.clipboard.writeText(`http://spots.vest.li/makes/selected/modelselected?make=${item.make}&model=${item.model}&username=${item.user}`)
+                                }} />*/}
                             </div>
                         </div>
                     </div>

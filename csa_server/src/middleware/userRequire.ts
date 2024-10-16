@@ -1,23 +1,28 @@
 import { redisClient } from "../redis-source";
 import { verify_jwt } from "../utils/user";
-
-const jwt = require('jsonwebtoken');
+import { parse } from 'cookie';
 
 const userRequireMiddleware = async (req, res, next) => {
     const excludedRoutes = [
         'users/login',
         'users/createuser'
     ];
-    console.log('User Conneced', req.ip);
+
+    console.log('User Connected', req.ip);
+    console.log('user connected', req.path);
 
     if (!excludedRoutes.some((route) => req.path.includes(route))) {
         try {
-            const token = req.headers.authorization.split(' ')[1];
+            const cookies = parse(req.headers.cookie || '');
+
+            const token = cookies.auth_token;
+
+            console.log('Token:', token);
 
             if (!token) {
                 return res
-                .status(401)
-                .json({ error: 'Authorization token not provided.' });
+                    .status(401)
+                    .json({ error: 'Authorization token not provided.' });
             }
 
             const decoded = await verify_jwt(token);
@@ -33,8 +38,9 @@ const userRequireMiddleware = async (req, res, next) => {
             }
 
             req.user = userExists;
-            next();
+            next(); 
         } catch (error) {
+            console.error('Error in userRequireMiddleware:', error);
             return res.status(500).json({ error: 'Internal Server Error' });
         }
     } else {

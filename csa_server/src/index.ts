@@ -11,7 +11,10 @@ const app: Application = express();
 const PORT: number = parseInt(process.env.SERVER_PORT || "3000", 10);
 const HOST = process.env.SERVER_HOST || "localhost";
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000', // Your frontend's URL
+  credentials: true // Allow credentials (cookies, authorization headers, etc.)
+}));
 
 app.use(
   helmet({

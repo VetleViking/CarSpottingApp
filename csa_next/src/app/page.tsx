@@ -1,13 +1,13 @@
 "use client";
 import Header from "@/components/Header";
 import { useState } from "react";
-import { ensure_login } from "@/functions/functions";
+import { ensure_login, ensure_login_new } from "@/functions/functions";
 import Button from "@/components/Button";
 
 export default function Home() {
     const [username, setUsername] = useState('');
 
-    ensure_login().then(setUsername);
+    ensure_login_new().then(setUsername);
 
     return <div>
         <Header username={username} />

@@ -30,6 +30,70 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
     }
 });
 
+import { serialize } from 'cookie';
+//import bcrypt from 'bcrypt';
+
+router.post('/loginnew', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { username, password } = req.body;
+
+
+        if (!username || !password) {
+            res.status(400).json({ message: 'Username and password are required' });
+            return;
+        }
+
+        const userExists = await redisClient.hGet('users', username);
+        if (!userExists) {
+            console.log('User does not exist');
+            res.status(400).json({ message: 'Invalid credentials' });
+            return;
+        }
+
+        //const isPasswordValid = await bcrypt.compare(password, userExists); not using bcrypt yet
+        const isPasswordValid = userExists === password;
+        if (!isPasswordValid) {
+            console.log('Invalid password');
+            res.status(400).json({ message: 'Invalid credentials' });
+            return;
+        }
+
+        const token = await generate_jwt(username);
+
+        res.setHeader(
+            'Set-Cookie',
+            serialize('auth_token', token, {
+                httpOnly: true, 
+                secure: false,  
+                maxAge: 60 * 60 * 24 * 31,  // 1 month expiration
+                sameSite: 'strict',  
+                path: '/',  
+            })
+        );
+
+        res.status(200).json({ message: 'Logged in' });
+
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.get('/getusernamenew', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const token = req.cookies.auth_token;
+
+        if (!token) {
+            res.status(400).json({ message: 'Token is required' });
+            return;
+        }
+
+        const decoded = await verify_jwt(token);
+
+        res.status(200).json({ username: decoded.username });
+    } catch(err) {
+        next(err);
+    }
+});
 
 router.post('/createuser', async (req: Request, res: Response, next: NextFunction) => {
     try {

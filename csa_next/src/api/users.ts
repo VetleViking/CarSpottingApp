@@ -27,24 +27,11 @@ export async function login(username: string, password: string) {
 export async function loginnew(username: string, password: string) {
     const response = await fetch(`${apiIpUsers}loginnew`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ username, password })
-    });
-
-    return await response.json();
-}
-
-export async function get_username_new() {
-    console.log('get_username_new');
-
-    const response = await fetch(`${apiIpUsers}getusernamenew`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json'
-        }
     });
 
     return await response.json();

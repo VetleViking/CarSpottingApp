@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import Route from "./routes/index";
+import { errorHandler } from "./errorHandling";
 
 const app: Application = express();
 const PORT: number = parseInt(process.env.SERVER_PORT || "3000", 10);
@@ -28,6 +29,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.use("/api/v1", Route);
+
+app.use(errorHandler);
 
 try {
   app.listen(PORT, HOST, (): void => {

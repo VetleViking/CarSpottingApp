@@ -30,7 +30,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
     }
 });
 
-import { serialize } from 'cookie';
+import { parse, serialize } from 'cookie';
 //import bcrypt from 'bcrypt';
 
 router.post('/loginnew', async (req: Request, res: Response, next: NextFunction) => {
@@ -60,16 +60,19 @@ router.post('/loginnew', async (req: Request, res: Response, next: NextFunction)
 
         const token = await generate_jwt(username);
 
-        res.setHeader(
-            'Set-Cookie',
-            serialize('auth_token', token, {
-                httpOnly: true, 
-                secure: false,  
-                maxAge: 60 * 60 * 24 * 31,  // 1 month expiration
-                sameSite: 'strict',  
-                path: '/',  
-            })
-        );
+        console.log('Token:', token);
+
+        const cookie = serialize('auth_token', token, {
+            httpOnly: true, // Cookie is accessible only by the web server
+            secure: false, // Set to true if served over HTTPS
+            maxAge: 60 * 60 * 24 * 31, // 1 month expiration
+            sameSite: 'lax', // Strict same-site policy
+            path: '/', // Cookie is accessible on all routes
+        });
+
+        console.log('Set-Cookie Header:', cookie);
+
+        res.setHeader('Set-Cookie', cookie);
 
         res.status(200).json({ message: 'Logged in' });
 
@@ -80,7 +83,9 @@ router.post('/loginnew', async (req: Request, res: Response, next: NextFunction)
 
 router.get('/getusernamenew', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = req.cookies.auth_token;
+        const cookies = parse(req.headers.cookie || '');
+
+        const token = cookies.auth_token;
 
         if (!token) {
             res.status(400).json({ message: 'Token is required' });

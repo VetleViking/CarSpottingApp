@@ -1,4 +1,4 @@
-import { decode_jwt, get_username_new } from "@/api/users";
+import { decode_jwt} from "@/api/users";
 
 /**
  * @returns The username of the logged in user. If the user is not logged in, the user is redirected to the login page.
@@ -27,32 +27,6 @@ export async function ensure_login() {
         };
 
         return decode();
-    }
-
-    return '';
-}
-
-export async function ensure_login_new() {
-    if (typeof window !== 'undefined') {
-        try {
-            get_username_new().then(async (response) => {
-
-            if (!response.ok) {
-                window.location.href = '/login';
-            }
-
-            const data = await response.json();
-
-            if (!data || data.error) {
-                window.location.href = '/login';
-            }
-
-            return data; 
-            });
-        } catch (error) {
-            console.error('Error validating token:', error);
-            window.location.href = '/login';
-        }
     }
 
     return '';

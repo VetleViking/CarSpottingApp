@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "cookie": "^1.0.1",
     "dotenv": "^16.4.5",
     "next": "14.2.3",
     "node-localstorage": "^3.0.5",

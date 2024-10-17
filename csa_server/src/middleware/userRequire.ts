@@ -5,7 +5,8 @@ import { parse } from 'cookie';
 const userRequireMiddleware = async (req, res, next) => {
     const excludedRoutes = [
         'users/login',
-        'users/createuser'
+        'users/createuser',
+        'users/loginnew',
     ];
 
     console.log('User Connected', req.ip);
@@ -18,6 +19,7 @@ const userRequireMiddleware = async (req, res, next) => {
             const token = cookies.auth_token;
 
             console.log('Token:', token);
+            console.log('Cookies:', cookies);
 
             if (!token) {
                 return res

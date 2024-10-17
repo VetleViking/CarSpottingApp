@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { redisClient } from '../redis-source';
-import { generate_jwt, verify_jwt } from '../utils/user';
+import { generate_jwt, get_user, verify_jwt } from '../utils/user';
 
 const router = Router();
 
@@ -33,7 +33,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
 import { parse, serialize } from 'cookie';
 //import bcrypt from 'bcrypt';
 
-router.post('/loginnew', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/login_new', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { username, password } = req.body;
 
@@ -63,10 +63,10 @@ router.post('/loginnew', async (req: Request, res: Response, next: NextFunction)
         console.log('Token:', token);
 
         const cookie = serialize('auth_token', token, {
-            httpOnly: true, // Cookie is accessible only by the web server
+            httpOnly: true,
             secure: false, // Set to true if served over HTTPS
             maxAge: 60 * 60 * 24 * 31, // 1 month expiration
-            sameSite: 'lax', // Strict same-site policy
+            sameSite: 'lax',
             path: '/', // Cookie is accessible on all routes
         });
 
@@ -81,7 +81,7 @@ router.post('/loginnew', async (req: Request, res: Response, next: NextFunction)
     }
 });
 
-router.get('/getusernamenew', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/get_username_new', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const cookies = parse(req.headers.cookie || '');
 
@@ -179,7 +179,33 @@ router.get('/checkadmin/:username', async (req: Request, res: Response, next: Ne
     }
 });
 
-router.get('/getstats/:username', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/check_admin_new', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const cookies = parse(req.headers.cookie || '');
+
+        const token = cookies.auth_token;
+
+        if (!token) {
+            res.status(400).json({ message: 'Token is required' });
+            return;
+        }
+
+        const username = await get_user(token);
+        const userExists = await redisClient.hGet('users', username);
+
+        if (!userExists) {
+            res.status(400).json({ message: 'User does not exist' });
+            return;
+        }
+
+        const isAdmin = await redisClient.hGet('admins', username) ? true : username === 'Vetle';
+        res.status(200).json({ is_admin: isAdmin });
+    } catch(err) {
+        next(err);
+    }
+});
+
+router.get('/get_stats/:username', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { username } = req.params;
 

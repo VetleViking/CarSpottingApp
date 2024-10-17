@@ -18,9 +18,6 @@ const userRequireMiddleware = async (req, res, next) => {
 
             const token = cookies.auth_token;
 
-            console.log('Token:', token);
-            console.log('Cookies:', cookies);
-
             if (!token) {
                 return res
                     .status(401)

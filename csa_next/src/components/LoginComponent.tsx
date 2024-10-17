@@ -1,4 +1,4 @@
-import { login, loginnew } from "@/api/users";
+import { login_new } from "@/api/users";
 import { useState } from "react";
 
 const LoginComponent = () => {
@@ -7,7 +7,7 @@ const LoginComponent = () => {
     const [errormessage, setErrormessage] = useState('');
 
     const login_handler = async (username: string, password: string) => {
-        const data = await loginnew(username, password);
+        const data = await login_new(username, password);
 
         if (data.message === 'Logged in') {
             window.location.href = '/';

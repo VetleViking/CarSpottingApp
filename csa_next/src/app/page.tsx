@@ -1,6 +1,5 @@
 import Header from "@/components/Header";
 import { ensure_login_new } from "@/functions/server_functions";
-import Button from "@/components/Button";
 import HomePageButtons from "@/components/HomePageButtons";
 
 export default async function Home() {

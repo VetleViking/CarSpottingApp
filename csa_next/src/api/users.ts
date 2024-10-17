@@ -24,8 +24,8 @@ export async function login(username: string, password: string) {
     return await response.json();
 }
 
-export async function loginnew(username: string, password: string) {
-    const response = await fetch(`${apiIpUsers}loginnew`, {
+export async function login_new(username: string, password: string) {
+    const response = await fetch(`${apiIpUsers}login_new`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -37,6 +37,19 @@ export async function loginnew(username: string, password: string) {
     return await response.json();
 }
 
+export async function delete_user_new() {
+    const response = await fetch(`${apiIpUsers}delete_user_new`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+
+    return await response.json();
+}
+
+
 export async function decode_jwt(token: string) {
     const response = await fetch(`${apiIpUsers}decodejwt`, {
         method: 'POST',
@@ -45,18 +58,6 @@ export async function decode_jwt(token: string) {
             'authorization': 'Bearer ' + localStorage.getItem('token')
         },
         body: JSON.stringify({ token })
-    });
-
-    return await response.json();
-}
-
-export async function get_stats(username: string) {
-    const response = await fetch(`${apiIpUsers}getstats/${username}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
-        }
     });
 
     return await response.json();

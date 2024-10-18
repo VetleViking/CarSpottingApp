@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Header from '@/components/Header';
-import AdminClientSide from './AdminClientSide';
+import AdminClientSide from './AdminClient';
 import { ensure_login_new } from '@/functions/server_functions';
 import { check_admin_new } from '@/api/serverside_users';
 import { redirect } from 'next/navigation';

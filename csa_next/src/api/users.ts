@@ -12,6 +12,19 @@ export async function create_user(username: string, password: string) {
     return await response.json();
 }
 
+export async function create_user_new(username: string, password: string) {
+    const response = await fetch(`${apiIpUsers}create_user_new`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+    });
+
+    return await response.json();
+}
+
 export async function login(username: string, password: string) {
     const response = await fetch(`${apiIpUsers}login`, {
         method: 'POST',

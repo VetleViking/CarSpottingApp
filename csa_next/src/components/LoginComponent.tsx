@@ -1,3 +1,5 @@
+"use client";
+
 import { login_new } from "@/api/users";
 import { useState } from "react";
 

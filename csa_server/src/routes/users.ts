@@ -100,7 +100,7 @@ router.get('/get_username_new', async (req: Request, res: Response, next: NextFu
     }
 });
 
-router.post('/createuser', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/create_user_new', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { username, password } = req.body;
 

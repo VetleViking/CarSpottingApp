@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { redisClient } from '../redis-source';
-import { verify_jwt } from '../utils/user';
+import { get_user, verify_jwt } from '../utils/user';
 import dotenv from "dotenv";
 import cors from 'cors';
 dotenv.config();
@@ -640,6 +640,7 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
 });
 
 import sharp from 'sharp';
+import { parse } from 'cookie';
 
 const compressImage = async (base64Image) => {
     const buffer = Buffer.from(base64Image, 'base64');
@@ -682,6 +683,53 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
                 date: spot['date'],
                 spotDate: spot['uploadDate'],
                 images: compressedImages,
+                tags
+            });
+        }
+
+        res.status(200).json(allSpots);
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.get('/get_spots_new/:make/:model', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const username = req.query.username;
+        const { make, model } = req.params;
+
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+
+        if (!token) {
+            res.status(400).json({ message: 'Token is required' });
+            return;
+        }
+
+        const decodedUser = await get_user(token);
+
+        if (!make || !model) {
+            res.status(400).json({ message: 'Make and model are required' });
+            return;
+        }
+
+        const allSpotsKeys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:${model}:*`);
+
+        const allSpots = [];
+
+        for (const key of allSpotsKeys) {
+            const spot = await redisClient.hGetAll(key);
+
+            const images = Object.keys(spot).filter(key => key.startsWith('image')).map(key => spot[key]);
+
+            const tags = Object.keys(spot).filter(key => key.startsWith('tag')).map(key => spot[key]);
+
+            allSpots.push({
+                key: key.split(':')[4],
+                images,
+                notes: spot['notes'],
+                date: spot['date'],
+                uploadDate: spot['uploadDate'],
                 tags
             });
         }

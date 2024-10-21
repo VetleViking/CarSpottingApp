@@ -30,3 +30,15 @@ export async function get_spotted_images_new(make: string, model: string, userna
 
     return dataImages;
 }
+
+export async function get_spotted_make_percentage_new(make: string, username?: string) {
+    const response = await fetch(`${apiIpCars}spots/${make}/percentage_new${username ? '?username=' + username : ''}`, {
+        method: 'GET',
+        headers: {
+            Cookie: cookies().toString(),
+            'Content-Type': 'application/json'
+        }
+    });
+
+    return await response.json()
+}

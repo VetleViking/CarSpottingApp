@@ -347,6 +347,31 @@ router.get('/spots/:make/percentage', async (req: Request, res: Response, next: 
     }
 });
 
+router.get('/spots/:make/percentage_new', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { make } = req.params;
+        const username = req.query.username;
+        
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
+
+        const modelsObject = await redisClient.hGetAll(`make:${make}`);
+        const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}:${make}`);
+        const modelsArray = Object.keys(modelsObject).map(key => ({ make, model: modelsObject[key] }))
+            .concat(Object.keys(modelsObjectUser).map(key => ({ make, model: modelsObjectUser[key] })));
+
+        const spotsKeys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:*`);
+
+        const percentage = Math.floor(spotsKeys.length / modelsArray.length * 100);
+
+
+        res.status(200).json({ percentage: percentage, numSpots: spotsKeys.length, numModels: modelsArray.length });
+    } catch (err) {
+        next(err);
+    }
+});
+
 router.post('/addmake', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make } = req.body;
@@ -700,12 +725,6 @@ router.get('/get_spots_new/:make/:model', async (req: Request, res: Response, ne
 
         const cookies = parse(req.headers.cookie || '');
         const token = cookies.auth_token;
-
-        if (!token) {
-            res.status(400).json({ message: 'Token is required' });
-            return;
-        }
-
         const decodedUser = await get_user(token);
 
         if (!make || !model) {

@@ -1,43 +1,37 @@
 "use client";
 
+import { get_models, get_spotted_models } from "@/api/cars";
+import AddNew from "@/components/AddNew";
 import AskAi from "@/components/AskAi";
 import Header from "@/components/Header";
+import ListComponent from "@/components/ListComponent";
+import SearchReg from "@/components/SearchReg";
 import { useEffect, useState } from "react";
 
 interface MakeSelectedClientProps {
     altUsername: string;
     username?: string;
+    make: string;
+    percentageData?: {
+        numSpots: number;
+        numModels: number;
+        percentage: number;
+    };
 };
 
-const MakeSelectedClient = ({altUsername, username}: MakeSelectedClientProps) => {
+const MakeSelectedClient = ({altUsername, username, make, percentageData}: MakeSelectedClientProps) => {
     const [search, setSearch] = useState('');
     const [data, setData] = useState<{ model: string; }[]>([]);
-    const searchParams = useSearchParams();
-    const make = searchParams.get('make') as string;
-    const username = searchParams.get('username');
-    const [percentageData, setPercentageData] = useState<{ percentage: number; numSpots: number; numModels: number }>();
 
-
-
-    
     function selectedModel(make: string, model: string) {
         if (username) window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}&username=${username}`;
         else window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}`;
     }
 
     useEffect(() => {
-        const fetchData = async () => {
-            let data = [];
-            let percentageData = {};
-
-            if (username) {
-                data = await get_spotted_models(make as string, search, username);
-                percentageData = await get_spotted_make_percentage(make as string, username);
-                setPercentageData(percentageData as { percentage: number; numSpots: number; numModels: number });
-            } else data = await get_models(make as string, search);
-
-
-            setData(data);
+        const fetchData = () => {
+            username ? get_spotted_models(make as string, search, username).then(setData) 
+                     : get_models(make as string, search).then(setData);
         };
 
         fetchData();

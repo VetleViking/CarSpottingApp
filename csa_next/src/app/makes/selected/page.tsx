@@ -1,29 +1,18 @@
-import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Header from "@/components/Header";
-import ListComponent from "@/components/ListComponent";
-import { ensure_login } from "@/functions/functions";
-import { get_models, get_spotted_make_percentage, get_spotted_models } from "@/api/cars";
-import AskAi from "@/components/AskAi";
-import AddNew from "@/components/AddNew";
-import SearchReg from "@/components/SearchReg";
 import MakeSelectedClient from "./MakeselectedClient";
+import { ensure_login_new } from "@/functions/server_functions";
+import { get_spotted_make_percentage_new } from "@/api/serverside_cars";
 
-export default function MakeSelected() {
-    const [search, setSearch] = useState('');
-    const [data, setData] = useState<{ model: string; }[]>([]);
-    const searchParams = useSearchParams();
-    const make = searchParams.get('make') as string;
-    const username = searchParams.get('username');
-    const [altUsername, setAltUsername] = useState("");
-    const [percentageData, setPercentageData] = useState<{ percentage: number; numSpots: number; numModels: number }>();
-
+export default async function MakeSelected() {
+    const altUsername = await ensure_login_new();
     
-    if (!altUsername) ensure_login().then(setAltUsername);
+    const searchParams = useSearchParams();
+    const username = searchParams.get('username') as string;
+    const make = searchParams.get('make') as string;
 
-   
+    const percentageData = await get_spotted_make_percentage_new(make, username) as { percentage: number; numSpots: number; numModels: number };
 
     return <div>
-        <MakeSelectedClient altUsername={altUsername as string} username={altUsername as string} />
+        <MakeSelectedClient altUsername={altUsername as string} username={username as string} make={make} percentageData={percentageData} />
     </div>
 };

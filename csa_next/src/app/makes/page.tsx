@@ -48,8 +48,8 @@ function MakesComponent() {
             <Header search={search} setSearch={setSearch} username={altUsername} />
             <p className='text-center text-white text-3xl my-4'>Select the make</p>
             <div className='flex gap-2 mx-1 mb-4 flex-wrap md:flex-nowrap'>
-                <div onClick={() => selectedMake("unknown")} className='w-full mx-[-0.25rem]'>
-                    <ListComponent title="Dont know" />
+                <div onClick={() => selectedMake("unknown")} className="bg-black border border-[#9ca3af] cursor-pointer w-full">
+                    <p className="text-[#9ca3af] font-ListComponent px-1 py-2 text-nowrap">Dont know</p>
                 </div>
                 {!username && <AddNew type='make' />}
                 {!username && <SearchReg />}

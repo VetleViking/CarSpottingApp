@@ -9,8 +9,9 @@ const router = Router();
 
 router.get('/makes', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         const makesObject = await redisClient.hGetAll('makes');
         const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}`);
@@ -28,8 +29,9 @@ router.get('/makes', async (req: Request, res: Response, next: NextFunction) => 
 router.get('/makes/:query', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { query } = req.params;
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         const makesObject = await redisClient.hGetAll('makes');
         const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}`);
@@ -48,8 +50,9 @@ router.get('/makes/:query', async (req: Request, res: Response, next: NextFuncti
 
 router.get('/makes/unknown/models/', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         // if not searched bofore, save search and get from apininja instead
         const searchedBefore = await redisClient.hGet(`searched:unknown`, ' ');
@@ -124,8 +127,9 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
 router.get('/makes/unknown/models/:query', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { query } = req.params;
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         // if not searched bofore, save search and get from apininja instead
         const searchedBefore = await redisClient.hGet('searched:unknown', query);
@@ -204,8 +208,9 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
 router.get('/makes/:make/models/', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make } = req.params;
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         // if not searched bofore, save search and get from apininja instead
         const searchedBefore = await redisClient.hGet(`searched:${make}`, ' ');
@@ -266,8 +271,9 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
     try {
         const { make, query } = req.params;
 
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         // if not searched bofore, save search and get from apininja instead
         const searchedBefore = await redisClient.hGet(`searched:${make}`, query);
@@ -328,8 +334,9 @@ router.get('/spots/:make/percentage', async (req: Request, res: Response, next: 
     try {
         const { make } = req.params;
         const username = req.query.username;
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         const modelsObject = await redisClient.hGetAll(`make:${make}`);
         const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}:${make}`);
@@ -356,17 +363,33 @@ router.get('/spots/:make/percentage_new', async (req: Request, res: Response, ne
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
+        console.log(decodedUser, username);
+
         const modelsObject = await redisClient.hGetAll(`make:${make}`);
-        const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}:${make}`);
-        const modelsArray = Object.keys(modelsObject).map(key => ({ make, model: modelsObject[key] }))
-            .concat(Object.keys(modelsObjectUser).map(key => ({ make, model: modelsObjectUser[key] })));
+        const modelsObjectUser = await redisClient.hGetAll(`makes:${username || decodedUser.username}:${make}`);
+
+        const modelsSet = new Set([
+            ...Object.values(modelsObject),
+            ...Object.values(modelsObjectUser)
+        ]);
+
+        console.log(modelsSet);
+
+        const modelsArray = Array.from(modelsSet).map(model => ({ make, model }));
 
         const spotsKeys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:*`);
 
-        const percentage = Math.floor(spotsKeys.length / modelsArray.length * 100);
+        console.log(spotsKeys);
 
+        const uniqueModels = new Set(spotsKeys.map(key => key.split(':')[3]));
 
-        res.status(200).json({ percentage: percentage, numSpots: spotsKeys.length, numModels: modelsArray.length });
+        console.log(uniqueModels);
+
+        const percentage = modelsArray.length > 0 ? Math.floor((uniqueModels.size / modelsArray.length) * 100) : 0;
+
+        console.log(percentage, spotsKeys.length, modelsArray.length);
+
+        res.status(200).json({ percentage: percentage, numSpots: uniqueModels.size, numModels: modelsArray.length });
     } catch (err) {
         next(err);
     }
@@ -375,8 +398,9 @@ router.get('/spots/:make/percentage_new', async (req: Request, res: Response, ne
 router.post('/addmake', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make } = req.body;
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         const alreadyExists = await redisClient.hGet('makes', make);
         const alreadyExistsUser = await redisClient.hGet(`makes:${decodedUser.username}`, make);
@@ -399,8 +423,9 @@ router.post('/addmake', async (req: Request, res: Response, next: NextFunction) 
 router.post('/addmodel', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model } = req.body;
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         const alreadyExists = await redisClient.hGet(`makes:${decodedUser.username}:${make}`, model);
 
@@ -422,8 +447,9 @@ router.post('/addmodel', async (req: Request, res: Response, next: NextFunction)
 router.post('/addtag', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { tag } = req.body;
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         const alreadyExists = await redisClient.hGet('tags', tag) || await redisClient.hGet(`tags:${decodedUser.username}`, tag);
 
@@ -444,8 +470,9 @@ router.post('/addtag', async (req: Request, res: Response, next: NextFunction) =
 
 router.get('/tags', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         const tagsObject = await redisClient.hGetAll('tags');
         const tagsObjectUser = await redisClient.hGetAll(`tags:${decodedUser.username}`);
@@ -515,8 +542,9 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
                 ? [tags]
                 : [];
         const images = req.files as Express.Multer.File[];
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         if (!make || !model || images.length === 0) {
             res.status(400).json({ message: 'Make, model, and at least one image are required' });
@@ -576,8 +604,9 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
 router.post('/editspot', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model, key, notes, date, tags } = req.body;
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         const tagsArray: string[] = Array.isArray(tags)
             ? tags
@@ -642,8 +671,9 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
 router.post('/deletespot', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model, key } = req.body;
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         if (!make || !model || (key === undefined || key === null)) {
             res.status(400).json({ message: 'Make, model, and key are required' });
@@ -684,8 +714,9 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
     try {
         const username = req.query.username;
         const { make, model } = req.params;
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         if (!make || !model) {
             res.status(400).json({ message: 'Make and model are required' });
@@ -765,8 +796,9 @@ router.get('/get_spots_new/:make/:model', async (req: Request, res: Response, ne
 router.get('/spots/makes/', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const username = req.query.username;
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
 
@@ -785,8 +817,9 @@ router.get('/spots/makes/:query', async (req: Request, res: Response, next: Next
         const { query } = req.params;
 
         const username = req.query.username;
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
 
@@ -805,8 +838,9 @@ router.get('/spots/makes/:query', async (req: Request, res: Response, next: Next
 router.get('/spots/makes/unknown/models/', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const username = req.query.username;
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
 
@@ -828,8 +862,9 @@ router.get('/spots/makes/unknown/models/:query', async (req: Request, res: Respo
         const { query } = req.params;
 
         const username = req.query.username;
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
 
@@ -853,8 +888,9 @@ router.get('/spots/makes/:make/models/', async (req: Request, res: Response, nex
         const { make } = req.params;
 
         const username = req.query.username;
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         const keys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:*`);
 
@@ -875,8 +911,9 @@ router.get('/spots/makes/:make/models/:query', async (req: Request, res: Respons
         const { make, query } = req.params;
 
         const username = req.query.username;
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         const keys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:*`);
 
@@ -896,8 +933,9 @@ router.get('/spots/makes/:make/models/:query', async (req: Request, res: Respons
 
 router.get('/discover', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         const page = parseInt(req.query.page as string) || 0;
         const sort = req.query.sort as 'recent' | 'hot' | 'top' || 'recent';
@@ -952,8 +990,9 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
 router.post('/likespot', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model, key, user } = req.body;
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         const spotKey = `spots:${user}:${make}:${model}:${key}`;
 
@@ -1012,10 +1051,13 @@ router.post('/makes/:make', async (req: Request, res: Response, next: NextFuncti
 
 router.post('/updatespots', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedUser = await verify_jwt(token);
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
-        const is_admin = await redisClient.hGet('admins', decodedUser.username) ? true : decodedUser.username === 'Vetle';
+        console.log(decodedUser);
+
+        const is_admin = await redisClient.hGet('admins', decodedUser) ? true : decodedUser === 'Vetle';
 
         if (!is_admin) {
             res.status(401).json({ message: 'Unauthorized' });

@@ -4,13 +4,8 @@ import { redirect } from "next/navigation";
 export async function ensure_login_new() {
     try {
         const data = await get_username_new();
-        console.log('Data:', data);
-
-        if (!data || data.error) {
-            redirect('/login');
-        }
-
-        console.log('Username:', data.username);
+        if (!data || data.error) redirect('/login')
+            
         return data.username as string;
     } catch (error) {
         console.error('Error validating token:', error);

@@ -6,9 +6,9 @@ export async function get_models(make?: string, query?: string) {
 
     const response = await fetch(`${apiIpCars}makes/${make}/models/${query}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         }
     });
 
@@ -18,9 +18,9 @@ export async function get_models(make?: string, query?: string) {
 export async function get_makes(query?: string) {
     const response = await fetch(`${apiIpCars}makes/${query}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         }
     });
 
@@ -30,9 +30,9 @@ export async function get_makes(query?: string) {
 export async function add_make(make: string) {
     const response = await fetch(`${apiIpCars}addmake`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({ make })
     });
@@ -43,9 +43,9 @@ export async function add_make(make: string) {
 export async function add_model(make: string, model: string) {
     const response = await fetch(`${apiIpCars}addmodel`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({ make, model })
     });
@@ -56,9 +56,9 @@ export async function add_model(make: string, model: string) {
 export async function add_tag(tag: string) {
     const response = await fetch(`${apiIpCars}addtag`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({ tag })
     });
@@ -69,9 +69,9 @@ export async function add_tag(tag: string) {
 export async function get_tags() {
     const response = await fetch(`${apiIpCars}tags`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         }
     });
 
@@ -81,9 +81,9 @@ export async function get_tags() {
 export async function regnr_info(regnr: string) {
     const response = await fetch(`${apiIpCars}regnr/${regnr}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         }
     });
 
@@ -110,6 +110,7 @@ export async function upload_spot(make: string, model: string, images: File[], n
 
     const response = await fetch(`${apiIpCars}addspot`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
             'authorization': 'Bearer ' + localStorage.getItem('token')
         },
@@ -122,9 +123,9 @@ export async function upload_spot(make: string, model: string, images: File[], n
 export async function edit_spot(make: string, model: string, key: string, notes: string, date: string, tags?: string[]) {
     const response = await fetch(`${apiIpCars}editspot`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({ make, model, key, notes, date, tags })
     });
@@ -135,9 +136,9 @@ export async function edit_spot(make: string, model: string, key: string, notes:
 export async function like_spot(make: string, model: string, key: string, user: string) {
     const response = await fetch(`${apiIpCars}likespot`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({ make, model, key, user })
     });
@@ -148,9 +149,9 @@ export async function like_spot(make: string, model: string, key: string, user: 
 export async function delete_spot(make: string, model: string, key: string) {
     const response = await fetch(`${apiIpCars}deletespot`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({ make, model, key })
     });
@@ -161,9 +162,9 @@ export async function delete_spot(make: string, model: string, key: string) {
 export async function get_spotted_makes(query?: string, username?: string) {
     const response = await fetch(`${apiIpCars}spots/makes/${query}${username ? '?username=' + username : ''}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         }
     });
 
@@ -174,9 +175,9 @@ export async function get_spotted_models(make?: string, query?: string, username
     if (!make) make = 'unknown';
     const response = await fetch(`${apiIpCars}spots/makes/${make}/models/${query}${username ? '?username=' + username : ''}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         }
     });
 
@@ -186,9 +187,9 @@ export async function get_spotted_models(make?: string, query?: string, username
 export async function get_spotted_make_percentage(make: string, username?: string) {
     const response = await fetch(`${apiIpCars}spots/${make}/percentage${username ? '?username=' + username : ''}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         }
     });
 
@@ -202,9 +203,9 @@ export async function get_spotted_images(make: string, model: string, username?:
 
     const response = await fetch(`${apiIpCars}getspots/${encodedMake}/${encodedModel}${encodedUsername ? '?username=' + encodedUsername : ''}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         }
     });
 
@@ -227,9 +228,9 @@ export async function get_spotted_images(make: string, model: string, username?:
 export async function discover(page?: number, sort?: 'recent' | 'hot' | 'top') {
     const response = await fetch(`${apiIpCars}discover?page=${page || 0}&sort=${sort || 'recent'}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         }
     });
 
@@ -252,9 +253,9 @@ export async function discover(page?: number, sort?: 'recent' | 'hot' | 'top') {
 export async function update_spots() {
     const response = await fetch(`${apiIpCars}updatespots`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         }
     });
 

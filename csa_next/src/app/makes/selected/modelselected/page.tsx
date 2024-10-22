@@ -1,20 +1,19 @@
 import React from 'react';
-import { useSearchParams } from "next/navigation";
 import UploadSpot from '@/components/UploadSpot';
 import Spotimage from '@/components/Spotimage';
 import Header from '@/components/Header';
-import { get_spotted_images } from '@/api/cars';
 import { ensure_login_new } from '@/functions/server_functions';
+import { get_spotted_images_new } from '@/api/serverside_cars';
 
-export default async function Makes() {
-    const searchParams = useSearchParams();
-    const make = searchParams.get('make');
-    const model = searchParams.get('model');
-    const username = searchParams.get('username');
+export default async function Makes({searchParams}: {searchParams: Promise<{ [key: string]: string | string[] | undefined }>}) {
+    const resolvedSearchParams = await searchParams;
+    const username = resolvedSearchParams.username as string || undefined;
+    const make = resolvedSearchParams.make as string;
+    const model = resolvedSearchParams.model as string;
     const altUsername = await ensure_login_new();
     const isOwner = username === altUsername;
 
-    const spots = (username && make && model) ? await get_spotted_images(make, model, username) as {
+    const spots = (username && make && model) ? await get_spotted_images_new(make, model, username) as {
         name: string;
         urlArr: string[];
         tags: string[];

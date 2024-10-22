@@ -7,6 +7,7 @@ export async function get_models(make: string, model: string) {
     params.append('limit', '50');
 
     const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
+        credentials: 'include',
         headers: {
         'X-Api-Key': `9UKQbcg6KLGBNFl1N0I2Kw==pvGsAwuxi8RToxzi`
         }

@@ -3,6 +3,7 @@ const apiIpUsers = `http://${process.env.NEXT_PUBLIC_DATABASE_IP || "81.191.113.
 export async function create_user(username: string, password: string) {
     const response = await fetch(`${apiIpUsers}createuser`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         },
@@ -28,6 +29,7 @@ export async function create_user_new(username: string, password: string) {
 export async function login(username: string, password: string) {
     const response = await fetch(`${apiIpUsers}login`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         },
@@ -66,9 +68,9 @@ export async function delete_user_new() {
 export async function decode_jwt(token: string) {
     const response = await fetch(`${apiIpUsers}decodejwt`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({ token })
     });
@@ -79,9 +81,9 @@ export async function decode_jwt(token: string) {
 export async function delete_user(username: string) {
     const response = await fetch(`${apiIpUsers}deleteuser`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({ username })
     });
@@ -92,9 +94,9 @@ export async function delete_user(username: string) {
 export async function check_admin(username: string) {
     const response = await fetch(`${apiIpUsers}checkadmin/${username}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + localStorage.getItem('token')
+            'Content-Type': 'application/json'
         }
     });
 

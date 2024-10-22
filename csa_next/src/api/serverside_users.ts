@@ -32,6 +32,7 @@ export async function check_admin_new() {
 export async function get_stats(username: string) {
     const response = await fetch(`${apiIpUsers}get_stats/${username}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
             Cookie: cookies().toString(),
             'Content-Type': 'application/json',

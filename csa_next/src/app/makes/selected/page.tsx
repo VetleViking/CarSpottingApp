@@ -1,4 +1,3 @@
-import { useSearchParams } from "next/navigation";
 import MakeSelectedClient from "./MakeselectedClient";
 import { ensure_login_new } from "@/functions/server_functions";
 import { get_spotted_make_percentage_new } from "@/api/serverside_cars";
@@ -6,14 +5,12 @@ import AddNew from "@/components/AddNew";
 import SearchReg from "@/components/SearchReg";
 import AskAi from "@/components/AskAi";
 
-export default async function MakeSelected() {
+export default async function MakeSelected({searchParams}: {searchParams: Promise<{ [key: string]: string | string[] | undefined }>}) {
     const altUsername = await ensure_login_new();
-    
-    const searchParams = useSearchParams();
-    const username = searchParams.get('username') || undefined;
-    const make = searchParams.get('make') as string;
-
-    const percentageData = username ? await get_spotted_make_percentage_new(make, username) as { percentage: number; numSpots: number; numModels: number } : undefined;
+    const resolvedSearchParams = await searchParams;
+    const username = resolvedSearchParams.username as string || undefined;
+    const make = resolvedSearchParams.make as string;
+    const percentageData = (username && make != "unknown") ? await get_spotted_make_percentage_new(make, username) as { percentage: number; numSpots: number; numModels: number } : undefined;
 
     return <div>
         <AskAi />

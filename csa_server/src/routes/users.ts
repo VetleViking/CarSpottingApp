@@ -37,7 +37,6 @@ router.post('/login_new', async (req: Request, res: Response, next: NextFunction
     try {
         const { username, password } = req.body;
 
-
         if (!username || !password) {
             res.status(400).json({ message: 'Username and password are required' });
             return;
@@ -45,7 +44,6 @@ router.post('/login_new', async (req: Request, res: Response, next: NextFunction
 
         const userExists = await redisClient.hGet('users', username);
         if (!userExists) {
-            console.log('User does not exist');
             res.status(400).json({ message: 'Invalid credentials' });
             return;
         }
@@ -53,14 +51,11 @@ router.post('/login_new', async (req: Request, res: Response, next: NextFunction
         //const isPasswordValid = await bcrypt.compare(password, userExists); not using bcrypt yet
         const isPasswordValid = userExists === password;
         if (!isPasswordValid) {
-            console.log('Invalid password');
             res.status(400).json({ message: 'Invalid credentials' });
             return;
         }
 
         const token = await generate_jwt(username);
-
-        console.log('Token:', token);
 
         const cookie = serialize('auth_token', token, {
             httpOnly: true,
@@ -69,8 +64,6 @@ router.post('/login_new', async (req: Request, res: Response, next: NextFunction
             sameSite: 'lax',
             path: '/', // Cookie is accessible on all routes
         });
-
-        console.log('Set-Cookie Header:', cookie);
 
         res.setHeader('Set-Cookie', cookie);
 

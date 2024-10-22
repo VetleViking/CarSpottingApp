@@ -1,22 +1,12 @@
-"use client";
-
-import React, { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react'
-import { ensure_login } from '@/functions/functions';
+import React from 'react';
 import AskAi from '@/components/AskAi';
-import LoadingAnimation from '@/components/LoadingAnim';
 import MakesClient from './MakesClient';
 import { ensure_login_new } from '@/functions/server_functions';
 
-export default async function MakesComponent() {
-    const searchParams = useSearchParams();
-    const username = searchParams.get('username') || undefined; 
-
+export default async function MakesComponent({searchParams}: {searchParams: Promise<{ [key: string]: string | string[] | undefined }>}) {
+    const resolvedSearchParams = await searchParams;
+    const username = resolvedSearchParams.username as string || undefined; 
     const altUsername = await ensure_login_new();
-
-
-    
 
     return <div>
         <AskAi />

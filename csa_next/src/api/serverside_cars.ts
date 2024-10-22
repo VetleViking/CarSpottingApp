@@ -9,6 +9,7 @@ export async function get_spotted_images_new(make: string, model: string, userna
 
     const response = await fetch(`${apiIpCars}get_spots_new/${encodedMake}/${encodedModel}${encodedUsername ? '?username=' + encodedUsername : ''}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
             Cookie: cookies().toString(),
             'Content-Type': 'application/json'
@@ -34,6 +35,7 @@ export async function get_spotted_images_new(make: string, model: string, userna
 export async function get_spotted_make_percentage_new(make: string, username?: string) {
     const response = await fetch(`${apiIpCars}spots/${make}/percentage_new${username ? '?username=' + username : ''}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
             Cookie: cookies().toString(),
             'Content-Type': 'application/json'

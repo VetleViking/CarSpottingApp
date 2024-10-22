@@ -38,10 +38,10 @@ const AddNew = ({ type, make }: AddNewProps) => {
             <p className=" font-ListComponent text-[#9ca3af] my-1">Add new {type}</p>
             <Image src={down_arrow} alt="Down arrow" width={15} height={15} className={open ? "transform rotate-180" : ""} />
         </div>
-        {open && <div className='absolute bg-black border border-[#9ca3af] p-2'>
+        {open && <div className='absolute bg-black border border-[#9ca3af] p-2 w-[calc(100vw-0.5rem)] md:w-auto'>
             <div className="flex items-center justify-center gap-4">
                 <input
-                    className='font-ListComponent border border-black p-1 w-full h-full rounded-md'
+                    className='font-ListComponent border border-black p-2 w-full h-full rounded-md'
                     type='text'
                     placeholder={`New ${type}`}
                     value={newItem}

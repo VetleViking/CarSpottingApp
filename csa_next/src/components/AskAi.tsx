@@ -52,7 +52,7 @@ const AskAi = () => {
     }, [files]);
 
 
-    return <div className="fixed bottom-0 right-0 bg-black border-t-[6px] border-l-[6px] border-white p-4">
+    return <div className={`fixed bottom-0 right-0 bg-black border-t-[6px] border-l-[6px] border-white p-4 ${(open) && "w-full md:w-auto"}`}>
         {open ? <div className=" flex flex-col gap-2 items-center">
             <p className="text-white font-ListComponent">Here you can ask AI to identify a car from the chosen image.</p>
             <div className="flex items-center flex-col max-w-96 gap-2">

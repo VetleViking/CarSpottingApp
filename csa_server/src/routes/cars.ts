@@ -544,6 +544,7 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             [`notes`]: notes,
             [`date`]: date,
             [`uploadDate`]: new Date().toISOString(),
+            [`likes`]: '0'
         };
 
         imagesBase64.forEach((item, index) => {
@@ -560,6 +561,8 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
         if (!notes) delete data[`notes`];
         if (!date) delete data[`date`];
 
+        await redisClient.zAdd('zset:spots:recent', { score: new Date(data['uploadDate']).getTime(), value: `spots:${decodedUser.username}:${make}:${model}:${offset}` });
+        await redisClient.zAdd('zset:spots:likes', { score: parseInt(data['likes']), value: `spots:${decodedUser.username}:${make}:${model}:${offset}` })
         await redisClient.hSet(`spots:${decodedUser.username}:${make}:${model}:${offset}`, data);
 
         res.status(201).json({ message: 'Spot added' });
@@ -1032,7 +1035,10 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                 // from here you have all the spots for all users
                 // update one at a time
 
-                // let newSpot = spot;
+                let newSpot = spot;
+                
+                newSpot['likes'] = newSpot['likes'] || '0';
+                newSpot['uploadDate'] = newSpot['uploadDate'] || new Date().toISOString();
 
                 console.log(spot['uploadDate']);
                 console.log(new Date(spot['uploadDate']).getTime());
@@ -1040,15 +1046,12 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                 console.log(spot['likes']);
                 console.log(parseInt(spot['likes']));
 
-                await redisClient.zAdd('zset:spots:recent', { score: new Date(spot['uploadDate']).getTime(), value: key });
-                await redisClient.zAdd('zset:spots:likes', { score: parseInt(spot['likes']), value: key });
+                await redisClient.zAdd('zset:spots:recent', { score: new Date(newSpot['uploadDate']).getTime(), value: key });
+                await redisClient.zAdd('zset:spots:likes', { score: parseInt(newSpot['likes']), value: key });
 
-                // newSpot['likes'] = newSpot['likes'] || '0';
-                // newSpot['uploadDate'] = newSpot['uploadDate'] || new Date().toISOString();
+                await redisClient.del(key);
 
-                // await redisClient.del(key);
-
-                // await redisClient.hSet(key, newSpot);
+                await redisClient.hSet(key, newSpot);
             }
         }
 

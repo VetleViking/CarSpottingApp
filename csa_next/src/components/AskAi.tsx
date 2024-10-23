@@ -28,8 +28,8 @@ const AskAi = () => {
             const text = await imageProcess(base64Data, additional) as CarDetails;
 
             const carExists = await ((text.make !== "cant recognize" && text.model !== "cant recognize") && get_models(text.make, text.model));
+            
             setExists(carExists.length > 0);
-
             setResults(text);
             setLoading(false);
         };

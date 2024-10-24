@@ -25,14 +25,12 @@ const CreateUser = () => {
             placeholder="username"
             value={username}
             onChange={e => setUsername(e.target.value)} />
-
         <input
             className="font-ListComponent"
             type="password"
             placeholder="password"
             value={password}
             onChange={e => setPassword(e.target.value)} />
-
         <button
             className="bg-white text-black py-1 px-2 mt-1 italic"
             onClick={() => create_user_handler(username, password)}>Create user</button>

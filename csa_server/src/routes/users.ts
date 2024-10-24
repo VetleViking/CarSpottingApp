@@ -87,6 +87,8 @@ router.get('/get_username_new', async (req: Request, res: Response, next: NextFu
 
         const decoded = await verify_jwt(token);
 
+        console.log(decoded);
+
         res.status(200).json({ username: decoded.username });
     } catch(err) {
         next(err);

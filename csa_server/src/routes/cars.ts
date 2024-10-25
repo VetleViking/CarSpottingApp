@@ -363,8 +363,6 @@ router.get('/spots/:make/percentage_new', async (req: Request, res: Response, ne
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
-        console.log(decodedUser, username);
-
         const modelsObject = await redisClient.hGetAll(`make:${make}`);
         const modelsObjectUser = await redisClient.hGetAll(`makes:${username || decodedUser.username}:${make}`);
 
@@ -373,21 +371,13 @@ router.get('/spots/:make/percentage_new', async (req: Request, res: Response, ne
             ...Object.values(modelsObjectUser)
         ]);
 
-        console.log(modelsSet);
-
         const modelsArray = Array.from(modelsSet).map(model => ({ make, model }));
 
         const spotsKeys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:*`);
 
-        console.log(spotsKeys);
-
         const uniqueModels = new Set(spotsKeys.map(key => key.split(':')[3]));
 
-        console.log(uniqueModels);
-
         const percentage = modelsArray.length > 0 ? Math.floor((uniqueModels.size / modelsArray.length) * 100) : 0;
-
-        console.log(percentage, spotsKeys.length, modelsArray.length);
 
         res.status(200).json({ percentage: percentage, numSpots: uniqueModels.size, numModels: modelsArray.length });
     } catch (err) {
@@ -1055,8 +1045,6 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
-        console.log(decodedUser);
-
         const is_admin = await redisClient.hGet('admins', decodedUser) ? true : decodedUser === 'Vetle';
 
         if (!is_admin) {
@@ -1079,21 +1067,15 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
 
                 let newSpot = spot;
                 
-                newSpot['likes'] = newSpot['likes'] || '0';
-                newSpot['uploadDate'] = newSpot['uploadDate'] || new Date().toISOString();
+                //newSpot['likes'] = newSpot['likes'] || '0';
+                //newSpot['uploadDate'] = newSpot['uploadDate'] || new Date().toISOString();
 
-                console.log(spot['uploadDate']);
-                console.log(new Date(spot['uploadDate']).getTime());
-                console.log(key);
-                console.log(spot['likes']);
-                console.log(parseInt(spot['likes']));
+                //await redisClient.zAdd('zset:spots:recent', { score: new Date(newSpot['uploadDate']).getTime(), value: key });
+                //await redisClient.zAdd('zset:spots:likes', { score: parseInt(newSpot['likes']), value: key });
 
-                await redisClient.zAdd('zset:spots:recent', { score: new Date(newSpot['uploadDate']).getTime(), value: key });
-                await redisClient.zAdd('zset:spots:likes', { score: parseInt(newSpot['likes']), value: key });
+                //await redisClient.del(key);
 
-                await redisClient.del(key);
-
-                await redisClient.hSet(key, newSpot);
+                //await redisClient.hSet(key, newSpot);
             }
         }
 

@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 
-const apiIpUsers = `http://${process.env.NEXT_PUBLIC_DATABASE_IP || "81.191.113.109"}:4000/api/v1/users/`
+const apiIpUsers = `https://${process.env.NEXT_PUBLIC_DATABASE_IP || "localhost"}/api/v1/users/`
 
 
 export async function get_username_new() {

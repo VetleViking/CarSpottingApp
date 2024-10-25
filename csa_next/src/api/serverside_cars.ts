@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 
-const apiIpCars = `http://${process.env.NEXT_PUBLIC_DATABASE_IP || "81.191.113.109"}:4000/api/v1/cars/`
+const apiIpCars = `https://${process.env.NEXT_PUBLIC_DATABASE_IP || "localhost"}/api/v1/cars/`
 
 export async function get_spotted_images_new(make: string, model: string, username?: string) {
     const encodedMake = encodeURIComponent(make);

@@ -59,9 +59,10 @@ router.post('/login_new', async (req: Request, res: Response, next: NextFunction
 
         const cookie = serialize('auth_token', token, {
             httpOnly: true,
-            secure: false, // Set to true if served over HTTPS
+            secure: true, // Set to true if served over HTTPS
             maxAge: 60 * 60 * 24 * 31, // 1 month expiration
-            sameSite: 'lax',
+            sameSite: 'strict',
+            page: '.vest.li', // Cookie is accessible on all subdomains
             path: '/', // Cookie is accessible on all routes
         });
 

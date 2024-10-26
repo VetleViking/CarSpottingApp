@@ -62,7 +62,7 @@ router.post('/login_new', async (req: Request, res: Response, next: NextFunction
             secure: true, // Set to true if served over HTTPS
             maxAge: 60 * 60 * 24 * 31, // 1 month expiration
             sameSite: 'none',
-            page: '.vest.li', // Cookie is accessible on all subdomains
+            domain: '.vest.li', // Cookie is accessible on all subdomains
             path: '/', // Cookie is accessible on all routes
         });
 

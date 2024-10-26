@@ -9,11 +9,11 @@ import Route from "./routes/index";
 import { errorHandler } from "./errorHandling";
 
 const app: Application = express();
-const PORT: number = parseInt(process.env.SERVER_PORT || "3000", 10);
+const PORT: number = parseInt(process.env.SERVER_PORT || "4000", 10);
 const HOST = process.env.SERVER_HOST || "localhost";
 
 app.use(cors({
-  origin: ['http://spots.vest.li', 'http://localhost:3000'], 
+  origin: ['https://spots.vest.li', 'http://localhost:3000'], 
   credentials: true
 }));
 

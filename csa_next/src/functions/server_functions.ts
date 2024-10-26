@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 export async function ensure_login_new() {
     try {
         const data = await get_username_new();
-        //if (!data || data.error) redirect('/login')
+        if (!data || data.error) redirect('/login');
 
         console.log('Data:', data);
             

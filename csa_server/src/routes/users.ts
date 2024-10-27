@@ -58,11 +58,11 @@ router.post('/login_new', async (req: Request, res: Response, next: NextFunction
         const token = await generate_jwt(username);
 
         const cookie = serialize('auth_token', token, {
-            httpOnly: true,
+            httpOnly: process.env.PRODUCTION == "true", // Cookie is only accessible on the server
             secure: true, // Set to true if served over HTTPS
             maxAge: 60 * 60 * 24 * 31, // 1 month expiration
             sameSite: 'none',
-            domain: '.vest.li', // Cookie is accessible on all subdomains
+            domain: process.env.PRODUCTION == "true" ? '.vest.li' : 'localhost',
             path: '/', // Cookie is accessible on all routes
         });
 

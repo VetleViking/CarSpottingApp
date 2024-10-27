@@ -517,6 +517,8 @@ router.get('/regnr/:regnr', async (req: Request, res: Response, next: NextFuncti
 });
 
 import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -541,7 +543,7 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             return;
         }
 
-        const allSpots = await redisClient.keys(`spots:${decodedUser.username}:${make}:${model}:*`);
+        const allSpots = await redisClient.keys(`spots:${decodedUser}:${make}:${model}:*`);
 
         let offset = 0;
 
@@ -555,8 +557,20 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
 
         offset++;
 
+        const rootDir = path.resolve(__dirname, '../../');
+        const userDir = path.join(rootDir, 'uploads', decodedUser, `${make}_${model}`);
+        await fs.promises.mkdir(userDir, { recursive: true });
 
-        const imagesBase64 = images.map(image => image.buffer.toString('base64'));
+        const imagePaths: string[] = [];
+        for (const [index, image] of images.entries()) {
+            const imageName = `${offset}_${index}.jpg`;  // Unique image name
+            const imagePath = path.join(userDir, imageName);
+            await fs.promises.writeFile(imagePath, image.buffer);  // Write image buffer to file
+            imagePaths.push(`/images/${decodedUser}/${make}_${model}/${imageName}`);
+        }
+
+
+        // const imagesBase64 = images.map(image => image.buffer.toString('base64'));
 
         const data: Record<string, string> = {
             [`notes`]: notes,
@@ -565,13 +579,17 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             [`likes`]: '0'
         };
 
-        imagesBase64.forEach((item, index) => {
-            data[`image${index}`] = item;
+        imagePaths.forEach((item, index) => {
+            data[`image${index}`] = item;  // Store path instead of base64
         });
+
+        // imagesBase64.forEach((item, index) => {
+        //     data[`image${index}`] = item;
+        // });
 
         if (tagsArray && tagsArray.length > 0) {
             tagsArray.forEach((tag, index) => {
-                redisClient.hSet(`tags:${decodedUser.username}:${tag}`, `spots:${decodedUser.username}:${make}:${model}:${offset}`, index);
+                redisClient.hSet(`tags:${decodedUser}:${tag}`, `spots:${decodedUser}:${make}:${model}:${offset}`, index);
                 data[`tag${index}`] = tag;
             });
         }
@@ -579,9 +597,9 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
         if (!notes) delete data[`notes`];
         if (!date) delete data[`date`];
 
-        await redisClient.zAdd('zset:spots:recent', { score: new Date(data['uploadDate']).getTime(), value: `spots:${decodedUser.username}:${make}:${model}:${offset}` });
-        await redisClient.zAdd('zset:spots:likes', { score: parseInt(data['likes']), value: `spots:${decodedUser.username}:${make}:${model}:${offset}` })
-        await redisClient.hSet(`spots:${decodedUser.username}:${make}:${model}:${offset}`, data);
+        await redisClient.zAdd('zset:spots:recent', { score: new Date(data['uploadDate']).getTime(), value: `spots:${decodedUser}:${make}:${model}:${offset}` });
+        await redisClient.zAdd('zset:spots:likes', { score: parseInt(data['likes']), value: `spots:${decodedUser}:${make}:${model}:${offset}` })
+        await redisClient.hSet(`spots:${decodedUser}:${make}:${model}:${offset}`, data);
 
         res.status(201).json({ message: 'Spot added' });
 
@@ -722,7 +740,7 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
 
             const images = Object.keys(spot).filter(key => key.startsWith('image')).map(key => spot[key]);
 
-            const compressedImages = await Promise.all(images.map(async image => await compressImage(image)));
+            // const compressedImages = await Promise.all(images.map(async image => await compressImage(image)));
 
             const tags = Object.keys(spot).filter(key => key.startsWith('tag')).map(key => spot[key]);
 
@@ -731,7 +749,7 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
                 notes: spot['notes'],
                 date: spot['date'],
                 spotDate: spot['uploadDate'],
-                images: compressedImages,
+                images,
                 tags
             });
         }
@@ -1067,11 +1085,28 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
 
                 let newSpot = spot;
                 
-                //newSpot['likes'] = newSpot['likes'] || '0';
-                //newSpot['uploadDate'] = newSpot['uploadDate'] || new Date().toISOString();
+                const images = Object.keys(newSpot).filter(key => key.startsWith('image')).map(key => newSpot[key]);
+                const make = key.split(':')[2];
+                const model = key.split(':')[3];
+                const offset = key.split(':')[4];
 
-                //await redisClient.zAdd('zset:spots:recent', { score: new Date(newSpot['uploadDate']).getTime(), value: key });
-                //await redisClient.zAdd('zset:spots:likes', { score: parseInt(newSpot['likes']), value: key });
+                const rootDir = path.resolve(__dirname, '../../');
+                const userDir = path.join(rootDir, 'uploads', decodedUser, `${make}_${model}`);
+                await fs.promises.mkdir(userDir, { recursive: true });
+        
+                const imagePaths: string[] = [];
+                for (const [index, image] of images.entries()) {
+                    const imageName = `${offset}_${index}.jpg`;  // Unique image name
+                    const imagePath = path.join(userDir, imageName);
+                    //await fs.promises.writeFile(imagePath, image.buffer);  // Write image buffer to file
+                    imagePaths.push(`/images/${decodedUser}/${make}_${model}/${imageName}`);
+                }
+        
+                imagePaths.forEach((item, index) => {
+                    newSpot[`image${index}`] = item;  // Store path instead of base64
+                });
+
+                console.log(newSpot);
 
                 //await redisClient.del(key);
 

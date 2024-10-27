@@ -24,7 +24,7 @@ export default async function Makes({searchParams}: {searchParams: Promise<{ [ke
 
     if (!username) return <div>
         <Header username={altUsername as string} />
-        <UploadSpot make={make as string} model={model as string} />
+        <UploadSpot make={make as string} model={model as string} username={altUsername} />
     </div>;
 
     return <div>

@@ -3,7 +3,6 @@
 import { add_tag, get_tags, upload_spot } from "@/api/cars";
 import React, { useEffect, useState } from "react";
 import Spotimage from "./Spotimage";
-import { ensure_login } from "@/functions/functions";
 import LoadingAnimation from "./LoadingAnim";
 import Button from "./Button";
 import down_arrow from "@/images/down_arrow.svg";
@@ -12,14 +11,14 @@ import Image from "next/image";
 type SpotProps = {
     make: string;
     model: string;
+    username: string;
 };
 
-const UploadSpot = ({ make, model }: SpotProps) => {
+const UploadSpot = ({ make, model, username }: SpotProps) => {
     const [files, setFiles] = useState<FileList | null>(null);
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
     const [notes, setNotes] = useState('');
     const [date, setDate] = useState('');
-    const [username, setUsername] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [uploading, setUploading] = useState(false);
@@ -28,8 +27,6 @@ const UploadSpot = ({ make, model }: SpotProps) => {
     const [tagOpen, setTagOpen] = useState(false);
     const [newTag, setNewTag] = useState('');
     const [tagFetch, setTagFetch] = useState(false);
-
-    if (!username) ensure_login().then((username) => setUsername(username));
 
     if (!tagFetch && typeof window !== 'undefined') get_tags().then((tags) => {
         setTagList(tags)

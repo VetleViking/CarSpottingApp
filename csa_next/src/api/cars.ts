@@ -1,4 +1,4 @@
-const apiIpCars = `https://${process.env.NEXT_PUBLIC_DATABASE_IP || "localhost"}/api/v1/cars/`
+const apiIpCars = `${process.env.NEXT_PUBLIC_DATABASE_IP || "http://localhost:4000"}/api/v1/cars/`
 
 
 export async function get_models(make?: string, query?: string) {

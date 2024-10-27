@@ -16,20 +16,22 @@ export async function get_spotted_images_new(make: string, model: string, userna
         }
     });
 
-    const data = await response.json();
+    return await response.json();
 
-    const dataImages = data.map((item: any) => {
-        const urlArr = [];
+    // const data = await response.json();
 
-        for (let i = 0; i < item.images.length; i++) {
-            const url = item.images[i] ? `data:image/jpeg;base64,${item.images[i]}` : null;
-            urlArr.push(url);
-        }
+    // const dataImages = data.map((item: any) => {
+    //     const urlArr = [];
 
-        return { key: item.key, urlArr, notes: item.notes, date: item.date, tags: item.tags };
-    });
+    //     for (let i = 0; i < item.images.length; i++) {
+    //         const url = item.images[i] ? `data:image/jpeg;base64,${item.images[i]}` : null;
+    //         urlArr.push(url);
+    //     }
 
-    return dataImages;
+    //     return { key: item.key, urlArr, notes: item.notes, date: item.date, tags: item.tags };
+    // });
+
+    // return dataImages;
 }
 
 export async function get_spotted_make_percentage_new(make: string, username?: string) {

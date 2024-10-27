@@ -15,7 +15,7 @@ export default async function Makes({searchParams}: {searchParams: Promise<{ [ke
 
     const spots = (username && make && model) ? await get_spotted_images_new(make, model, username) as {
         name: string;
-        urlArr: string[];
+        images: string[];
         tags: string[];
         notes: string;
         date: string;
@@ -34,7 +34,7 @@ export default async function Makes({searchParams}: {searchParams: Promise<{ [ke
             {(username && make && model) && spots.map((item, id) => 
                 <div key={id}>
                     <Spotimage
-                        images={item.urlArr} tags={item.tags} notes={item.notes} date={item.date}
+                        images={item.images} tags={item.tags} notes={item.notes} date={item.date}
                         spotdata={{ make: make, model: model, key: item.key, isOwner: isOwner }} />
                 </div>
             )}

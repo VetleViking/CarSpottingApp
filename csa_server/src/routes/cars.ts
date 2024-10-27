@@ -566,7 +566,7 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             const imageName = `${offset}_${index}.jpg`;  // Unique image name
             const imagePath = path.join(userDir, imageName);
             await fs.promises.writeFile(imagePath, image.buffer);  // Write image buffer to file
-            imagePaths.push(`/images/${decodedUser}/${make}_${model}/${imageName}`);
+            imagePaths.push(`/${decodedUser}/${make}_${model}/${imageName}`);
         }
 
 
@@ -1099,7 +1099,7 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                     const imageName = `${offset}_${index}.jpg`;  // Unique image name
                     const imagePath = path.join(userDir, imageName);
                     //await fs.promises.writeFile(imagePath, image.buffer);  // Write image buffer to file
-                    imagePaths.push(`/images/${decodedUser}/${make}_${model}/${imageName}`);
+                    imagePaths.push(`/${decodedUser}/${make}_${model}/${imageName}`);
                 }
         
                 imagePaths.forEach((item, index) => {

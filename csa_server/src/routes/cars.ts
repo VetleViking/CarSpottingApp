@@ -1089,7 +1089,7 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                 const offset = key.split(':')[4];
 
                 const rootDir = path.resolve(__dirname, '../../');
-                const userDir = path.join(rootDir, 'uploads', decodedUser, `${make}_${model}`);
+                const userDir = path.join(rootDir, 'uploads', user, `${make}_${model}`);
                 await fs.promises.mkdir(userDir, { recursive: true });
         
                 const imagePaths: string[] = [];
@@ -1098,7 +1098,7 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                     const imagePath = path.join(userDir, imageName);
                     const imageBuffer = Buffer.from(image, 'base64');
                     await fs.promises.writeFile(imagePath, imageBuffer);  // Write image buffer to file
-                    imagePaths.push(`/${decodedUser}/${make}_${model}/${imageName}`);
+                    imagePaths.push(`/${user}/${make}_${model}/${imageName}`);
                 }
         
                 imagePaths.forEach((item, index) => {

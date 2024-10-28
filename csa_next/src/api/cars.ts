@@ -234,20 +234,7 @@ export async function discover(page?: number, sort?: 'recent' | 'hot' | 'top') {
         }
     });
 
-    const data = await response.json();
-
-    const dataFixed = data.map((item: any) => {
-        const urlArr = [];
-
-        for (let i = 0; i < item.images.length; i++) {
-            const url = item.images[i] ? `data:image/jpeg;base64,${item.images[i]}` : null;
-            urlArr.push(url);
-        }
-
-        return { ...item, images: urlArr };
-    });
-
-    return dataFixed;
+    return await response.json();
 }
 
 export async function update_spots() {

@@ -966,16 +966,14 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                 const spot = await redisClient.hGetAll(`${spotID}`);
                 const likedByUser = await redisClient.hGet(`likes:${decodedUser.username}`, spotID);
 
-                const compressedImages = await Promise.all(
-                    Object.keys(spot).filter(key => key.startsWith('image')).map(async imageKey => await compressImage(spot[imageKey]))
-                );
+                const images = Object.keys(spot).filter(key => key.startsWith('image')).map(key => spot[key]);
 
                 return {
                     key: spotID.split(':')[4],
                     notes: spot['notes'],
                     date: spot['date'],
-                    images: compressedImages,
-                    tags: spot['tags'],
+                    images,
+                    tags: spot['tags'], // may not work, debug later
                     user: spotID.split(':')[1],
                     make: spotID.split(':')[2],
                     model: spotID.split(':')[3],
@@ -1098,7 +1096,8 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                 for (const [index, image] of images.entries()) {
                     const imageName = `${offset}_${index}.jpg`;  // Unique image name
                     const imagePath = path.join(userDir, imageName);
-                    //await fs.promises.writeFile(imagePath, image.buffer);  // Write image buffer to file
+                    const imageBuffer = Buffer.from(image, 'base64');
+                    await fs.promises.writeFile(imagePath, imageBuffer);  // Write image buffer to file
                     imagePaths.push(`/${decodedUser}/${make}_${model}/${imageName}`);
                 }
         
@@ -1108,9 +1107,9 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
 
                 console.log(newSpot);
 
-                await redisClient.del(key);
+                //await redisClient.del(key);
 
-                await redisClient.hSet(key, newSpot);
+                //await redisClient.hSet(key, newSpot);
             }
         }
 

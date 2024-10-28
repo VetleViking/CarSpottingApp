@@ -1108,9 +1108,9 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
 
                 console.log(newSpot);
 
-                //await redisClient.del(key);
+                await redisClient.del(key);
 
-                //await redisClient.hSet(key, newSpot);
+                await redisClient.hSet(key, newSpot);
             }
         }
 

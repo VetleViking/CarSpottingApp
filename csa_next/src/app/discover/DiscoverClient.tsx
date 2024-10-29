@@ -96,7 +96,7 @@ const DiscoverClient = () => {
                             </p>
                         </div>
                         <Spotimage
-                            images={item.images} tags={item.tags} notes={item.notes} date={item.date} />
+                            images={item.images.map(image => `https://images.vest.li${image}`)} tags={item.tags} notes={item.notes} date={item.date} />
                         <div className='flex items-center mb-1 gap-2'>
                             <p className='p-1 text-xl'>{item.likes} {item.likes == 1 ? "like" : "likes"}</p>
                             <Button text={item.likedByUser ? "Remove like" : "Like"} className='py-1' onClick={() => {

@@ -34,7 +34,7 @@ export default async function Makes({searchParams}: {searchParams: Promise<{ [ke
             {(username && make && model) && spots.map((item, id) => 
                 <div key={id}>
                     <Spotimage
-                        images={item.images} tags={item.tags} notes={item.notes} date={item.date}
+                        images={item.images.map(image => `https://images.vest.li${image}`)} tags={item.tags} notes={item.notes} date={item.date}
                         spotdata={{ make: make, model: model, key: item.key, isOwner: isOwner }} />
                 </div>
             )}

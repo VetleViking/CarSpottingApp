@@ -237,6 +237,31 @@ export async function discover(page?: number, sort?: 'recent' | 'hot' | 'top') {
     return await response.json();
 }
 
+export async function fix_spots() {
+    const response = await fetch(`${apiIpCars}fixspots`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+
+    return await response.json();
+}
+
+export async function fix_spot(make: string, model: string, user: string, key: string, images: FileList | null) {
+    const response = await fetch(`${apiIpCars}fixspot`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ make, model, key, images })
+    });
+
+    return await response.json();
+}
+
 export async function update_spots() {
     const response = await fetch(`${apiIpCars}updatespots`, {
         method: 'POST',

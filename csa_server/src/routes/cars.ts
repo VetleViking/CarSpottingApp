@@ -1055,6 +1055,83 @@ router.post('/makes/:make', async (req: Request, res: Response, next: NextFuncti
     }
 });
 
+router.get('/fixspots', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
+
+        const is_admin = await redisClient.hGet('admins', decodedUser) ? true : decodedUser === 'Vetle';
+
+        if (!is_admin) {
+            res.status(401).json({ message: 'Unauthorized' });
+            return;
+        }
+
+        const spots = {};
+
+        const users = await redisClient.hGetAll('users');
+
+        for (const user of Object.keys(users)) {
+            const keys = await redisClient.keys(`spots:${user}:*`);
+
+            for (const key of keys) {
+                const spot = await redisClient.hGetAll(key);
+
+                spot['user'] = user;
+                spot['make'] = key.split(':')[2];
+                spot['model'] = key.split(':')[3];
+
+                spots[key] = spot;
+            }
+        }
+
+        res.status(200).json(spots);
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.post('/fixspot', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { make, model, user, key } = req.body;
+        const images = req.files as Express.Multer.File[];
+
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
+
+        const is_admin = await redisClient.hGet('admins', decodedUser) ? true : decodedUser === 'Vetle';
+
+        if (!is_admin) {
+            res.status(401).json({ message: 'Unauthorized' });
+            return;
+        }
+
+        const spot = await redisClient.hGetAll(`spots:${user}:${make}:${model}:${key}`);
+
+        const offset = key.split(':')[4];
+
+        const rootDir = path.resolve(__dirname, '../../');
+        const userDir = path.join(rootDir, 'uploads', user, `${make}_${model}`);
+        await fs.promises.mkdir(userDir, { recursive: true });
+
+        const imagePaths: string[] = [];
+        for (const [index, image] of images.entries()) {
+            const imageName = `${offset}_${index}.jpg`;  // Unique image name
+            const imagePath = path.join(userDir, imageName);
+            await fs.promises.writeFile(imagePath, image.buffer);  // Write image buffer to file
+            imagePaths.push(`/${user}/${make}_${model}/${imageName}`);
+        }
+    
+        console.log(spot);
+
+        res.status(200).json({ message: 'Spot updated' });
+    } catch (err) {
+        next(err);
+    }
+});
+
 router.post('/updatespots', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const cookies = parse(req.headers.cookie || '');

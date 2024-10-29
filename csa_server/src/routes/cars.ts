@@ -1103,6 +1103,7 @@ router.post('/fixspot', upload.array('images', 10), async (req: Request, res: Re
         const images = req.files as Express.Multer.File[];
 
         console.log(make, model, user, key);
+        console.log(images);
 
         const cookies = parse(req.headers.cookie || '');
         const token = cookies.auth_token;

@@ -1097,7 +1097,7 @@ router.get('/fixspots', async (req: Request, res: Response, next: NextFunction) 
     }
 });
 
-router.post('/fixspot', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/fixspot', upload.array('images', 10), async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model, user, key } = req.body;
         const images = req.files as Express.Multer.File[];

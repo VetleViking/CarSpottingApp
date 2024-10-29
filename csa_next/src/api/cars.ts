@@ -111,9 +111,6 @@ export async function upload_spot(make: string, model: string, images: File[], n
     const response = await fetch(`${apiIpCars}addspot`, {
         method: 'POST',
         credentials: 'include',
-        headers: {
-            'authorization': 'Bearer ' + localStorage.getItem('token')
-        },
         body: formData
     });
 
@@ -263,9 +260,6 @@ export async function fix_spot(make: string, model: string, user: string, key: s
     const response = await fetch(`${apiIpCars}fixspot`, {
         method: 'POST',
         credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json'
-        },
         body: formData
     });
 

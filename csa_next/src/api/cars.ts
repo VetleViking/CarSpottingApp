@@ -256,7 +256,7 @@ export async function fix_spot(make: string, model: string, user: string, key: s
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ make, model, key, images })
+        body: JSON.stringify({ make, model, user, key, images })
     });
 
     return await response.json();

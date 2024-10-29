@@ -1117,8 +1117,6 @@ router.post('/fixspot', upload.array('images', 10), async (req: Request, res: Re
 
         const spot = await redisClient.hGetAll(`spots:${user}:${make}:${model}:${key}`);
 
-        const offset = key.split(':')[4];
-
         const rootDir = path.resolve(__dirname, '../../');
         console.log(rootDir);
         const userDir = path.join(rootDir, 'uploads', user, `${make}_${model}`);
@@ -1127,7 +1125,7 @@ router.post('/fixspot', upload.array('images', 10), async (req: Request, res: Re
 
         const imagePaths: string[] = [];
         for (const [index, image] of images.entries()) {
-            const imageName = `${offset}_${index}.jpg`;  // Unique image name
+            const imageName = `${key}_${index}.jpg`;  // Unique image name
             const imagePath = path.join(userDir, imageName);
             await fs.promises.writeFile(imagePath, image.buffer);  // Write image buffer to file
             imagePaths.push(`/${user}/${make}_${model}/${imageName}`);

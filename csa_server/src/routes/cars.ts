@@ -1127,6 +1127,9 @@ router.post('/fixspot', upload.array('images', 10), async (req: Request, res: Re
         for (const [index, image] of images.entries()) {
             const imageName = `${key}_${index}.jpg`;  // Unique image name
             const imagePath = path.join(userDir, imageName);
+            console.log(imageName);
+            console.log(imagePath);
+            console.log(image.buffer);
             await fs.promises.writeFile(imagePath, image.buffer);  // Write image buffer to file
             imagePaths.push(`/${user}/${make}_${model}/${imageName}`);
         }

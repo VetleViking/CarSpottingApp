@@ -1083,6 +1083,10 @@ router.get('/fixspots', async (req: Request, res: Response, next: NextFunction) 
                 spot['model'] = key.split(':')[3];
                 spot['key'] = key.split(':')[4];
 
+                const images = Object.keys(spot).filter(key => key.startsWith('image')).map(key => spot[key]);
+
+                spot['images'] = images.join(', ');
+
                 spots.push(spot);
             }
         }

@@ -249,14 +249,24 @@ export async function fix_spots() {
     return await response.json();
 }
 
-export async function fix_spot(make: string, model: string, user: string, key: string, images: FileList | null) {
+export async function fix_spot(make: string, model: string, user: string, key: string, images: File[]) {
+    const formData = new FormData();
+    formData.append('make', make);
+    formData.append('model', model);
+    formData.append('user', user);
+    formData.append('key', key);
+
+    images.forEach(image => {
+        formData.append('images', image);
+    });
+
     const response = await fetch(`${apiIpCars}fixspot`, {
         method: 'POST',
         credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ make, model, user, key, images })
+        body: formData
     });
 
     return await response.json();

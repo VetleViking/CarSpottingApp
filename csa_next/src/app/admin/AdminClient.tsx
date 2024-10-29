@@ -8,10 +8,10 @@ import Spotimage from '@/components/Spotimage';
 export default function AdminClientSide() {
     const [spots, setSpots] = useState<{
         date: string;
-        images: string[];
+        images: string;
         key: string;
         notes: string;
-        tags: string[];
+        tags: string;
         user: string;
         make: string;
         model: string;
@@ -44,11 +44,12 @@ export default function AdminClientSide() {
                         <p className='text-white text-center'>Spot {atSpot}</p>
                         <p className='text-white text-center'>Date: {spots[atSpot].date}</p>
                         <p className='text-white text-center'>Notes: {spots[atSpot].notes}</p>
-                        <p className='text-white text-center'>Tags: {Array.isArray(spots[atSpot].tags) ? spots[atSpot].tags.join(', ') : ""}</p>
+                        <p className='text-white text-center'>Tags: {spots[atSpot].tags}</p>
                         <p className='text-white text-center'>User: {spots[atSpot].user}</p>
                         <p className='text-white text-center'>Likes: {spots[atSpot].likes}</p>
                         <p className='text-white text-center'>Upload Date: {spots[atSpot].uploadDate}</p>
                         <p className='text-white text-center'>Liked by user: {spots[atSpot].likedByUser ? 'Yes' : 'No'}</p>
+                        {spots[atSpot].images && <Spotimage images={spots[atSpot].images.split(', ').map(image => `https://images.vest.li${image}`)} />}
                     </div>
                     <input
                         className="rounded-sm bg-black p-1 mb-2 border border-[#9ca3af] text-[#9ca3af] font-ListComponent"
@@ -59,11 +60,18 @@ export default function AdminClientSide() {
                     <Spotimage images={files ? Array.from(files).map(file => URL.createObjectURL(file)) : []} />
                     <Button
                         onClick={() => {
-                            fix_spot(spots[atSpot].make, spots[atSpot].model, spots[atSpot].user, spots[atSpot].key, files);
+                            if (!files) return;
+                            const fileArray = Array.from(files);
+                            fix_spot(spots[atSpot].make, spots[atSpot].model, spots[atSpot].user, spots[atSpot].key, fileArray);
                             setAtSpot(atSpot + 1);
                             setFiles(null);
                         }}
                         text='Update spot'
+                        className='text-xl m-4'
+                    />
+                    <Button
+                        onClick={() => setAtSpot(atSpot + 1)}
+                        text='Skip'
                         className='text-xl m-4'
                     />
                 </div>}

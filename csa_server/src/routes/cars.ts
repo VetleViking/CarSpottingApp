@@ -1068,7 +1068,7 @@ router.get('/fixspots', async (req: Request, res: Response, next: NextFunction) 
             return;
         }
 
-        const spots = {};
+        const spots = [];
 
         const users = await redisClient.hGetAll('users');
 
@@ -1081,8 +1081,9 @@ router.get('/fixspots', async (req: Request, res: Response, next: NextFunction) 
                 spot['user'] = user;
                 spot['make'] = key.split(':')[2];
                 spot['model'] = key.split(':')[3];
+                spot['key'] = key.split(':')[4];
 
-                spots[key] = spot;
+                spots.push(spot);
             }
         }
 

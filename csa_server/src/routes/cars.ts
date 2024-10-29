@@ -1098,6 +1098,8 @@ router.post('/fixspot', async (req: Request, res: Response, next: NextFunction) 
         const { make, model, user, key } = req.body;
         const images = req.files as Express.Multer.File[];
 
+        console.log(make, model, user, key);
+
         const cookies = parse(req.headers.cookie || '');
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
@@ -1114,7 +1116,9 @@ router.post('/fixspot', async (req: Request, res: Response, next: NextFunction) 
         const offset = key.split(':')[4];
 
         const rootDir = path.resolve(__dirname, '../../');
+        console.log(rootDir);
         const userDir = path.join(rootDir, 'uploads', user, `${make}_${model}`);
+        console.log(userDir);
         await fs.promises.mkdir(userDir, { recursive: true });
 
         const imagePaths: string[] = [];

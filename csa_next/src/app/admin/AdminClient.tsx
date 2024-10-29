@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Button from '@/components/Button';
 import { fix_spot, fix_spots, update_spots } from '@/api/cars';
+import Spotimage from '@/components/Spotimage';
 
 export default function AdminClientSide() {
     const [spots, setSpots] = useState<{
@@ -37,7 +38,7 @@ export default function AdminClientSide() {
                 text='Get fix spots'
                 className='text-xl m-4'
             />
-                {spots && <div className='flex flex-col gap-2 items-center'>
+                {spots && spots.length && <div className='flex flex-col gap-2 items-center'>
                     <p className='text-white text-center text-xl m-4'>{spots[atSpot].make} {spots[atSpot].model}</p>
                     <div className='flex flex-col gap-2 items-center'>
                         <p className='text-white text-center text-xl m-4'>Spot {atSpot}</p>
@@ -55,17 +56,17 @@ export default function AdminClientSide() {
                         accept="image/*"
                         multiple
                         onChange={e => setFiles(e.target.files)} />
+                    <Spotimage images={files ? Array.from(files).map(file => URL.createObjectURL(file)) : []} />
                     <Button
                         onClick={() => {
                             fix_spot(spots[atSpot].make, spots[atSpot].model, spots[atSpot].user, spots[atSpot].key, files);
                             setAtSpot(atSpot + 1);
+                            setFiles(null);
                         }}
                         text='Update spot'
                         className='text-xl m-4'
                     />
-                    
-                </div>
-            }
+                </div>}
         </div>
     </>
 }

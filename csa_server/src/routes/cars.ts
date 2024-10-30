@@ -520,7 +520,10 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({ 
+    storage: multer.memoryStorage(), 
+    limits: { fileSize: 50 * 1024 * 1024 } // 50 MB
+});
 
 router.post('/addspot', upload.array('images', 10), async (req: Request, res: Response, next: NextFunction) => {
     try {

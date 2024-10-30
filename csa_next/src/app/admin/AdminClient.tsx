@@ -22,6 +22,8 @@ export default function AdminClientSide() {
     const [atSpot, setAtSpot] = useState(0);
     const [files, setFiles] = useState<FileList | null>(null);
 
+    const timeStamp = new Date().getTime();
+
     return <>
         <Button
             onClick={update_spots}
@@ -49,7 +51,7 @@ export default function AdminClientSide() {
                         <p className='text-white text-center'>Likes: {spots[atSpot].likes}</p>
                         <p className='text-white text-center'>Upload Date: {spots[atSpot].uploadDate}</p>
                         <p className='text-white text-center'>Liked by user: {spots[atSpot].likedByUser ? 'Yes' : 'No'}</p>
-                        {spots[atSpot].images && <Spotimage images={spots[atSpot].images.split(', ').map(image => `https://images.vest.li${image}`)} />}
+                        {spots[atSpot].images && <Spotimage images={spots[atSpot].images.split(', ').map(image => `https://images.vest.li${image}?v=${timeStamp}`)} />}
                     </div>
                     <input
                         className="rounded-sm bg-black p-1 mb-2 border border-[#9ca3af] text-[#9ca3af] font-ListComponent"

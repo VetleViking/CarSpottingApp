@@ -61,7 +61,7 @@ router.post('/login_new', async (req: Request, res: Response, next: NextFunction
             httpOnly: process.env.PRODUCTION == "true", // Cookie is only accessible on the server
             secure: true, // Set to true if served over HTTPS
             maxAge: 60 * 60 * 24 * 31, // 1 month expiration
-            sameSite: 'none',
+            sameSite: process.env.PRODUCTION === "true" ? 'none' : 'lax',
             domain: process.env.PRODUCTION == "true" ? '.vest.li' : 'localhost',
             path: '/', // Cookie is accessible on all routes
         });

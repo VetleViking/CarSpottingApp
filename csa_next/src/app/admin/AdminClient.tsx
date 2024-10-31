@@ -52,7 +52,6 @@ export default function AdminClientSide() {
                         <p className='text-white text-center'>Upload Date: {spots[atSpot].uploadDate}</p>
                         <p className='text-white text-center'>Liked by user: {spots[atSpot].likedByUser ? 'Yes' : 'No'}</p>
                         {spots[atSpot].images && <Spotimage images={spots[atSpot].images.split(', ').map(image => `https://images.vest.li${image}?v=${timeStamp}`)} />}
-                        {spots[atSpot].images && spots[atSpot].images.split(', ').map(image => <img src={`https://images.vest.li${image}?v=${timeStamp}`} alt='spot' />)}
                     </div>
                     <input
                         className="rounded-sm bg-black p-1 mb-2 border border-[#9ca3af] text-[#9ca3af] font-ListComponent"

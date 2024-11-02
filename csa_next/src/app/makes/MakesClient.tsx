@@ -28,9 +28,11 @@ const MakesClient = ({altUsername, username}: MakesClientProps) => {
         const fetchData = async () => {
             if (username) {
                 const data = await get_spotted_makes(search, username);
+                data.sort((a: any, b: any) => a.name.localeCompare(b.name));
                 setData(data);
             } else {
                 const data = await get_makes(search);
+                data.sort((a: any, b: any) => a.name.localeCompare(b.name));
                 setData(data);
             }
         };

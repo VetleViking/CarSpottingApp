@@ -24,8 +24,8 @@ const MakeSelectedClient = ({altUsername, username, make, children}: MakeSelecte
 
     useEffect(() => {
         const fetchData = () => {
-            username ? get_spotted_models(make as string, search, username).then(setData) 
-                     : get_models(make as string, search).then(setData);
+            username ? get_spotted_models(make as string, search, username).then(data => setData(data.sort((a: any, b: any) => a.model.localeCompare(b.model)))) 
+                     : get_models(make as string, search).then(data => setData(data.sort((a: any, b: any) => a.model.localeCompare(b.model))));
         };
 
         fetchData();

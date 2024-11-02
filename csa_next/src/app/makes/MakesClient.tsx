@@ -2,11 +2,10 @@
 
 import { get_makes, get_spotted_makes } from "@/api/cars";
 import AddNew from "@/components/AddNew";
-import AskAi from "@/components/AskAi";
 import Header from "@/components/Header";
 import ListComponent from "@/components/ListComponent";
 import SearchReg from "@/components/SearchReg";
-import { ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface MakesClientProps {
     altUsername: string;

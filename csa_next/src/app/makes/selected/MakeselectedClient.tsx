@@ -1,7 +1,6 @@
 "use client";
 
 import { get_models, get_spotted_models } from "@/api/cars";
-import AskAi from "@/components/AskAi";
 import Header from "@/components/Header";
 import ListComponent from "@/components/ListComponent";
 import { ReactNode, useEffect, useState } from "react";

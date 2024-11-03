@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Button from "./Button";
 import Spotimage from "./Spotimage";
 import imageProcess, { CarDetails } from "@/api/chatGPT";
@@ -16,6 +16,7 @@ const AskAi = () => {
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState<CarDetails | null>(null);
     const [exists, setExists] = useState(false);
+    const aiRef = useRef<HTMLDivElement>(null);
 
     const upload = async () => {
         if (!files) return;
@@ -51,6 +52,18 @@ const AskAi = () => {
         return () => urls.forEach(url => URL.revokeObjectURL(url));
     }, [files]);
 
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (aiRef.current && !aiRef.current.contains(event.target as Node)) {
+                setOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [aiRef]);
 
     return <div className={`fixed bottom-0 right-0 bg-black border-t-[6px] border-l-[6px] border-white p-4 ${(open) && "w-full md:w-auto"}`}>
         {open ? <div className=" flex flex-col gap-2 items-center">

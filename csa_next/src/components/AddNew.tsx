@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Button from "./Button";
 import Image from "next/image";
 import down_arrow from "@/images/down_arrow.svg";
@@ -16,6 +16,7 @@ const AddNew = ({ type, make }: AddNewProps) => {
     const [open, setOpen] = useState(false);
     const [newItem, setNewItem] = useState("");
     const [uploading, setUploading] = useState(false);
+    const addNewRef = useRef<HTMLDivElement>(null);
 
     function addNewHandler() {
         if (!newItem) return;
@@ -28,6 +29,19 @@ const AddNew = ({ type, make }: AddNewProps) => {
             add_model(make, newItem).then(() => window.location.href = `/makes/selected/modelselected?make=${make}&model=${newItem}`);
         }
     }
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (addNewRef.current && !addNewRef.current.contains(event.target as Node)) {
+                setOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [addNewRef]);
 
     return <div className="w-full cursor-pointer">
         <div className="flex justify-between rounded-sm p-1 border border-[#9ca3af]" onClick={() => {

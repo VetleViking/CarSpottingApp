@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Button from "./Button";
 import Image from "next/image";
 import down_arrow from "@/images/down_arrow.svg";
@@ -16,6 +16,7 @@ const SearchReg = () => {
     const [regOpen, setRegOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [carExists, setCarExists] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     function searchRegHandler(reg: string) {
         if (!reg) return;
@@ -35,6 +36,19 @@ const SearchReg = () => {
             setLoading(false);
         });
     }
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setRegOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [dropdownRef]);
 
     return <div className="w-full cursor-pointer">
         <div className="flex justify-between rounded-sm p-1 border border-[#9ca3af]" onClick={() => setRegOpen(!regOpen)}>

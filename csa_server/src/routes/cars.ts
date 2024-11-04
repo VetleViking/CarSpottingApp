@@ -1105,9 +1105,6 @@ router.post('/fixspot', upload.array('images', 10), async (req: Request, res: Re
         const { make, model, user, key } = req.body;
         const images = req.files as Express.Multer.File[];
 
-        console.log(make, model, user, key);
-        console.log(images);
-
         const cookies = parse(req.headers.cookie || '');
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
@@ -1122,18 +1119,13 @@ router.post('/fixspot', upload.array('images', 10), async (req: Request, res: Re
         const spot = await redisClient.hGetAll(`spots:${user}:${make}:${model}:${key}`);
 
         const rootDir = path.resolve(__dirname, '../../');
-        console.log(rootDir);
         const userDir = path.join(rootDir, 'uploads', user, `${make}_${model}`);
-        console.log(userDir);
         await fs.promises.mkdir(userDir, { recursive: true });
 
         const imagePaths: string[] = [];
         for (const [index, image] of images.entries()) {
             const imageName = `${key}_${index}.jpg`;  // Unique image name
             const imagePath = path.join(userDir, imageName);
-            console.log(imageName);
-            console.log(imagePath);
-            console.log(image.buffer);
             await fs.promises.writeFile(imagePath, image.buffer);  // Write image buffer to file
             imagePaths.push(`/${user}/${make}_${model}/${imageName}`);
         }

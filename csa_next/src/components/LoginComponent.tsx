@@ -11,8 +11,6 @@ const LoginComponent = () => {
     const login_handler = async (username: string, password: string) => {
         const data = await login_new(username, password);
 
-        console.log('Data:', data);
-
         data.message === 'Logged in' ? window.location.href = '/' : setErrormessage(data.message)
     }
 

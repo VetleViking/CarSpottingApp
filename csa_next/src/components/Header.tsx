@@ -27,7 +27,7 @@ const Header = ({ search, setSearch, username }: HeaderProps) => {
                     <button
                         onClick={() => window.location.href = `/makes?username=${username}`}
                         className="italic p-1 text-nowrap hidden md:block"
-                    >My <span className="text-[#e72328]">spots</span></button>
+                    >Your <span className="text-[#e72328]">spots</span></button>
                 </div>
                 {setSearch && <Search search={search as string} setSearch={setSearch} />}
                 <div className="flex gap-4">
@@ -47,11 +47,15 @@ const Header = ({ search, setSearch, username }: HeaderProps) => {
                 <button
                     onClick={() => window.location.href = `/makes?username=${username}`}
                     className="italic p-1 text-nowrap w-max"
-                >My <span className="text-[#e72328]">spots</span></button>
+                >Your <span className="text-[#e72328]">spots</span></button>
                 <button
                     onClick={() => window.location.href = `/makes`}
                     className="italic p-1 text-nowrap w-max"
                 >Upload <span className="text-[#e72328]">spot</span></button>
+                <button
+                    onClick={() => window.location.href = `/discover`}
+                    className="italic p-1 text-nowrap w-max"
+                >Discover <span className="text-[#e72328]">spots</span></button>
                 <button
                     onClick={() => window.location.href = `/`}
                     className="italic p-1 text-nowrap w-max"

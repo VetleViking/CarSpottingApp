@@ -10,7 +10,7 @@ const HomePageButtons = ({username}: HomePageButtonsProps) => {
     return <div className="flex justify-around pt-12">
     <Button
         onClick={() => window.location.href = `/makes?username=${username}`}
-        text="My Spots"
+        text="Your Spots"
         className="text-2xl"
     />
     <Button

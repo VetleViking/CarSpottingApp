@@ -15,7 +15,7 @@ const CreateUser = () => {
             const loginData = await login_new(username, password);
 
             if (!loginData.token) setErrormessage(loginData.message);
-        } else setErrormessage(data.message);
+        } else setErrormessage(data.message || 'An error occurred');
     }
 
     return <div className="flex flex-col gap-2 w-48 p-2 bg-black border border-white">

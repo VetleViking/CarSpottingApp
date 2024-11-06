@@ -45,9 +45,7 @@ const SearchReg = () => {
         }
 
         document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
+        return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [dropdownRef]);
 
     return <div className="w-full cursor-pointer">

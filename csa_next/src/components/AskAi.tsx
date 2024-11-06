@@ -60,9 +60,7 @@ const AskAi = () => {
         }
 
         document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
+        return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [aiRef]);
 
     return <div className={`fixed bottom-0 right-0 bg-black border-t-[6px] border-l-[6px] border-white p-4 ${(open) && "w-full md:w-auto"}`}>

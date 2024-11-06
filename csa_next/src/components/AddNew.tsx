@@ -38,9 +38,7 @@ const AddNew = ({ type, make }: AddNewProps) => {
         }
 
         document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
+        return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [addNewRef]);
 
     return <div className="w-full cursor-pointer">

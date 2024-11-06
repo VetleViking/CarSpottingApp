@@ -111,9 +111,9 @@ const DiscoverClient = () => {
                             <Button text='View' className='py-1' onClick={() => {
                                 window.open(`/makes/selected/modelselected?make=${item.make}&model=${item.model}&username=${item.user}`)
                             }} />
-                            {/*<Button text='share' className='py-1' onClick={() => { // not working until site is https
+                            {<Button text='share' className='py-1' onClick={() => {
                                 navigator.clipboard.writeText(`http://spots.vest.li/makes/selected/modelselected?make=${item.make}&model=${item.model}&username=${item.user}`)
-                            }} />*/}
+                            }} />}
                         </div>
                     </div>
                 </div>

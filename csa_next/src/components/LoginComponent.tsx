@@ -11,7 +11,7 @@ const LoginComponent = () => {
     const login_handler = async (username: string, password: string) => {
         const data = await login_new(username, password);
 
-        data.message === 'Logged in' ? window.location.href = '/' : setErrormessage(data.message)
+        data.message === 'Logged in' ? window.location.href = '/' : setErrormessage(data.message || 'An error occurred');
     }
 
     return <div className="flex flex-col gap-2 w-48 p-2 bg-black border border-white">

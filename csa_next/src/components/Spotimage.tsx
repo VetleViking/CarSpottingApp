@@ -58,14 +58,16 @@ const Spotimage = ({ images, tags, notes, date, alt, spotdata }: ImageProps) => 
                                 <Button
                                     text="Add"
                                     className="py-1 px-4"
-                                    onClick={() => add_tag(newTag).then((res) => {
-                                        if (res.message == 'Tag already exists') {
+                                    onClick={() => {
+                                        if (newTag.length < 1) return;   
+                                        add_tag(newTag).then((res) => {
+                                            if (res.message == 'Tag already exists') {
+                                                setNewTag('');
+                                                return;
+                                            }
+                                            setTagList([...tagList, newTag]);
                                             setNewTag('');
-                                            return;
-                                        }
-                                        setTagList([...tagList, newTag]);
-                                        setNewTag('');
-                                    })}
+                                    })}}
                                 />
                             </div>
                             {tagList.map((tag, id) => <div key={id} className="flex justify-between items-center">

@@ -127,6 +127,7 @@ const UploadSpot = ({ make, model, username }: SpotProps) => {
                                     <button
                                         className="rounded-sm bg-[#9ca3af] text-black py-[4px] px-4 italic"
                                         onClick={() => {
+                                            if (newTag.length < 1) return;
                                             add_tag(newTag).then((res) => {
                                                 if (res.message == 'Tag already exists') {
                                                     setNewTag('');

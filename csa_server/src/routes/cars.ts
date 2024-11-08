@@ -14,7 +14,7 @@ router.get('/makes', async (req: Request, res: Response, next: NextFunction) => 
         const decodedUser = await get_user(token);
 
         const makesObject = await redisClient.hGetAll('makes');
-        const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}`);
+        const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
         const makesArray = Object.keys(makesObject).map(key => makesObject[key])
             .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
 
@@ -34,7 +34,7 @@ router.get('/makes/:query', async (req: Request, res: Response, next: NextFuncti
         const decodedUser = await get_user(token);
 
         const makesObject = await redisClient.hGetAll('makes');
-        const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}`);
+        const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
         const makesArray = Object.keys(makesObject).map(key => makesObject[key])
             .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
 
@@ -79,7 +79,7 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
             );
 
             const makesObject = await redisClient.hGetAll('makes');
-            const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}`);
+            const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
             const makesArray = Object.keys(makesObject).map(key => makesObject[key])
                 .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
 
@@ -95,7 +95,7 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
 
         // Else, get all makes from Redis
         const makesObject = await redisClient.hGetAll('makes');
-        const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}`);
+        const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
         const makesArray = Object.keys(makesObject).map(key => makesObject[key])
             .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
 
@@ -103,7 +103,7 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
 
         for (const make of makesArray) {
             const modelsObject = await redisClient.hGetAll(`make:${make}`);
-            const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}:${make}`);
+            const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);
             const models = Object.keys(modelsObject).map(key => modelsObject[key])
                 .concat(Object.keys(modelsObjectUser).map(key => modelsObjectUser[key]));
 
@@ -157,7 +157,7 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
             );
 
             const makesObject = await redisClient.hGetAll('makes');
-            const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}`);
+            const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
             const makesArray = Object.keys(makesObject).map(key => makesObject[key])
                 .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
 
@@ -173,7 +173,7 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
 
         // Else, get all makes from Redis
         const makesObject = await redisClient.hGetAll('makes');
-        const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}`);
+        const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
         const makesArray = Object.keys(makesObject).map(key => makesObject[key])
             .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
         makesArray.push('other');
@@ -182,7 +182,7 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
 
         for (const make of makesArray) {
             const modelsObject = await redisClient.hGetAll(`make:${make}`);
-            const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}:${make}`);
+            const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);
             const models = Object.keys(modelsObject).map(key => modelsObject[key])
                 .concat(Object.keys(modelsObjectUser).map(key => modelsObjectUser[key]));
 
@@ -248,7 +248,7 @@ router.get('/makes/:make/models/', async (req: Request, res: Response, next: Nex
 
         // Else, get all makes from Redis
         const modelsObject = await redisClient.hGetAll(`make:${make}`);
-        const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}:${make}`);
+        const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);
         const modelsArray = Object.keys(modelsObject).map(key => ({ make, model: modelsObject[key] }))
             .concat(Object.keys(modelsObjectUser).map(key => ({ make, model: modelsObjectUser[key] })));
 
@@ -311,7 +311,7 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
 
         // Else, get all makes from Redis
         const modelsObject = await redisClient.hGetAll(`make:${make}`);
-        const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}:${make}`);
+        const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);
         const modelsArray = Object.keys(modelsObject).map(key => ({ make, model: modelsObject[key] }))
             .concat(Object.keys(modelsObjectUser).map(key => ({ make, model: modelsObjectUser[key] })));
 
@@ -339,11 +339,11 @@ router.get('/spots/:make/percentage', async (req: Request, res: Response, next: 
         const decodedUser = await get_user(token);
 
         const modelsObject = await redisClient.hGetAll(`make:${make}`);
-        const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser.username}:${make}`);
+        const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);
         const modelsArray = Object.keys(modelsObject).map(key => ({ make, model: modelsObject[key] }))
             .concat(Object.keys(modelsObjectUser).map(key => ({ make, model: modelsObjectUser[key] })));
 
-        const spotsKeys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:*`);
+        const spotsKeys = await redisClient.keys(`spots:${username || decodedUser}:${make}:*`);
 
         const percentage = Math.floor(spotsKeys.length / modelsArray.length * 100);
 
@@ -364,7 +364,7 @@ router.get('/spots/:make/percentage_new', async (req: Request, res: Response, ne
         const decodedUser = await get_user(token);
 
         const modelsObject = await redisClient.hGetAll(`make:${make}`);
-        const modelsObjectUser = await redisClient.hGetAll(`makes:${username || decodedUser.username}:${make}`);
+        const modelsObjectUser = await redisClient.hGetAll(`makes:${username || decodedUser}:${make}`);
 
         const modelsSet = new Set([
             ...Object.values(modelsObject),
@@ -373,7 +373,7 @@ router.get('/spots/:make/percentage_new', async (req: Request, res: Response, ne
 
         const modelsArray = Array.from(modelsSet).map(model => ({ make, model }));
 
-        const spotsKeys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:*`);
+        const spotsKeys = await redisClient.keys(`spots:${username || decodedUser}:${make}:*`);
 
         const uniqueModels = new Set(spotsKeys.map(key => key.split(':')[3]));
 
@@ -393,14 +393,14 @@ router.post('/addmake', async (req: Request, res: Response, next: NextFunction) 
         const decodedUser = await get_user(token);
 
         const alreadyExists = await redisClient.hGet('makes', make);
-        const alreadyExistsUser = await redisClient.hGet(`makes:${decodedUser.username}`, make);
+        const alreadyExistsUser = await redisClient.hGet(`makes:${decodedUser}`, make);
 
         if (alreadyExists || alreadyExistsUser) {
             res.status(400).json({ message: 'Make already exists' });
             return;
         }
 
-        await redisClient.hSet(`makes:${decodedUser.username}`, make, make);
+        await redisClient.hSet(`makes:${decodedUser}`, make, make);
 
         res.status(201).json({ message: 'Make created' });
         return;
@@ -417,14 +417,14 @@ router.post('/addmodel', async (req: Request, res: Response, next: NextFunction)
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
-        const alreadyExists = await redisClient.hGet(`makes:${decodedUser.username}:${make}`, model);
+        const alreadyExists = await redisClient.hGet(`makes:${decodedUser}:${make}`, model);
 
         if (alreadyExists) {
             res.status(400).json({ message: 'Model already exists' });
             return;
         }
 
-        await redisClient.hSet(`makes:${decodedUser.username}:${make}`, model, model);
+        await redisClient.hSet(`makes:${decodedUser}:${make}`, model, model);
 
         res.status(201).json({ message: 'Model created' });
         return;
@@ -441,14 +441,14 @@ router.post('/addtag', async (req: Request, res: Response, next: NextFunction) =
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
-        const alreadyExists = await redisClient.hGet('tags', tag) || await redisClient.hGet(`tags:${decodedUser.username}`, tag);
+        const alreadyExists = await redisClient.hGet('tags', tag) || await redisClient.hGet(`tags:${decodedUser}`, tag);
 
         if (alreadyExists) {
             res.status(400).json({ message: 'Tag already exists' });
             return;
         }
 
-        await redisClient.hSet(`tags:${decodedUser.username}`, tag, tag);
+        await redisClient.hSet(`tags:${decodedUser}`, tag, tag);
 
         res.status(201).json({ message: 'Tag created' });
         return;
@@ -465,7 +465,7 @@ router.get('/tags', async (req: Request, res: Response, next: NextFunction) => {
         const decodedUser = await get_user(token);
 
         const tagsObject = await redisClient.hGetAll('tags');
-        const tagsObjectUser = await redisClient.hGetAll(`tags:${decodedUser.username}`);
+        const tagsObjectUser = await redisClient.hGetAll(`tags:${decodedUser}`);
         const tagsArray = Object.keys(tagsObject).map(key => tagsObject[key])
             .concat(Object.keys(tagsObjectUser).map(key => tagsObjectUser[key]));
 
@@ -630,7 +630,7 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
             return;
         }
 
-        const spotKeyPrefix = `spots:${decodedUser.username}:${make}:${model}:${key}`;
+        const spotKeyPrefix = `spots:${decodedUser}:${make}:${model}:${key}`;
         const allSpots = await redisClient.hGetAll(spotKeyPrefix);
 
         if (!allSpots) {
@@ -641,7 +641,7 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
         const data: Record<string, string> = {};
 
         if (tagsArray && tagsArray.length > 0) {
-            const allTagsData = await redisClient.hGetAll(`tags:${decodedUser.username}`);
+            const allTagsData = await redisClient.hGetAll(`tags:${decodedUser}`);
             const allTags: string[] = Array.isArray(allTagsData) ? allTagsData : []
 
             allTags.forEach(tag => {
@@ -691,15 +691,15 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
             return;
         }
 
-        await redisClient.zRem('zset:spots:recent', `spots:${decodedUser.username}:${make}:${model}:${key}`);
-        await redisClient.zRem('zset:spots:likes', `spots:${decodedUser.username}:${make}:${model}:${key}`);
+        await redisClient.zRem('zset:spots:recent', `spots:${decodedUser}:${make}:${model}:${key}`);
+        await redisClient.zRem('zset:spots:likes', `spots:${decodedUser}:${make}:${model}:${key}`);
 
-        await redisClient.del(`spots:${decodedUser.username}:${make}:${model}:${key}`);
+        await redisClient.del(`spots:${decodedUser}:${make}:${model}:${key}`);
 
-        const tagsObject = await redisClient.hGetAll(`tags:${decodedUser.username}`);
+        const tagsObject = await redisClient.hGetAll(`tags:${decodedUser}`);
 
         for (const tag in tagsObject) {
-            await redisClient.hDel(`tags:${decodedUser.username}:${tag}`, `spots:${decodedUser.username}:${make}:${model}:${key}`);
+            await redisClient.hDel(`tags:${decodedUser}:${tag}`, `spots:${decodedUser}:${make}:${model}:${key}`);
         }
 
         res.status(200).json({ message: 'Spot deleted' });
@@ -734,7 +734,7 @@ router.get('/getspots/:make/:model', async (req: Request, res: Response, next: N
             return;
         }
 
-        const allSpotsKeys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:${model}:*`);
+        const allSpotsKeys = await redisClient.keys(`spots:${username || decodedUser}:${make}:${model}:*`);
 
         const allSpots = [];
 
@@ -777,7 +777,7 @@ router.get('/get_spots_new/:make/:model', async (req: Request, res: Response, ne
             return;
         }
 
-        const allSpotsKeys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:${model}:*`);
+        const allSpotsKeys = await redisClient.keys(`spots:${username || decodedUser}:${make}:${model}:*`);
 
         const allSpots = [];
 
@@ -811,7 +811,7 @@ router.get('/spots/makes/', async (req: Request, res: Response, next: NextFuncti
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
-        const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
+        const keys = await redisClient.keys(`spots:${username || decodedUser}:*`);
 
         const makesArray = keys.map(key => key.split(':')[2]).filter((item, index, self) => self.indexOf(item) === index);
 
@@ -832,7 +832,7 @@ router.get('/spots/makes/:query', async (req: Request, res: Response, next: Next
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
-        const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
+        const keys = await redisClient.keys(`spots:${username || decodedUser}:*`);
 
         const makesArray = keys.map(key => key.split(':')[2]).filter((item, index, self) => self.indexOf(item) === index);
 
@@ -853,7 +853,7 @@ router.get('/spots/makes/unknown/models/', async (req: Request, res: Response, n
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
-        const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
+        const keys = await redisClient.keys(`spots:${username || decodedUser}:*`);
 
         const makesArray = keys.map(key => key.split(':')[2]);
         const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
@@ -877,7 +877,7 @@ router.get('/spots/makes/unknown/models/:query', async (req: Request, res: Respo
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
-        const keys = await redisClient.keys(`spots:${username || decodedUser.username}:*`);
+        const keys = await redisClient.keys(`spots:${username || decodedUser}:*`);
 
         const makesArray = keys.map(key => key.split(':')[2]);
         const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
@@ -903,7 +903,7 @@ router.get('/spots/makes/:make/models/', async (req: Request, res: Response, nex
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
-        const keys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:*`);
+        const keys = await redisClient.keys(`spots:${username || decodedUser}:${make}:*`);
 
         const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
 
@@ -926,7 +926,7 @@ router.get('/spots/makes/:make/models/:query', async (req: Request, res: Respons
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
-        const keys = await redisClient.keys(`spots:${username || decodedUser.username}:${make}:*`);
+        const keys = await redisClient.keys(`spots:${username || decodedUser}:${make}:*`);
 
         const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
 
@@ -967,7 +967,7 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
         const spots = await Promise.all(
             sortedSpotIDs.map(async spotID => {
                 const spot = await redisClient.hGetAll(`${spotID}`);
-                const likedByUser = await redisClient.hGet(`likes:${decodedUser.username}`, spotID);
+                const likedByUser = await redisClient.hGet(`likes:${decodedUser}`, spotID);
 
                 const images = Object.keys(spot).filter(key => key.startsWith('image')).map(key => spot[key]);
 
@@ -1005,7 +1005,7 @@ router.post('/likespot', async (req: Request, res: Response, next: NextFunction)
 
         const spotKey = `spots:${user}:${make}:${model}:${key}`;
 
-        const alreadyLiked = await redisClient.hGet(`likes:${decodedUser.username}`, spotKey);
+        const alreadyLiked = await redisClient.hGet(`likes:${decodedUser}`, spotKey);
 
         const spot = await redisClient.hGetAll(spotKey);
 
@@ -1017,7 +1017,7 @@ router.post('/likespot', async (req: Request, res: Response, next: NextFunction)
         const likes = parseInt(spot['likes']) || 0;
 
         if (alreadyLiked) {
-            await redisClient.hDel(`likes:${decodedUser.username}`, spotKey);
+            await redisClient.hDel(`likes:${decodedUser}`, spotKey);
             await redisClient.hSet(spotKey, 'likes', likes - 1);
 
             await redisClient.zAdd('zset:spots:likes', { score: likes - 1, value: spotKey });
@@ -1025,7 +1025,7 @@ router.post('/likespot', async (req: Request, res: Response, next: NextFunction)
             res.status(200).json({ message: 'Spot unliked' });
             return;
         } else {
-            await redisClient.hSet(`likes:${decodedUser.username}`, spotKey, spotKey);
+            await redisClient.hSet(`likes:${decodedUser}`, spotKey, spotKey);
             await redisClient.hSet(spotKey, 'likes', likes + 1);
 
             await redisClient.zAdd('zset:spots:likes', { score: likes + 1, value: spotKey });

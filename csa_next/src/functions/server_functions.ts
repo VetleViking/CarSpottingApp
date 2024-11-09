@@ -1,9 +1,9 @@
-import { get_username_new } from "@/api/serverside_users";
+import { get_username } from "@/api/serverside_users";
 import { redirect } from "next/navigation";
 
-export async function ensure_login_new() {
+export async function ensure_login() {
     try {
-        const data = await get_username_new();
+        const data = await get_username();
         if (!data || data.error) redirect('/login');
 
         return data.username as string;

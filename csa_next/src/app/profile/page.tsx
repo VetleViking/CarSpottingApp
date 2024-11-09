@@ -1,11 +1,11 @@
 import React from 'react';
 import Header from '@/components/Header';
-import { ensure_login_new } from '@/functions/server_functions';
+import { ensure_login } from '@/functions/server_functions';
 import ProfileClient from './ProfileClient';
 import { get_stats } from '@/api/serverside_users';
 
 export default async function Profile() {
-    const username = await ensure_login_new();
+    const username = await ensure_login();
     const stats = await get_stats(username);
 
     return <div>

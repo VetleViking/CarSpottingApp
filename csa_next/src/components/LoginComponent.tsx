@@ -1,6 +1,6 @@
 "use client";
 
-import { login_new } from "@/api/users";
+import { login } from "@/api/users";
 import { useState } from "react";
 
 const LoginComponent = () => {
@@ -9,7 +9,7 @@ const LoginComponent = () => {
     const [errormessage, setErrormessage] = useState('');
 
     const login_handler = async (username: string, password: string) => {
-        const data = await login_new(username, password);
+        const data = await login(username, password);
 
         data.message === 'Logged in' ? window.location.href = '/' : setErrormessage(data.message || 'An error occurred');
     }

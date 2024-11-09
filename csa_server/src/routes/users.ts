@@ -1,39 +1,13 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { redisClient } from '../redis-source';
 import { generate_jwt, get_user, verify_jwt } from '../utils/user';
+import { parse, serialize } from 'cookie';
 
 const router = Router();
 
-router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { username, password } = req.body;
-
-        if (!username || !password) {
-            res.status(400).json({ message: 'Username and password are required' });
-            return;
-        }
-
-        const userExists = await redisClient.hGet('users', username);
-        if (!userExists) {
-            res.status(400).json({ message: 'User does not exist' });
-            return;
-        }
-
-        if (userExists !== password) {
-            res.status(400).json({ message: 'Incorrect password' });
-            return;
-        }
-
-        res.status(200).json({ message: 'Logged in', token: await generate_jwt(username) });
-    } catch(err) {
-        next(err);
-    }
-});
-
-import { parse, serialize } from 'cookie';
 //import bcrypt from 'bcrypt';
 
-router.post('/login_new', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { username, password } = req.body;
 
@@ -75,7 +49,7 @@ router.post('/login_new', async (req: Request, res: Response, next: NextFunction
     }
 });
 
-router.get('/get_username_new', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/get_username', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const cookies = parse(req.headers.cookie || '');
 
@@ -94,7 +68,7 @@ router.get('/get_username_new', async (req: Request, res: Response, next: NextFu
     }
 });
 
-router.post('/create_user_new', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/create_user', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { username, password } = req.body;
 
@@ -156,24 +130,7 @@ router.post('/deleteuser', async (req: Request, res: Response, next: NextFunctio
     }
 });
 
-router.get('/checkadmin/:username', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { username } = req.params;
-
-        const userExists = await redisClient.hGet('users', username);
-        if (!userExists) {
-            res.status(400).json({ message: 'User does not exist' });
-            return;
-        }
-
-        const isAdmin = await redisClient.hGet('admins', username) ? true : username === 'Vetle';
-        res.status(200).json({ is_admin: isAdmin });
-    } catch(err) {
-        next(err);
-    }
-});
-
-router.get('/check_admin_new', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/check_admin', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const cookies = parse(req.headers.cookie || '');
 
@@ -212,7 +169,16 @@ router.get('/get_stats/:username', async (req: Request, res: Response, next: Nex
         // find all spots that belong to user
         const keys = await redisClient.keys(`spots:${username}:*`);
 
-        res.status(200).json({ total_spots: keys.length });
+        // get all likes for each spot
+        let totalLikes = 0;
+        for (const key of keys) {
+            const likes = await redisClient.sCard(key);
+            totalLikes += likes;
+        }
+
+        // get 
+
+        res.status(200).json({ total_spots: keys.length, total_likes: totalLikes });
     } catch(err) {
         next(err);
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import { create_user_new, login_new } from "@/api/users";
+import { create_user, login } from "@/api/users";
 import { useState } from "react";
 
 const CreateUser = () => {
@@ -9,10 +9,10 @@ const CreateUser = () => {
     const [errormessage, setErrormessage] = useState('');
 
     const create_user_handler = async (username: string, password: string) => {
-        const data = await create_user_new(username, password);
+        const data = await create_user(username, password);
 
         if (data.message === "User created") {
-            const loginData = await login_new(username, password);
+            const loginData = await login(username, password);
 
             if (!loginData.token) setErrormessage(loginData.message);
         } else setErrormessage(data.message || 'An error occurred');

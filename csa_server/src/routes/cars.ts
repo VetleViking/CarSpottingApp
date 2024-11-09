@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { redisClient } from '../redis-source';
-import { get_user, verify_jwt } from '../utils/user';
+import { get_user } from '../utils/user';
 import dotenv from "dotenv";
-import cors from 'cors';
+import { parse } from 'cookie';
+
 dotenv.config();
 
 const router = Router();
@@ -331,30 +332,6 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
 });
 
 router.get('/spots/:make/percentage', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { make } = req.params;
-        const username = req.query.username;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
-
-        const modelsObject = await redisClient.hGetAll(`make:${make}`);
-        const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);
-        const modelsArray = Object.keys(modelsObject).map(key => ({ make, model: modelsObject[key] }))
-            .concat(Object.keys(modelsObjectUser).map(key => ({ make, model: modelsObjectUser[key] })));
-
-        const spotsKeys = await redisClient.keys(`spots:${username || decodedUser}:${make}:*`);
-
-        const percentage = Math.floor(spotsKeys.length / modelsArray.length * 100);
-
-
-        res.status(200).json({ percentage: percentage, numSpots: spotsKeys.length, numModels: modelsArray.length });
-    } catch (err) {
-        next(err);
-    }
-});
-
-router.get('/spots/:make/percentage_new', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make } = req.params;
         const username = req.query.username;
@@ -708,62 +685,8 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
     }
 });
 
-import sharp from 'sharp';
-import { parse } from 'cookie';
 
-const compressImage = async (base64Image) => {
-    const buffer = Buffer.from(base64Image, 'base64');
-    const compressedBuffer = await sharp(buffer)
-        .rotate()
-        .resize(800)
-        .jpeg({ quality: 80 })
-        .toBuffer();
-    return compressedBuffer.toString('base64');
-};
-
-router.get('/getspots/:make/:model', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const username = req.query.username;
-        const { make, model } = req.params;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
-
-        if (!make || !model) {
-            res.status(400).json({ message: 'Make and model are required' });
-            return;
-        }
-
-        const allSpotsKeys = await redisClient.keys(`spots:${username || decodedUser}:${make}:${model}:*`);
-
-        const allSpots = [];
-
-        for (const key of allSpotsKeys) {
-            const spot = await redisClient.hGetAll(key);
-
-            const images = Object.keys(spot).filter(key => key.startsWith('image')).map(key => spot[key]);
-
-            // const compressedImages = await Promise.all(images.map(async image => await compressImage(image)));
-
-            const tags = Object.keys(spot).filter(key => key.startsWith('tag')).map(key => spot[key]);
-
-            allSpots.push({
-                key: key.split(':')[4],
-                notes: spot['notes'],
-                date: spot['date'],
-                spotDate: spot['uploadDate'],
-                images,
-                tags
-            });
-        }
-
-        res.status(200).json(allSpots);
-    } catch (err) {
-        next(err);
-    }
-});
-
-router.get('/get_spots_new/:make/:model', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/get_spots/:make/:model', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const username = req.query.username;
         const { make, model } = req.params;

@@ -1,9 +1,9 @@
 import Header from "@/components/Header";
-import { ensure_login_new } from "@/functions/server_functions";
+import { ensure_login } from "@/functions/server_functions";
 import HomePageButtons from "@/components/HomePageButtons";
 
 export default async function Home() {
-    const username = await ensure_login_new();
+    const username = await ensure_login();
 
     return <div>
         <Header username={username} />

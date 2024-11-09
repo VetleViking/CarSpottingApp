@@ -5,12 +5,12 @@ import { parse } from 'cookie';
 const userRequireMiddleware = async (req, res, next) => {
     const excludedRoutes = [
         'users/login',
-        'users/createuser',
-        'users/login_new',
-        'users/create_user_new',
+        'users/create_user',
     ];
 
-    console.log('User Connected', req.ip);
+    const clientIp = req.headers['x-forwarded-for'] || req.ip;
+
+    console.log('User Connected', clientIp);
     console.log('user connected', req.path);
 
     if (!excludedRoutes.some((route) => req.path.includes(route))) {

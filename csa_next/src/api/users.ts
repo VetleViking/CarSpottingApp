@@ -1,20 +1,7 @@
 const apiIpUsers = `${process.env.NEXT_PUBLIC_DATABASE_IP || "http://localhost:4000"}/api/v1/users/`
 
 export async function create_user(username: string, password: string) {
-    const response = await fetch(`${apiIpUsers}createuser`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username, password })
-    });
-
-    return await response.json();
-}
-
-export async function create_user_new(username: string, password: string) {
-    const response = await fetch(`${apiIpUsers}create_user_new`, {
+    const response = await fetch(`${apiIpUsers}create_user`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -39,21 +26,8 @@ export async function login(username: string, password: string) {
     return await response.json();
 }
 
-export async function login_new(username: string, password: string) {
-    const response = await fetch(`${apiIpUsers}login_new`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username, password })
-    });
-
-    return await response.json();
-}
-
-export async function delete_user_new() {
-    const response = await fetch(`${apiIpUsers}delete_user_new`, {
+export async function delete_user() {
+    const response = await fetch(`${apiIpUsers}delete_user`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -73,19 +47,6 @@ export async function decode_jwt(token: string) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ token })
-    });
-
-    return await response.json();
-}
-
-export async function delete_user(username: string) {
-    const response = await fetch(`${apiIpUsers}deleteuser`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username })
     });
 
     return await response.json();

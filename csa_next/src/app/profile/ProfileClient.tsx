@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Button from '@/components/Button';
-import { delete_user_new } from '@/api/users';
+import { delete_user } from '@/api/users';
 
 export default function ProfileClient() {
     const [delete_confirm, setDeleteConfirm] = useState(false);
@@ -15,7 +15,7 @@ export default function ProfileClient() {
             setDeleteConfirm(true);
             return;
         }
-        delete_user_new().then(() => window.location.href = '/login');
+        delete_user().then(() => window.location.href = '/login');
     }
 
     return <div>

@@ -172,11 +172,9 @@ router.get('/get_stats/:username', async (req: Request, res: Response, next: Nex
         // get all likes for each spot
         let totalLikes = 0;
         for (const key of keys) {
-            const likes = await redisClient.sCard(key);
-            totalLikes += likes;
+            const likes = await redisClient.hGet(key, 'likes');
+            totalLikes += parseInt(likes || '0');
         }
-
-        // get 
 
         res.status(200).json({ total_spots: keys.length, total_likes: totalLikes });
     } catch(err) {

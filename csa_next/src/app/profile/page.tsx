@@ -18,6 +18,7 @@ export default async function Profile() {
                 <div className='m-4'>
                     <p className='text-white text-xl'>Stats:</p>
                     <p className='text-white font-ListComponent'>Total spots: {stats?.total_spots}</p>
+                    <p className='text-white font-ListComponent'>Total likes: {stats?.total_likes}</p>
                 </div>
                 <ProfileClient />
             </div>

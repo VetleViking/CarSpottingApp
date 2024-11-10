@@ -535,7 +535,7 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             }
         });
 
-        offset++;
+        offset != 0 && offset++;
 
         const rootDir = path.resolve(__dirname, '../../');
         const userDir = path.join(rootDir, 'uploads', decodedUser, `${make}_${model}`);

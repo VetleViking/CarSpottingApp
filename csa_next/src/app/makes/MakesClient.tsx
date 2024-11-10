@@ -4,13 +4,13 @@ import { get_makes, get_spotted_makes } from "@/api/cars";
 import AddNew from "@/components/AddNew";
 import Header from "@/components/Header";
 import ListComponent from "@/components/ListComponent";
+import Search from "@/components/Search";
 import SearchReg from "@/components/SearchReg";
 import { useEffect, useState } from "react";
 
 interface MakesClientProps {
     altUsername: string;
     username?: string;
-
 };
 
 const MakesClient = ({altUsername, username}: MakesClientProps) => {
@@ -40,8 +40,9 @@ const MakesClient = ({altUsername, username}: MakesClientProps) => {
     }, [search, username]);
 
     return <div>
-        <Header search={search} setSearch={setSearch} username={altUsername} />
+        <Header username={altUsername} />
         <p className='text-center text-white text-3xl my-4'>Select the make</p>
+        <Search search={search} setSearch={setSearch} />
         <div className='flex gap-2 mx-1 mb-4 flex-wrap md:flex-nowrap'>
             <div onClick={() => selectedMake("unknown")} className="bg-black border border-[#9ca3af] cursor-pointer w-full">
                 <p className="text-[#9ca3af] font-ListComponent px-1 py-2 text-nowrap">Dont know</p>

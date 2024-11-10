@@ -1,15 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import Search from "./Search";
 
 interface HeaderProps {
-    search?: string;
-    setSearch?: (search: string) => void;
     username: string;
 };
 
-const Header = ({ search, setSearch, username }: HeaderProps) => {
+const Header = ({ username }: HeaderProps) => {
     const [isOpen, setIsOpen] = useState(false);
 
     return <div className="bg-white border-b-[6px] border-white">
@@ -29,7 +26,6 @@ const Header = ({ search, setSearch, username }: HeaderProps) => {
                         className="italic p-1 text-nowrap hidden md:block"
                     >Your <span className="text-[#e72328]">spots</span></button>
                 </div>
-                {setSearch && <Search search={search as string} setSearch={setSearch} />}
                 <div className="flex gap-4">
                     <button
                         onClick={() => window.location.href = `/`}

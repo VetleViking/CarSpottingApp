@@ -549,9 +549,6 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             imagePaths.push(`/${decodedUser}/${make}_${model}/${imageName}`);
         }
 
-
-        // const imagesBase64 = images.map(image => image.buffer.toString('base64'));
-
         const data: Record<string, string> = {
             [`notes`]: notes,
             [`date`]: date,
@@ -560,12 +557,8 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
         };
 
         imagePaths.forEach((item, index) => {
-            data[`image${index}`] = item;  // Store path instead of base64
+            data[`image${index}`] = item; 
         });
-
-        // imagesBase64.forEach((item, index) => {
-        //     data[`image${index}`] = item;
-        // });
 
         if (tagsArray && tagsArray.length > 0) {
             tagsArray.forEach((tag, index) => {

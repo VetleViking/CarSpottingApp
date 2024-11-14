@@ -77,6 +77,7 @@ const DiscoverClient = () => {
                     minutes: Math.floor(sinceUploadMs / (1000 * 60)),
                     seconds: Math.floor(sinceUploadMs / (1000))
                 }
+                let shared = false; 
 
                 return <div key={id} className='bg-white w-max'>
                     <div className='border-b border-black mx-1 mt-1'>
@@ -109,10 +110,11 @@ const DiscoverClient = () => {
                                 })
                             }} />
                             <Button text='View' className='py-1' onClick={() => {
-                                window.open(`/makes/selected/modelselected?make=${item.make}&model=${item.model}&username=${item.user}`)
+                                window.open(`/makes/selected/modelselected?make=${item.make}&model=${item.model}&username=${item.user}&key=${item.key}`, '_blank')
                             }} />
-                            {<Button text='share' className='py-1' onClick={() => {
-                                navigator.clipboard.writeText(`http://spots.vest.li/makes/selected/modelselected?make=${item.make}&model=${item.model}&username=${item.user}`)
+                            {<Button text={shared ? 'Copied to clipboard' : 'Share'} className='py-1' onClick={() => {
+                                navigator.clipboard.writeText(`http://spots.vest.li/makes/selected/modelselected?make=${item.make}&model=${item.model}&username=${item.user}&key=${item.key}`)
+                                shared = true;
                             }} />}
                         </div>
                     </div>

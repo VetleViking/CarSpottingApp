@@ -2,12 +2,13 @@ import { cookies } from "next/headers";
 
 const apiIpCars = `${process.env.NEXT_PUBLIC_DATABASE_IP || "http://localhost:4000"}/api/v1/cars/`
 
-export async function get_spotted_images(make: string, model: string, username?: string) {
+export async function get_spotted_images(make: string, model: string, username?: string, key?: string) {
     const encodedMake = encodeURIComponent(make);
     const encodedModel = encodeURIComponent(model);
     const encodedUsername = username ? encodeURIComponent(username) : null;
+    const encodedKey = key ? encodeURIComponent(key) : null;
 
-    const response = await fetch(`${apiIpCars}get_spots/${encodedMake}/${encodedModel}${encodedUsername ? '?username=' + encodedUsername : ''}`, {
+    const response = await fetch(`${apiIpCars}get_spots/${encodedMake}/${encodedModel}${encodedUsername ? '?username=' + encodedUsername : ''}${encodedKey ? '&key=' + encodedKey : ''}`, {
         method: 'GET',
         credentials: 'include',
         headers: {

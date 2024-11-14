@@ -681,7 +681,7 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
 
 router.get('/get_spots/:make/:model', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const username = req.query.username;
+        const { username, key } = req.query;
         const { make, model } = req.params;
 
         const cookies = parse(req.headers.cookie || '');
@@ -712,6 +712,18 @@ router.get('/get_spots/:make/:model', async (req: Request, res: Response, next: 
                 uploadDate: spot['uploadDate'],
                 tags
             });
+        }
+
+        if (key) {
+            const spot = allSpots.find(spot => spot.key === key);
+
+            if (!spot) {
+                res.status(404).json({ message: 'Spot not found' });
+                return;
+            }
+
+            res.status(200).json(spot);
+            return;
         }
 
         res.status(200).json(allSpots);

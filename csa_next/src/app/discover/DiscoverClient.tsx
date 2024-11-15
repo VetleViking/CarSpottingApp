@@ -29,31 +29,44 @@ const DiscoverClient = () => {
     useEffect(() => {
         setLoading(true) 
        
-        if (page == prevPage) {
-            setSpots([])
-        }
+        if (page == prevPage) setSpots([]);
 
-        let active = true
-        load()
-        return () => { active = false }
+        let active = true;
+        load();
+        return () => { active = false };
 
         async function load() {
             const res = await discover(page, sort)
             if (!active) { return }
+            
             if (page !== prevPage) {
                 setPrevPage(page)
-                if (res.length === 0) {
-                    setReachEnd(true)
-                } else {
-                    setSpots(s => s.concat(res))
-                }
-            } else {
-                setSpots(res)
-            }
-            setLoading(false)
+                
+                if (res.length === 0) setReachEnd(true)
+                else setSpots(s => s.concat(res))
+            } else  setSpots(res);
+            
+            setLoading(false);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sort, page])
+
+    const calculateTimeAgo = (uploadDate: string): string => {
+        const sinceUploadMs = new Date().getTime() - new Date(uploadDate).getTime();
+        const sinceUpload = {
+          days: Math.floor(sinceUploadMs / (1000 * 60 * 60 * 24)),
+          hours: Math.floor(sinceUploadMs / (1000 * 60 * 60)),
+          minutes: Math.floor(sinceUploadMs / (1000 * 60)),
+          seconds: Math.floor(sinceUploadMs / 1000),
+        };
+      
+        return sinceUpload.days
+          ? `${sinceUpload.days} ${sinceUpload.days === 1 ? 'day' : 'days'}`
+          : sinceUpload.hours
+          ? `${sinceUpload.hours} ${sinceUpload.hours === 1 ? 'hour' : 'hours'}`
+          : sinceUpload.minutes
+          ? `${sinceUpload.minutes} ${sinceUpload.minutes === 1 ? 'minute' : 'minutes'}`
+          : `${sinceUpload.seconds} ${sinceUpload.seconds === 1 ? 'second' : 'seconds'}`;
+    };
 
     return <div className='flex flex-col gap-4 items-center mt-4 font-ListComponent'>
         <div className='w-min'>
@@ -70,13 +83,7 @@ const DiscoverClient = () => {
                 </select>
             </div>
             {spots.length ? <>{spots.map((item, id) => {
-                const sinceUploadMs = new Date().getTime() - new Date(item.uploadDate).getTime()
-                const sinceUpload = {
-                    days: Math.floor(sinceUploadMs / (1000 * 60 * 60 * 24)),
-                    hours: Math.floor(sinceUploadMs / (1000 * 60 * 60)),
-                    minutes: Math.floor(sinceUploadMs / (1000 * 60)),
-                    seconds: Math.floor(sinceUploadMs / (1000))
-                }
+                const sinceUpload = calculateTimeAgo(item.uploadDate);
                 let shared = false; 
 
                 return <div key={id} className='bg-white w-max'>
@@ -85,16 +92,9 @@ const DiscoverClient = () => {
                     </div>
                     <div>
                         <div className='flex'>
-                            <p className='p-1'>
-                                Uploaded by <a href={`http://spots.vest.li/makes?username=${item.user}`} target="_blank" rel="noopener noreferrer" className='text-initial'>{item.user}</a>
-                            </p>
+                            <p className='p-1'>Uploaded by <a href={`http://spots.vest.li/makes?username=${item.user}`} target="_blank" rel="noopener noreferrer" className='text-initial'>{item.user}</a></p>
                             <p className='p-1'>•</p>
-                            <p className='p-1'>
-                                {sinceUpload.days > 0 ? `${sinceUpload.days} ${sinceUpload.days === 1 ? "day" : "days"}` :
-                                    sinceUpload.hours > 0 ? `${sinceUpload.hours} ${sinceUpload.hours === 1 ? "hour" : "hours"}` :
-                                        sinceUpload.minutes > 0 ? `${sinceUpload.minutes} ${sinceUpload.minutes === 1 ? "minute" : "minutes"}` :
-                                            `${sinceUpload.seconds} ${sinceUpload.seconds === 1 ? "second" : "seconds"}`} ago
-                            </p>
+                            <p className='p-1'>{sinceUpload} ago</p>
                         </div>
                         <Spotimage
                             images={item.images.map(image => `https://images.vest.li${image}`)} tags={item.tags} notes={item.notes} date={item.date} />

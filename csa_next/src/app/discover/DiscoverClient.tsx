@@ -6,25 +6,84 @@ import LoadingAnimation from "@/components/LoadingAnim";
 import Spotimage from "@/components/Spotimage";
 import { useEffect, useState } from "react";
 
+interface SpotType {
+    date: string;
+    images: string[];
+    key: string;
+    notes: string;
+    tags: string[];
+    user: string;
+    make: string;
+    model: string;
+    likes: number;
+    uploadDate: string;
+    likedByUser: boolean;
+}
+
+const SpotCard = ({ item, onLike, onView, onShare }: { 
+        item: SpotType; 
+        onLike: () => void; 
+        onView: () => void; 
+        onShare: () => void; 
+}) => {
+    const sinceUploadMs = new Date().getTime() - new Date(item.uploadDate).getTime();
+    const sinceUpload = {
+        days: Math.floor(sinceUploadMs / (1000 * 60 * 60 * 24)),
+        hours: Math.floor(sinceUploadMs / (1000 * 60 * 60)),
+        minutes: Math.floor(sinceUploadMs / (1000 * 60)),
+        seconds: Math.floor(sinceUploadMs / 1000),
+    };
+    const timeAgo = sinceUpload.days
+        ? `${sinceUpload.days} ${sinceUpload.days === 1 ? 'day' : 'days'}`
+        : sinceUpload.hours
+        ? `${sinceUpload.hours} ${sinceUpload.hours === 1 ? 'hour' : 'hours'}`
+        : sinceUpload.minutes
+        ? `${sinceUpload.minutes} ${sinceUpload.minutes === 1 ? 'minute' : 'minutes'}`
+        : `${sinceUpload.seconds} ${sinceUpload.seconds === 1 ? 'second' : 'seconds'}`;
+    
+    return (
+        <div className="bg-white w-max">
+            <div className="border-b border-black mx-1 mt-1">
+                <p className="text-center text-2xl">
+                    {item.make} {item.model}
+                </p>
+            </div>
+            <div>
+                <div className="flex">
+                    <p className="p-1">
+                    Uploaded by{' '}
+                    <a
+                        href={`http://spots.vest.li/makes?username=${item.user}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-initial"
+                    >
+                        {item.user}
+                    </a>
+                    </p>
+                    <p className="p-1">•</p>
+                    <p className="p-1">{timeAgo} ago</p>
+                </div>
+                <Spotimage images={item.images.map((img) => `https://images.vest.li${img}`)} tags={item.tags} notes={item.notes} date={item.date} />
+                <div className="flex items-center mb-1 gap-2">
+                    <p className="p-1 text-xl">{item.likes} {item.likes === 1 ? 'like' : 'likes'}</p>
+                    <Button text={item.likedByUser ? 'Remove like' : 'Like'} className="py-1" onClick={onLike} />
+                    <Button text="View" className="py-1" onClick={onView} />
+                    <Button text="Share" className="py-1" onClick={onShare} />
+                </div>
+            </div>
+        </div>
+    );
+};
+  
 const DiscoverClient = () => {
-    const [spots, setSpots] = useState<{
-        date: string;
-        images: string[];
-        key: string;
-        notes: string;
-        tags: string[];
-        user: string;
-        make: string;
-        model: string;
-        likes: number;
-        uploadDate: string;
-        likedByUser: boolean;
-    }[]>([]);
-    const [page, setPage] = useState(0);
+    const [spots, setSpots] = useState<SpotType[]>([]);
     const [sort, setSort] = useState<'recent' | 'hot' | 'top'>("recent");
+    const [loading, setLoading] = useState(true);
+    
+    const [page, setPage] = useState(0);
     const [prevPage, setPrevPage] = useState(0);
     const [reachEnd, setReachEnd] = useState(false);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         setLoading(true) 
@@ -50,23 +109,28 @@ const DiscoverClient = () => {
         }
     }, [sort, page])
 
-    const calculateTimeAgo = (uploadDate: string): string => {
-        const sinceUploadMs = new Date().getTime() - new Date(uploadDate).getTime();
-        const sinceUpload = {
-          days: Math.floor(sinceUploadMs / (1000 * 60 * 60 * 24)),
-          hours: Math.floor(sinceUploadMs / (1000 * 60 * 60)),
-          minutes: Math.floor(sinceUploadMs / (1000 * 60)),
-          seconds: Math.floor(sinceUploadMs / 1000),
-        };
-      
-        return sinceUpload.days
-          ? `${sinceUpload.days} ${sinceUpload.days === 1 ? 'day' : 'days'}`
-          : sinceUpload.hours
-          ? `${sinceUpload.hours} ${sinceUpload.hours === 1 ? 'hour' : 'hours'}`
-          : sinceUpload.minutes
-          ? `${sinceUpload.minutes} ${sinceUpload.minutes === 1 ? 'minute' : 'minutes'}`
-          : `${sinceUpload.seconds} ${sinceUpload.seconds === 1 ? 'second' : 'seconds'}`;
+    const handleLike = (id: number) => {
+        const spot = spots[id];
+        like_spot(spot.make, spot.model, spot.key, spot.user).then(() => {
+            setSpots((s) =>
+                s.map((spot, i) =>
+                    i === id
+                        ? { ...spot, likedByUser: !spot.likedByUser, likes: spot.likes + (spot.likedByUser ? -1 : 1) }
+                        : spot
+                )
+            );
+        });
     };
+
+    const handleView = (id: number) => {
+        window.open(`http://spots.vest.li/makes?spot=${spots[id].key}`, "_blank");
+    };
+
+    const handleShare = (id: number) => {
+        window.open(`http://spots.vest.li/makes?spot=${
+            spots[id].key
+        }`, "_blank");
+    }
 
     return <div className='flex flex-col gap-4 items-center mt-4 font-ListComponent'>
         <div className='w-min'>
@@ -82,47 +146,16 @@ const DiscoverClient = () => {
                     <option value='top'>Top</option>
                 </select>
             </div>
-            {spots.length ? <>{spots.map((item, id) => {
-                const sinceUpload = calculateTimeAgo(item.uploadDate);
-                let shared = false; 
-
-                return <div key={id} className='bg-white w-max'>
-                    <div className='border-b border-black mx-1 mt-1'>
-                        <p className='text-center text-2xl '>{item.make} {item.model}</p>
-                    </div>
-                    <div>
-                        <div className='flex'>
-                            <p className='p-1'>Uploaded by <a href={`http://spots.vest.li/makes?username=${item.user}`} target="_blank" rel="noopener noreferrer" className='text-initial'>{item.user}</a></p>
-                            <p className='p-1'>•</p>
-                            <p className='p-1'>{sinceUpload} ago</p>
-                        </div>
-                        <Spotimage
-                            images={item.images.map(image => `https://images.vest.li${image}`)} tags={item.tags} notes={item.notes} date={item.date} />
-                        <div className='flex items-center mb-1 gap-2'>
-                            <p className='p-1 text-xl'>{item.likes} {item.likes == 1 ? "like" : "likes"}</p>
-                            <Button text={item.likedByUser ? "Remove like" : "Like"} className='py-1' onClick={() => {
-                                like_spot(item.make, item.model, item.key, item.user).then(() => {
-                                    setSpots(spots.map(spot => {
-                                        return spot.make === item.make && spot.model === item.model && spot.key === item.key && spot.user === item.user
-                                            ? { ...spot, likedByUser: !spot.likedByUser, likes: spot.likedByUser ? spot.likes - 1 : spot.likes + 1 }
-                                            : spot;
-                                    }));
-                                })
-                            }} />
-                            <Button text='View' className='py-1' onClick={() => {
-                                window.open(`/makes/selected/modelselected?make=${item.make}&model=${item.model}&username=${item.user}&key=${item.key}`, '_blank')
-                            }} />
-                            {<Button text={shared ? 'Copied to clipboard' : 'Share'} className='py-1' onClick={() => {
-                                navigator.clipboard.writeText(`http://spots.vest.li/makes/selected/modelselected?make=${item.make}&model=${item.model}&username=${item.user}&key=${item.key}`)
-                                shared = true;
-                            }} />}
-                        </div>
-                    </div>
-                </div>
-            })}
-                <div className='flex justify-center m-4'>
-                    {reachEnd ? <p className='text-white text-xl'>No more spots.</p> : loading ? <LoadingAnimation text='Loading spots' /> : <Button text='Load more' onClick={() => setPage(page + 1)} />}
-                </div></> : loading ? <LoadingAnimation text='Loading spots' /> : <p className='text-white text-xl text-nowrap'>Spots could not be loaded.</p>}
+            {spots.length ? <>{spots.map((item, id) => <SpotCard 
+                key={id} 
+                item={item} 
+                onLike={() => handleLike(id)} 
+                onView={() => handleView(id)} 
+                onShare={() => handleShare(id)}
+            />)}
+            <div className='flex justify-center m-4'>
+                {reachEnd ? <p className='text-white text-xl'>No more spots.</p> : loading ? <LoadingAnimation text='Loading spots' /> : <Button text='Load more' onClick={() => setPage(page + 1)} />}
+            </div></> : loading ? <LoadingAnimation text='Loading spots' /> : <p className='text-white text-xl text-nowrap'>Spots could not be loaded.</p>}
         </div>
     </div>
 };

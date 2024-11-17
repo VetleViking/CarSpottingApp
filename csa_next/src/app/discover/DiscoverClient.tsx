@@ -27,12 +27,14 @@ const SpotCard = ({ item, onLike, onView, onShare }: {
         onShare: () => void; 
 }) => {
     const sinceUploadMs = new Date().getTime() - new Date(item.uploadDate).getTime();
+
     const sinceUpload = {
         days: Math.floor(sinceUploadMs / (1000 * 60 * 60 * 24)),
         hours: Math.floor(sinceUploadMs / (1000 * 60 * 60)),
         minutes: Math.floor(sinceUploadMs / (1000 * 60)),
         seconds: Math.floor(sinceUploadMs / 1000),
     };
+
     const timeAgo = sinceUpload.days
         ? `${sinceUpload.days} ${sinceUpload.days === 1 ? 'day' : 'days'}`
         : sinceUpload.hours
@@ -40,6 +42,8 @@ const SpotCard = ({ item, onLike, onView, onShare }: {
         : sinceUpload.minutes
         ? `${sinceUpload.minutes} ${sinceUpload.minutes === 1 ? 'minute' : 'minutes'}`
         : `${sinceUpload.seconds} ${sinceUpload.seconds === 1 ? 'second' : 'seconds'}`;
+
+    let shared = false;
     
     return (
         <div className="bg-white w-max">
@@ -51,15 +55,15 @@ const SpotCard = ({ item, onLike, onView, onShare }: {
             <div>
                 <div className="flex">
                     <p className="p-1">
-                    Uploaded by{' '}
-                    <a
-                        href={`http://spots.vest.li/makes?username=${item.user}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-initial"
-                    >
-                        {item.user}
-                    </a>
+                        Uploaded by{' '}
+                        <a
+                            href={`http://spots.vest.li/makes?username=${item.user}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-initial"
+                        >
+                            {item.user}
+                        </a>
                     </p>
                     <p className="p-1">•</p>
                     <p className="p-1">{timeAgo} ago</p>
@@ -69,7 +73,10 @@ const SpotCard = ({ item, onLike, onView, onShare }: {
                     <p className="p-1 text-xl">{item.likes} {item.likes === 1 ? 'like' : 'likes'}</p>
                     <Button text={item.likedByUser ? 'Remove like' : 'Like'} className="py-1" onClick={onLike} />
                     <Button text="View" className="py-1" onClick={onView} />
-                    <Button text="Share" className="py-1" onClick={onShare} />
+                    <Button text="Share" className="py-1" onClick={ () => {
+                        onShare();
+                        shared = true;
+                    }} />
                 </div>
             </div>
         </div>
@@ -123,13 +130,13 @@ const DiscoverClient = () => {
     };
 
     const handleView = (id: number) => {
-        window.open(`http://spots.vest.li/makes?spot=${spots[id].key}`, "_blank");
-    };
+        const spot = spots[id];
+        window.open(`http://spots.vest.li/makes/selected/modelselected?make=${spot.make}&model=${spot.model}&username=${spot.user}&key=${spot.key}`)
+    }
 
     const handleShare = (id: number) => {
-        window.open(`http://spots.vest.li/makes?spot=${
-            spots[id].key
-        }`, "_blank");
+        const spot = spots[id];
+        navigator.clipboard.writeText(`http://spots.vest.li/makes/selected/modelselected?make=${spot.make}&model=${spot.model}&username=${spot.user}&key=${spot.key}`);
     }
 
     return <div className='flex flex-col gap-4 items-center mt-4 font-ListComponent'>

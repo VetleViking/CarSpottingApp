@@ -43,44 +43,42 @@ const SpotCard = ({ item, onLike, onView, onShare }: {
         ? `${sinceUpload.minutes} ${sinceUpload.minutes === 1 ? 'minute' : 'minutes'}`
         : `${sinceUpload.seconds} ${sinceUpload.seconds === 1 ? 'second' : 'seconds'}`;
 
-    let shared = false;
+    const [shared, setShared] = useState(false);
     
-    return (
-        <div className="bg-white w-max">
-            <div className="border-b border-black mx-1 mt-1">
-                <p className="text-center text-2xl">
-                    {item.make} {item.model}
+    return <div className="bg-white w-max">
+        <div className="border-b border-black mx-1 mt-1">
+            <p className="text-center text-2xl">
+                {item.make} {item.model}
+            </p>
+        </div>
+        <div>
+            <div className="flex">
+                <p className="p-1">
+                    Uploaded by{' '}
+                    <a
+                        href={`http://spots.vest.li/makes?username=${item.user}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-initial"
+                    >
+                        {item.user}
+                    </a>
                 </p>
+                <p className="p-1">•</p>
+                <p className="p-1">{timeAgo} ago</p>
             </div>
-            <div>
-                <div className="flex">
-                    <p className="p-1">
-                        Uploaded by{' '}
-                        <a
-                            href={`http://spots.vest.li/makes?username=${item.user}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-initial"
-                        >
-                            {item.user}
-                        </a>
-                    </p>
-                    <p className="p-1">•</p>
-                    <p className="p-1">{timeAgo} ago</p>
-                </div>
-                <Spotimage images={item.images.map((img) => `https://images.vest.li${img}`)} tags={item.tags} notes={item.notes} date={item.date} />
-                <div className="flex items-center mb-1 gap-2">
-                    <p className="p-1 text-xl">{item.likes} {item.likes === 1 ? 'like' : 'likes'}</p>
-                    <Button text={item.likedByUser ? 'Remove like' : 'Like'} className="py-1" onClick={onLike} />
-                    <Button text="View" className="py-1" onClick={onView} />
-                    <Button text="Share" className="py-1" onClick={ () => {
-                        onShare();
-                        shared = true;
-                    }} />
-                </div>
+            <Spotimage images={item.images.map((img) => `https://images.vest.li${img}`)} tags={item.tags} notes={item.notes} date={item.date} />
+            <div className="flex items-center mb-1 gap-2">
+                <p className="p-1 text-xl">{item.likes} {item.likes === 1 ? 'like' : 'likes'}</p>
+                <Button text={item.likedByUser ? 'Remove like' : 'Like'} className="py-1" onClick={onLike} />
+                <Button text="View" className="py-1" onClick={onView} />
+                <Button text={shared ? "Copied to clipboard" : "Share"} className="py-1" onClick={ () => {
+                    onShare();
+                    setShared(true);
+                }} />
             </div>
         </div>
-    );
+    </div>
 };
   
 const DiscoverClient = () => {

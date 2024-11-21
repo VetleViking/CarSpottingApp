@@ -4,7 +4,7 @@ import { discover, like_spot } from "@/api/cars";
 import Button from "@/components/Button";
 import LoadingAnimation from "@/components/LoadingAnim";
 import Spotimage from "@/components/Spotimage";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface SpotType {
     date: string;
@@ -23,37 +23,55 @@ interface SpotType {
 const SpotCard: React.FC<{ spot: SpotType }> = ({ spot }) => {
     const [shared, setShared] = useState(false);
     const [liked, setLiked] = useState(spot.likedByUser);
+    const [likeCount, setLikeCount] = useState(spot.likes);
     
     const sinceUploadMs = new Date().getTime() - new Date(spot.uploadDate).getTime();
-    const sinceUpload = {
-        days: Math.floor(sinceUploadMs / (1000 * 60 * 60 * 24)),
-        hours: Math.floor(sinceUploadMs / (1000 * 60 * 60)),
-        minutes: Math.floor(sinceUploadMs / (1000 * 60)),
-        seconds: Math.floor(sinceUploadMs / 1000),
-    };
+    const days = Math.floor(sinceUploadMs / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((sinceUploadMs / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((sinceUploadMs / (1000 * 60)) % 60);
+    const seconds = Math.floor((sinceUploadMs / 1000) % 60);
 
-    const timeAgo = sinceUpload.days
-        ? `${sinceUpload.days} ${sinceUpload.days === 1 ? 'day' : 'days'}`
-        : sinceUpload.hours
-        ? `${sinceUpload.hours} ${sinceUpload.hours === 1 ? 'hour' : 'hours'}`
-        : sinceUpload.minutes
-        ? `${sinceUpload.minutes} ${sinceUpload.minutes === 1 ? 'minute' : 'minutes'}`
-        : `${sinceUpload.seconds} ${sinceUpload.seconds === 1 ? 'second' : 'seconds'}`;
-
-
+    const buildSpotLink = (spot: SpotType) =>
+        `http://spots.vest.li/makes/selected/modelselected?make=${encodeURIComponent(
+          spot.make
+        )}&model=${encodeURIComponent(spot.model)}&username=${encodeURIComponent(
+          spot.user
+        )}&key=${encodeURIComponent(spot.key)}`;
     
+    const spotLink = useMemo(() => buildSpotLink(spot), [spot]);
+
+    const timeAgo = days
+        ? `${days} ${days === 1 ? 'day' : 'days'}`
+        : hours
+        ? `${hours} ${hours === 1 ? 'hour' : 'hours'}`
+        : minutes
+        ? `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`
+        : `${seconds} ${seconds === 1 ? 'second' : 'seconds'}`;
+
     const onLike = () => {
-        like_spot(spot.make, spot.model, spot.key, spot.user).then(() => {
-            setLiked(!liked);
+        const prevLiked = liked;
+        const prevLikeCount = likeCount;
+
+        setLiked(!liked);
+        setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+        like_spot(spot.make, spot.model, spot.key, spot.user).catch(error => {
+            setLiked(prevLiked);
+            setLikeCount(prevLikeCount);
+
+            console.error('Error liking the spot:', error);
         });
     };
 
     const onView = () => {
-        window.open(`http://spots.vest.li/makes/selected/modelselected?make=${spot.make}&model=${spot.model}&username=${spot.user}&key=${spot.key}`)
+        window.open(
+            spotLink,
+            '_blank',
+            'noopener noreferrer'
+        );
     }
 
     const onShare = () => {
-        navigator.clipboard.writeText(`http://spots.vest.li/makes/selected/modelselected?make=${spot.make}&model=${spot.model}&username=${spot.user}&key=${spot.key}`);
+        navigator.clipboard.writeText(spotLink);
         setShared(true);
     }
     
@@ -63,7 +81,7 @@ const SpotCard: React.FC<{ spot: SpotType }> = ({ spot }) => {
                 {spot.make} {spot.model}
             </p>
         </div>
-        <div>
+        <div className="w-min">
             <div className="flex">
                 <p className="p-1">
                     Uploaded by{' '}
@@ -71,7 +89,6 @@ const SpotCard: React.FC<{ spot: SpotType }> = ({ spot }) => {
                         href={`http://spots.vest.li/makes?username=${spot.user}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-initial"
                     >
                         {spot.user}
                     </a>
@@ -79,12 +96,17 @@ const SpotCard: React.FC<{ spot: SpotType }> = ({ spot }) => {
                 <p className="p-1">•</p>
                 <p className="p-1">{timeAgo} ago</p>
             </div>
-            <Spotimage images={spot.images.map((img) => `https://images.vest.li${img}`)} tags={spot.tags} notes={spot.notes} date={spot.date} />
+            <Spotimage 
+                images={spot.images.map((img) => `https://images.vest.li${img}`)} 
+                tags={spot.tags} 
+                notes={spot.notes} 
+                date={spot.date}
+            />
             <div className="flex items-center mb-1 gap-2">
-                <p className="p-1 text-xl">{spot.likes} {spot.likes === 1 ? 'like' : 'likes'}</p>
+                <p className="p-1 text-xl">{likeCount} {likeCount === 1 ? 'like' : 'likes'}</p>
                 <Button text={liked ? 'Remove like' : 'Like'} className="py-1" onClick={onLike} />
                 <Button text="View" className="py-1" onClick={onView} />
-                <Button text={shared ? "Copied to clipboard" : "Share"} className="py-1" onClick={onShare} />
+                <Button text={shared ? "Link copied" : "Share"} className="py-1" onClick={onShare} />
             </div>
         </div>
     </div>
@@ -96,56 +118,70 @@ const DiscoverClient = () => {
     const [loading, setLoading] = useState(true);
     
     const [page, setPage] = useState(0);
-    const [prevPage, setPrevPage] = useState(0);
     const [reachEnd, setReachEnd] = useState(false);
 
+    // Loading of spots, with pagination
     useEffect(() => {
-        setLoading(true) 
-       
-        if (page == prevPage) setSpots([]);
+        let active = true;       
+        
+        async function load() {
+            if (!active) return;
+            setLoading(true); 
+            
+            try {
+                const res = await discover(page, sort);
+                if (!active) return;
+                
+                if (page === 0) {
+                    setSpots(res);
+                } else {
+                    setSpots(prevSpots => [...prevSpots, ...res]);
+                }
+    
+                if (res.length === 0) setReachEnd(true);
+            } catch (error) {
+                console.error('Error loading spots:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
 
-        let active = true;
         load();
         return () => { active = false };
-
-        async function load() {
-            const res = await discover(page, sort)
-            if (!active) { return }
-            
-            if (page !== prevPage) {
-                setPrevPage(page)
-                
-                if (res.length === 0) setReachEnd(true)
-                else setSpots(s => s.concat(res))
-            } else  setSpots(res);
-            
-            setLoading(false);
-        }
     }, [sort, page])
 
-
     return <div className='flex flex-col gap-4 items-center mt-4 font-ListComponent'>
-        <div className='w-min'>
+        <div className='w-full max-w-96'>
             <div className='mb-2'>
                 <p className='text-white'>Sort by</p>
                 <select value={sort} onChange={e => {
-                    setSort(e.target.value as 'recent' | 'hot' | 'top')
-                    setPage(0)
-                    setReachEnd(false)
+                    setSort(e.target.value as 'recent' | 'hot' | 'top');
+                    setPage(0);
+                    setReachEnd(false);
+                    setSpots([]);
                 }}>
                     <option value='recent'>Recent</option>
                     <option value='hot'>Hot</option>
                     <option value='top'>Top</option>
                 </select>
             </div>
-            {/* sadf */}
-            {spots.length ? <>{spots.map((item, id) => <SpotCard 
-                key={id} 
-                spot={item} 
-            />)}
-            <div className='flex justify-center m-4'>
-                {reachEnd ? <p className='text-white text-xl'>No more spots.</p> : loading ? <LoadingAnimation text='Loading spots' /> : <Button text='Load more' onClick={() => setPage(page + 1)} />}
-            </div></> : loading ? <LoadingAnimation text='Loading spots' /> : <p className='text-white text-xl text-nowrap'>Spots could not be loaded.</p>}
+            {spots.length ? (
+                <>
+                    {spots.map((item, id) => <SpotCard 
+                        key={id} 
+                        spot={item} 
+                    />)}
+                    <div className='flex justify-center m-4'>
+                        {reachEnd ? <p className='text-white text-xl'>No more spots.</p> 
+                                  : loading ? <LoadingAnimation text='Loading spots' /> 
+                                            : <Button text='Load more' onClick={() => setPage(page + 1)} />}
+                    </div>
+                </> 
+            ) : loading ?  (
+                <LoadingAnimation text='Loading spots' />
+            ) : (
+                <p className='text-white text-xl text-nowrap'>Spots could not be loaded.</p>
+            )}
         </div>
     </div>
 };

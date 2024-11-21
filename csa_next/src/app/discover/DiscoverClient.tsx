@@ -20,14 +20,11 @@ interface SpotType {
     likedByUser: boolean;
 }
 
-const SpotCard = ({ item, onLike, onView, onShare }: { 
-        item: SpotType; 
-        onLike: () => void; 
-        onView: () => void; 
-        onShare: () => void; 
-}) => {
-    const sinceUploadMs = new Date().getTime() - new Date(item.uploadDate).getTime();
-
+const SpotCard: React.FC<{ spot: SpotType }> = ({ spot }) => {
+    const [shared, setShared] = useState(false);
+    const [liked, setLiked] = useState(spot.likedByUser);
+    
+    const sinceUploadMs = new Date().getTime() - new Date(spot.uploadDate).getTime();
     const sinceUpload = {
         days: Math.floor(sinceUploadMs / (1000 * 60 * 60 * 24)),
         hours: Math.floor(sinceUploadMs / (1000 * 60 * 60)),
@@ -43,12 +40,27 @@ const SpotCard = ({ item, onLike, onView, onShare }: {
         ? `${sinceUpload.minutes} ${sinceUpload.minutes === 1 ? 'minute' : 'minutes'}`
         : `${sinceUpload.seconds} ${sinceUpload.seconds === 1 ? 'second' : 'seconds'}`;
 
-    const [shared, setShared] = useState(false);
+
+    
+    const onLike = () => {
+        like_spot(spot.make, spot.model, spot.key, spot.user).then(() => {
+            setLiked(!liked);
+        });
+    };
+
+    const onView = () => {
+        window.open(`http://spots.vest.li/makes/selected/modelselected?make=${spot.make}&model=${spot.model}&username=${spot.user}&key=${spot.key}`)
+    }
+
+    const onShare = () => {
+        navigator.clipboard.writeText(`http://spots.vest.li/makes/selected/modelselected?make=${spot.make}&model=${spot.model}&username=${spot.user}&key=${spot.key}`);
+        setShared(true);
+    }
     
     return <div className="bg-white w-max">
         <div className="border-b border-black mx-1 mt-1">
             <p className="text-center text-2xl">
-                {item.make} {item.model}
+                {spot.make} {spot.model}
             </p>
         </div>
         <div>
@@ -56,26 +68,23 @@ const SpotCard = ({ item, onLike, onView, onShare }: {
                 <p className="p-1">
                     Uploaded by{' '}
                     <a
-                        href={`http://spots.vest.li/makes?username=${item.user}`}
+                        href={`http://spots.vest.li/makes?username=${spot.user}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-initial"
                     >
-                        {item.user}
+                        {spot.user}
                     </a>
                 </p>
                 <p className="p-1">•</p>
                 <p className="p-1">{timeAgo} ago</p>
             </div>
-            <Spotimage images={item.images.map((img) => `https://images.vest.li${img}`)} tags={item.tags} notes={item.notes} date={item.date} />
+            <Spotimage images={spot.images.map((img) => `https://images.vest.li${img}`)} tags={spot.tags} notes={spot.notes} date={spot.date} />
             <div className="flex items-center mb-1 gap-2">
-                <p className="p-1 text-xl">{item.likes} {item.likes === 1 ? 'like' : 'likes'}</p>
-                <Button text={item.likedByUser ? 'Remove like' : 'Like'} className="py-1" onClick={onLike} />
+                <p className="p-1 text-xl">{spot.likes} {spot.likes === 1 ? 'like' : 'likes'}</p>
+                <Button text={liked ? 'Remove like' : 'Like'} className="py-1" onClick={onLike} />
                 <Button text="View" className="py-1" onClick={onView} />
-                <Button text={shared ? "Copied to clipboard" : "Share"} className="py-1" onClick={ () => {
-                    onShare();
-                    setShared(true);
-                }} />
+                <Button text={shared ? "Copied to clipboard" : "Share"} className="py-1" onClick={onShare} />
             </div>
         </div>
     </div>
@@ -114,28 +123,6 @@ const DiscoverClient = () => {
         }
     }, [sort, page])
 
-    const handleLike = (id: number) => {
-        const spot = spots[id];
-        like_spot(spot.make, spot.model, spot.key, spot.user).then(() => {
-            setSpots((s) =>
-                s.map((spot, i) =>
-                    i === id
-                        ? { ...spot, likedByUser: !spot.likedByUser, likes: spot.likes + (spot.likedByUser ? -1 : 1) }
-                        : spot
-                )
-            );
-        });
-    };
-
-    const handleView = (id: number) => {
-        const spot = spots[id];
-        window.open(`http://spots.vest.li/makes/selected/modelselected?make=${spot.make}&model=${spot.model}&username=${spot.user}&key=${spot.key}`)
-    }
-
-    const handleShare = (id: number) => {
-        const spot = spots[id];
-        navigator.clipboard.writeText(`http://spots.vest.li/makes/selected/modelselected?make=${spot.make}&model=${spot.model}&username=${spot.user}&key=${spot.key}`);
-    }
 
     return <div className='flex flex-col gap-4 items-center mt-4 font-ListComponent'>
         <div className='w-min'>
@@ -151,12 +138,10 @@ const DiscoverClient = () => {
                     <option value='top'>Top</option>
                 </select>
             </div>
+            {/* sadf */}
             {spots.length ? <>{spots.map((item, id) => <SpotCard 
                 key={id} 
-                item={item} 
-                onLike={() => handleLike(id)} 
-                onView={() => handleView(id)} 
-                onShare={() => handleShare(id)}
+                spot={item} 
             />)}
             <div className='flex justify-center m-4'>
                 {reachEnd ? <p className='text-white text-xl'>No more spots.</p> : loading ? <LoadingAnimation text='Loading spots' /> : <Button text='Load more' onClick={() => setPage(page + 1)} />}

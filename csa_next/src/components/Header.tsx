@@ -26,6 +26,10 @@ const Header = ({ username }: HeaderProps) => {
                         className="italic p-1 text-nowrap hidden md:block"
                     >Your <span className="text-[#e72328]">spots</span></button>
                 </div>
+                <button
+                    onClick={() => window.location.href = `/discover`}
+                    className="italic p-1 text-nowrap w-max"
+                >Discover <span className="text-[#e72328]">spots</span></button>
                 <div className="flex gap-4">
                     <button
                         onClick={() => window.location.href = `/`}

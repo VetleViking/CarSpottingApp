@@ -1,9 +1,11 @@
 "use client";
 
 import { get_models, get_spotted_models } from "@/api/cars";
+import AddNew from "@/components/AddNew";
 import Header from "@/components/Header";
 import ListComponent from "@/components/ListComponent";
 import Search from "@/components/Search";
+import SearchReg from "@/components/SearchReg";
 import { ReactNode, useEffect, useState } from "react";
 
 interface MakeSelectedClientProps {
@@ -33,8 +35,12 @@ const MakeSelectedClient = ({altUsername, username, make, children}: MakeSelecte
 
     return <div>
         <Header username={altUsername as string} />
-        <Search search={search} setSearch={setSearch} />
         {children}
+        <Search search={search} setSearch={setSearch} />
+        {!username && <div className='flex gap-2 mx-1 mb-4 flex-wrap md:flex-nowrap'>
+            <AddNew type='model' make={make} />
+            <SearchReg />
+        </div>}
         {(Array.isArray(data) && data.length > 0)
             ? data.map((item: any, id) => <div key={id} onClick={() => { selectedModel(item.make, item.model) }}>
                 <ListComponent title={make == "unknown" ? item.make + " " + item.model : item.model} />

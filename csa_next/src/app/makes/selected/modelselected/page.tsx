@@ -32,7 +32,7 @@ export default async function Makes({searchParams}: {searchParams: Promise<{ [ke
         <Header username={altUsername as string} />
         <p className="text-white text-center text-xl m-4">{(isOwner ? `Your` : `${username}'s`) + ` spots of ${make} ${model}:`}</p>
         <div className='flex flex-col items-center gap-2'>
-            {(username && make && model) && spots.map((item, id) => 
+            {(username && make && model && spots) && spots.map((item, id) => 
                 <div key={id}>
                     <Spotimage
                         images={item.images.map(image => `https://images.vest.li${image}`)} tags={item.tags} notes={item.notes} date={item.date}

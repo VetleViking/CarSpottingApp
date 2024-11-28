@@ -23,6 +23,11 @@ export default async function Makes({searchParams}: {searchParams: Promise<{ [ke
         key: string;
     }[] : [];
 
+    if (!make || !model) return <div>
+        <Header username={altUsername as string} />
+        <p className="text-white text-center text-xl m-4">No spots found</p>
+    </div>;
+
     if (!username) return <div>
         <Header username={altUsername as string} />
         <UploadSpot make={make as string} model={model as string} username={altUsername} />

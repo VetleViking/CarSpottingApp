@@ -117,6 +117,47 @@ export async function upload_spot(make: string, model: string, images: File[], n
     return await response.json();
 }
 
+interface UploadData {
+    make: string;
+    model: string;
+    files: File[];
+    notes?: string;
+    date?: string;
+    tags?: string[];
+}
+
+export async function startBackgroundUpload(registration: ServiceWorkerRegistration, data: UploadData) {
+    const { make, model, files, notes, date, tags } = data;
+    const formData = new FormData();
+    formData.append('make', make);
+    formData.append('model', model);
+
+    files.forEach(file => formData.append('images', file));
+    if (tags) tags.forEach(tag => formData.append('tags', tag));
+    if (notes) formData.append('notes', notes);
+    if (date) formData.append('date', date);
+
+    const request = new Request(`${apiIpCars}addspot`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+    });
+
+    try {
+        const bgFetch = await (registration as any).backgroundFetch.fetch('my-upload-id', [request], {
+            title: 'Uploading your files',
+            icons: [{ src: '/icon.png', sizes: '192x192', type: 'image/png' }],
+            downloadTotal: files.reduce((acc, file) => acc + file.size, 0),
+        });
+        // The service worker will handle success/failure events.
+    } catch (error) {
+        console.error('Background fetch registration failed:', error);
+        // Fallback to normal upload if background fetch fails
+        await upload_spot(make, model, files, notes, date, tags);
+    }
+}
+  
+
 export async function edit_spot(make: string, model: string, key: string, notes: string, date: string, tags?: string[]) {
     const response = await fetch(`${apiIpCars}editspot`, {
         method: 'POST',

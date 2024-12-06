@@ -1,6 +1,6 @@
 "use client";
 
-import { add_tag, get_tags, upload_spot } from "@/api/cars";
+import { add_tag, get_tags, startBackgroundUpload, upload_spot } from "@/api/cars";
 import React, { useEffect, useState } from "react";
 import Spotimage from "./Spotimage";
 import LoadingAnimation from "./LoadingAnim";
@@ -47,18 +47,37 @@ const UploadSpot = ({ make, model, username }: SpotProps) => {
 
     const upload = async () => {
         if (!files) return;
-
+      
         setLoading(true);
         setUploading(true);
-
+      
         const fileArray = Array.from(files);
-        const data = await upload_spot(make, model, fileArray, notes, date, tags);
-
+      
+        // Check if service worker and background fetch are available
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then(async registration => {
+                if ('backgroundFetch' in registration) {
+                    // Use Background Fetch API
+                    await startBackgroundUpload(registration, { make, model, files: fileArray, notes, date, tags });
+                } else {
+                    // Fallback to normal upload
+                    const data = await upload_spot(make, model, fileArray, notes, date, tags);
+                    handleUploadResponse(data);
+                }
+            });
+        } else {
+            // If no service worker (and thus no background fetch), fallback directly
+            const data = await upload_spot(make, model, fileArray, notes, date, tags);
+            handleUploadResponse(data);
+        }
+    };
+      
+    function handleUploadResponse(data: any) {
         if (data === null || data === undefined || data.error) {
             setLoading(false);
             return;
         }
-
+      
         setMessage('Spot uploaded');
         setFiles(null);
         setPreviewUrls([]);
@@ -66,9 +85,8 @@ const UploadSpot = ({ make, model, username }: SpotProps) => {
         setDate('');
         setTags([]);
         setLoading(false);
-
-        // window.location.href = `/makes/selected/modelselected?make=${make}&model=${model}&username=${username}`;
-    };
+    }
+      
 
 
     return <div className="flex flex-col items-center">

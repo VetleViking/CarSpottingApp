@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { ServiceWorker } from "@/components/ServiceWorker";
 
 export const metadata: Metadata = {
     title: "Car Spotting App",
@@ -14,7 +15,10 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" className="bg-black">
-            <body className="">{children}</body>
+            <body className="">
+                {children}
+                <ServiceWorker />
+            </body>
         </html>
     );
 }

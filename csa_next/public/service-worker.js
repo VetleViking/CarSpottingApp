@@ -13,4 +13,3 @@ self.addEventListener('backgroundfetchfail', event => {
     console.log('Background Fetch failed: ', event.registration.id);
     // Optionally, inform the page or retry
 });
-  

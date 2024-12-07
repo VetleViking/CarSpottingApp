@@ -53,20 +53,17 @@ const UploadSpot = ({ make, model, username }: SpotProps) => {
       
         const fileArray = Array.from(files);
       
-        // Check if service worker and background fetch are available
+        // if supported, use background fetch so users can close the tab
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.ready.then(async registration => {
                 if ('backgroundFetch' in registration) {
-                    // Use Background Fetch API
                     await startBackgroundUpload(registration, { make, model, files: fileArray, notes, date, tags });
                 } else {
-                    // Fallback to normal upload
                     const data = await upload_spot(make, model, fileArray, notes, date, tags);
                     handleUploadResponse(data);
                 }
             });
-        } else {
-            // If no service worker (and thus no background fetch), fallback directly
+        } else { // if not supported, upload normally
             const data = await upload_spot(make, model, fileArray, notes, date, tags);
             handleUploadResponse(data);
         }
@@ -74,6 +71,7 @@ const UploadSpot = ({ make, model, username }: SpotProps) => {
       
     function handleUploadResponse(data: any) {
         if (data === null || data === undefined || data.error) {
+            setMessage('Error uploading spot, please try again');
             setLoading(false);
             return;
         }

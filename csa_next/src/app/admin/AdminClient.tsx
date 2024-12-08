@@ -31,7 +31,9 @@ export default function AdminClientSide() {
             className='text-xl m-4'
         />
         <div>
-            <p className='text-white text-center p-2 text-xl italic font-medium'>Create Release Notes</p>
+            <p className='text-white text-center p-2 text-xl italic font-medium'>
+                Create Release Notes
+            </p>
             <p>implement later</p>
         </div>
         <div>

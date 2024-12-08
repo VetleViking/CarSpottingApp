@@ -1,7 +1,7 @@
-import React from 'react';
-import AskAi from '@/components/AskAi';
-import MakesClient from './MakesClient';
 import { ensure_login } from '@/functions/server_functions';
+import MakesClient from './MakesClient';
+import AskAi from '@/components/AskAi';
+import React from 'react';
 
 export default async function MakesComponent({searchParams}: {searchParams: Promise<{ [key: string]: string | string[] | undefined }>}) {
     const resolvedSearchParams = await searchParams;

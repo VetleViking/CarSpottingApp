@@ -1,25 +1,62 @@
 # Car Spotting App
-A website where you can upload images of your spots of cars. The site is currently under development.
 
+**Car Spotting App** is a web application that allows users to upload and share images of cars they've spotted. The application leverages AI for car make and model recognition and provides additional vehicle details from the Statens Vegvesen registry for Norwegian registration numbers.
 
-The site is built with NextJS using TypeScript and Tailwind in the frontend, Redis for the database, and Express for the backend. The site is utilizing ChatGPT 4.0 lite using the [OpenAI api](https://platform.openai.com/api-keys) for AI-recognization of the make and models of cars, as well as [Statens Vegvesen reg api](https://www.vegvesen.no/om-oss/om-organisasjonen/apne-data/et-utvalg-apne-data/api-for-tekniske-kjoretoyopplysninger/) to have the ability to search up car details for norwegian reg-numbers.
+**Live Demo:** [https://spots.vest.li](https://spots.vest.li)
 
-The link to the site is: https://spots.vest.li
+## Features
 
-## Running the site
-If you want to run your own version of the site, you can do so in a couple of steps.
+- **AI Recognition (ChatGPT 4.0 lite & OpenAI API):** Identify car makes and models from uploaded images.
+- **Vehicle Details from Statens Vegvesen:** Get technical details and specs of Norwegian-registered cars via the [Statens Vegvesen reg API](https://www.vegvesen.no/om-oss/om-organisasjonen/apne-data/et-utvalg-apne-data/api-for-tekniske-kjoretoyopplysninger/).
+- **Frontend Stack:** Built with Next.js, TypeScript, and Tailwind CSS.
+- **Backend:** Uses Express for API endpoints and Redis for data storage.
+- **CDN Integration:** Save images to a custom CDN and store the image URLs in the database.
 
-First, you will need Docker, and Redis Insight if you want to see the data in the database easier.
-Then, set up the .env files in the frontend and backend according to the .env.example files.
-And then, install packages and run the Frontend with
-```bash
-npm i
-npm run dev
-```
-and the backend with
-```bash
-npm i
-docker-compose up -d
-npm run dev
-```
-you will probably need to change the /addspot endpoint, as it depends on the CDN i have set up, and saves the images to a file and only saves links to them (for example https://images.vest.li/Vetle/Porsche_944/0_0.jpg). Either set it up for your cdn, or replace the links with placeholder links so that it still works (for example https://cataas.com/cat)
+## Technologies Used
+
+- **Frontend:** [Next.js](https://nextjs.org/) (TypeScript, Tailwind CSS)
+- **Backend:** [Express.js](https://expressjs.com/) and [Redis](https://redis.io/)
+- **AI Integration:** [OpenAI API](https://platform.openai.com/api-keys) (for ChatGPT 4.0 lite)
+- **Data Source:** [Statens Vegvesen reg API](https://www.vegvesen.no/om-oss/om-organisasjonen/apne-data/et-utvalg-apne-data/api-for-tekniske-kjoretoyopplysninger/)
+
+## Running it locally
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/)
+- [Redis Insight](https://redis.com/redis-enterprise/redis-insight/) (optional, for easier database inspection)
+- [Node.js and npm](https://nodejs.org/)
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/yourusername/car-spotting-app.git
+   cd car-spotting-app
+   ```
+
+2. **Set up environment variables:**
+   - Copy the `.env.example` files in both `frontend` and `backend` directories and rename them to `.env`.
+   - Update the `.env` files with your own API keys, Redis connection info, and CDN URLs.
+
+3. **Install dependencies and run the Frontend:**
+   ```bash
+   # from the frontend directory
+   npm install
+   npm run dev
+   ```
+
+4. **Install dependencies and run the Backend:**
+   ```bash
+   # from the backend directory
+   npm install
+   docker-compose up -d
+   npm run dev
+   ```
+
+### CDN Configuration
+
+If you do not have a CDN set up, you’ll need to modify the `/addspot` endpoint in the backend. Either:
+
+- Set up your own CDN and adjust the code accordingly.
+- Replace the CDN image links with placeholder URLs (e.g., [Cataas](https://cataas.com/cat)) to ensure the app still functions without image hosting.

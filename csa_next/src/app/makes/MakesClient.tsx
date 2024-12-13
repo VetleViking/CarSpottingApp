@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import AddNew from "@/components/AddNew";
 import Header from "@/components/Header";
 import Search from "@/components/Search";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 
 interface MakesClientProps {
     altUsername: string;
@@ -42,7 +42,7 @@ const MakesClient = ({altUsername, username}: MakesClientProps) => {
         <Search search={search} setSearch={setSearch} />
         <div className='flex gap-2 mx-1 mb-4 flex-wrap md:flex-nowrap'>
             <div className="bg-black border border-[#9ca3af] cursor-pointer w-full">
-                <Link to="/makes/selected?make=unknown">
+                <Link href="/makes/selected?make=unknown">
                     <p className="text-[#9ca3af] font-ListComponent px-1 py-2 text-nowrap">
                         Don't know
                     </p>
@@ -54,7 +54,7 @@ const MakesClient = ({altUsername, username}: MakesClientProps) => {
         {Array.isArray(data) && data.length > 0 ? (
             data.map((item: any, id) => 
                 <div key={id}>
-                    <Link to={username ? `/makes/selected?make=${item}&username=${username}` : `/makes/selected?make=${item}` }>
+                    <Link href={username ? `/makes/selected?make=${item}&username=${username}` : `/makes/selected?make=${item}` }>
                         <ListComponent title={item} />
                     </Link>
                 </div>

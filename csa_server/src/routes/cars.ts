@@ -523,6 +523,22 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             return;
         }
 
+        if (process.env.PRODUCTION !== 'true') {
+            console.log('Make:', make);
+            console.log('Model:', model);
+            console.log('Notes:', notes);
+            console.log('Date:', date);
+            console.log('Tags:', tagsArray);
+            console.log('Images:', images);
+            
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            console.timeEnd('ExecutionTime');
+
+            res.status(201).json({ message: 'Spot added (not really, dev is on :P)' });
+            return;
+        }
+
         const allSpots = await redisClient.keys(`spots:${decodedUser}:${make}:${model}:*`);
 
         let offset = 0;

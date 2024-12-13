@@ -58,6 +58,13 @@ const UploadSpot = ({ make, model, username }: SpotProps) => {
             navigator.serviceWorker.ready.then(async registration => {
                 if ('backgroundFetch' in registration) {
                     await startBackgroundUpload(registration, { make, model, files: fileArray, notes, date, tags });
+                    setMessage('Spot being uploaded in the background');
+                    setFiles(null);
+                    setPreviewUrls([]);
+                    setNotes('');
+                    setDate('');
+                    setTags([]);
+                    setLoading(false);
                 } else {
                     const data = await upload_spot(make, model, fileArray, notes, date, tags);
                     handleUploadResponse(data);

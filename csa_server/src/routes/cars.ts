@@ -638,17 +638,9 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
             });
         }
 
-        if (notes) {
-            data[`notes`] = notes;
-        } else {
-            data[`notes`] = '';
-        }
+        data[`notes`] = notes || '';
 
-        if (date) {
-            data[`date`] = date;
-        } else {
-            data[`date`] = '';
-        }
+        data[`date`] = date || '';
 
         const validData = {};
         for (const key in data) {

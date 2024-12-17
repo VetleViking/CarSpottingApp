@@ -1,43 +1,62 @@
 import { cookies } from "next/headers";
 
-const apiIpUsers = `${process.env.NEXT_PUBLIC_DATABASE_IP || "http://localhost:4000"}/api/v1/users/`
+const BASE_URL = process.env.NEXT_PUBLIC_DATABASE_IP || "http://localhost:4000";
+const apiIpUsers = `${BASE_URL}/api/v1/users`;
 
+interface ApiCallOptions {
+    method?: string;
+    body?: object;
+    query?: Record<string, string | number | undefined | null>;
+    headers?: Record<string, string>;
+}
+
+async function apiCall(endpoint: string, { method = 'GET', body, query, headers }: ApiCallOptions = {}) {
+    let url = `${apiIpUsers}/${endpoint}`;
+
+    // Make query string
+    if (query && Object.keys(query).length > 0) {
+        const queryParams = new URLSearchParams();
+        for (const [key, value] of Object.entries(query)) {
+            if (value !== undefined && value !== null) {
+                queryParams.append(key, String(value));
+            }
+        }
+        url += `?${queryParams.toString()}`;
+    }
+
+    const defaultHeaders: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Cookie': cookies().toString()
+    };
+
+    let fetchOptions: RequestInit = {
+        method,
+        credentials: 'include',
+        headers: { ...defaultHeaders, ...headers }
+    };
+
+    if (body) {
+        fetchOptions.body = JSON.stringify(body);
+    }
+
+    const response = await fetch(url, fetchOptions);
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+    }
+
+    return response.json();
+}
 
 export async function get_username() {
-    const response = await fetch(`${apiIpUsers}get_username`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-            Cookie: cookies().toString(),
-            'Content-Type': 'application/json'
-        }
-    });
-
-    return await response.json();
+    return apiCall('get_username');
 }
 
 export async function check_admin() {
-    const response = await fetch(`${apiIpUsers}check_admin`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-            Cookie: cookies().toString(),
-            'Content-Type': 'application/json'
-        }
-    });
-
-    return await response.json();
+    return apiCall('check_admin');
 }
 
 export async function get_stats(username: string) {
-    const response = await fetch(`${apiIpUsers}get_stats/${username}`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-            Cookie: cookies().toString(),
-            'Content-Type': 'application/json',
-        }
-    });
-
-    return await response.json();
+    return apiCall(`get_stats/${encodeURIComponent(username)}`);
 }

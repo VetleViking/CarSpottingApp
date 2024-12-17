@@ -1,65 +1,77 @@
-const apiIpUsers = `${process.env.NEXT_PUBLIC_DATABASE_IP || "http://localhost:4000"}/api/v1/users/`
+const BASE_URL = process.env.NEXT_PUBLIC_DATABASE_IP || "http://localhost:4000";
+const apiBase = `${BASE_URL}/api/v1/users`;
 
-export async function create_user(username: string, password: string) {
-    const response = await fetch(`${apiIpUsers}create_user`, {
-        method: 'POST',
+interface ApiCallOptions {
+    method?: string;
+    body?: object;
+    query?: Record<string, string | number | undefined | null>;
+    headers?: Record<string, string>;
+}
+
+async function apiCall(endpoint: string, { method = 'GET', body, query, headers }: ApiCallOptions = {}) {
+    let url = `${apiBase}/${endpoint}`;
+
+    // Make query string
+    if (query && Object.keys(query).length > 0) {
+        const queryParams = new URLSearchParams();
+        for (const [key, value] of Object.entries(query)) {
+            if (value !== undefined && value !== null) {
+                queryParams.append(key, String(value));
+            }
+        }
+        url += `?${queryParams.toString()}`;
+    }
+
+    let fetchOptions: RequestInit = {
+        method,
         credentials: 'include',
         headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username, password })
-    });
+            'Content-Type': 'application/json',
+            ...(headers || {})
+        }
+    };
 
-    return await response.json();
+    if (body) {
+        fetchOptions.body = JSON.stringify(body);
+    }
+
+    const response = await fetch(url, fetchOptions);
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+    }
+
+    return response.json();
+}
+
+export async function create_user(username: string, password: string) {
+    return apiCall('create_user', {
+        method: 'POST',
+        body: { username, password }
+    });
 }
 
 export async function login(username: string, password: string) {
-    const response = await fetch(`${apiIpUsers}login`, {
+    return apiCall('login', {
         method: 'POST',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username, password })
+        body: { username, password }
     });
-
-    return await response.json();
 }
 
 export async function delete_user() {
-    const response = await fetch(`${apiIpUsers}delete_user`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json'
-        }
+    return apiCall('delete_user', {
+        method: 'POST'
     });
-
-    return await response.json();
 }
 
-
 export async function decode_jwt(token: string) {
-    const response = await fetch(`${apiIpUsers}decodejwt`, {
+    return apiCall('decodejwt', {
         method: 'POST',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ token })
+        body: { token }
     });
-
-    return await response.json();
 }
 
 export async function check_admin(username: string) {
-    const response = await fetch(`${apiIpUsers}checkadmin/${username}`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    });
-
-    return await response.json();
+    return apiCall(`checkadmin/${encodeURIComponent(username)}`);
 }

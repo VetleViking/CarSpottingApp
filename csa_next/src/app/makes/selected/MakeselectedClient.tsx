@@ -30,16 +30,16 @@ const MakeSelectedClient = ({altUsername, username, make, children}: MakeSelecte
         window.location.href = username ? `${url}&username=${username}` : url;
     }
 
-    const fetchData = async () => {
-        const fetchFn = username ? get_spotted_models : get_models;
-        const models = await fetchFn(make as string, search, username);
-
-        setData(models.sort((a: Model, b: Model) => 
-            a.model.localeCompare(b.model)
-        ));
-    };
-    
     useEffect(() => {
+        const fetchData = async () => {
+            const fetchFn = username ? get_spotted_models : get_models;
+            const models = await fetchFn(make as string, search, username);
+        
+            setData(
+                models.sort((a: Model, b: Model) => a.model.localeCompare(b.model))
+            );
+        };
+      
         fetchData();
     }, [search, make, username]);
 

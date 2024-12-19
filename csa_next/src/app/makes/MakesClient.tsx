@@ -44,7 +44,7 @@ const MakesClient = ({altUsername, username}: MakesClientProps) => {
             <div className="bg-black border border-[#9ca3af] cursor-pointer w-full">
                 <Link href="/makes/selected?make=unknown">
                     <p className="text-[#9ca3af] font-ListComponent px-1 py-2 text-nowrap">
-                        Don't know
+                        Don&apos;t know
                     </p>
                 </Link>
             </div>

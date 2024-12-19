@@ -40,7 +40,7 @@ const Spotimage = ({ images, tags, notes, date, alt, spotdata }: ImageProps) => 
 
     return (
         <div className="flex justify-center">
-            <div className="max-w-96 bg-white p-1">
+            <div className="max-w-96 w-96 bg-white p-1">
                 {editing && <div className="pb-1">
                     <div className="flex justify-between p-1 border border-black" onClick={() => setTagOpen(!tagOpen)}>
                         <p className=" font-ListComponent">Select new tag(s)</p>

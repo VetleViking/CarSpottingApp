@@ -546,12 +546,12 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
         allSpots.forEach(key => {
             const spotNum = parseInt(key.split(":")[4], 10);
 
-            if (spotNum > offset) {
-                offset = spotNum;
+            if (spotNum >= offset) {
+                offset = spotNum + 1;
             }
         });
 
-        offset != 0 && offset++;
+        console.log('Offset: ', offset);
 
         const rootDir = path.resolve(__dirname, '../../');
         const userDir = path.join(rootDir, 'uploads', decodedUser, `${make}_${model}`);

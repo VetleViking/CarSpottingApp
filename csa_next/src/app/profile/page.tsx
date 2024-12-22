@@ -6,7 +6,10 @@ import { get_stats } from '@/api/serverside_users';
 
 export default async function Profile() {
     const username = await ensure_login();
-    const stats = await get_stats(username);
+    const stats = await get_stats(username) as { 
+        total_spots: number, 
+        total_likes: number 
+    };
 
     return <div>
         <Header username={username} />

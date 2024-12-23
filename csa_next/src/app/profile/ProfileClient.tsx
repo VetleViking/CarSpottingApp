@@ -18,20 +18,22 @@ export default function ProfileClient() {
         delete_user().then(() => window.location.href = '/login');
     }
 
-    return <div>
-        <Button
-            onClick={deleteHandler}
-            text={delete_message}
-            className='text-xl mx-4'
-        />
-        <Button
-            onClick={() => {
-                localStorage.removeItem('token'); // TODO: replace with cookies.remove('token') or something
-                window.location.href = '/login';
-            }}
-            text='Logout'
-            className='text-xl'
-        />
-    </div>
+    return (
+        <div>
+            <Button
+                onClick={deleteHandler}
+                text={delete_message}
+                className='text-xl mx-4'
+            />
+            <Button
+                onClick={() => {
+                    localStorage.removeItem('token'); // TODO: replace with cookies.remove('token') or something
+                    window.location.href = '/login';
+                }}
+                text='Logout'
+                className='text-xl'
+            />
+        </div>
+    );
 }
 

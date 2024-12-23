@@ -11,20 +11,22 @@ export default async function Profile() {
         total_likes: number 
     };
 
-    return <div>
-        <Header username={username} />
+    return (
         <div>
-            <div className='flex justify-center mt-4'>
-                <p className='text-white text-2xl'>{username}</p>
-            </div>
+            <Header username={username} />
             <div>
-                <div className='m-4'>
-                    <p className='text-white text-xl'>Stats:</p>
-                    <p className='text-white font-ListComponent'>Total spots: {stats?.total_spots}</p>
-                    <p className='text-white font-ListComponent'>Total likes: {stats?.total_likes}</p>
+                <div className='flex justify-center mt-4'>
+                    <p className='text-white text-2xl'>{username}</p>
                 </div>
-                <ProfileClient />
+                <div>
+                    <div className='m-4'>
+                        <p className='text-white text-xl'>Stats:</p>
+                        <p className='text-white font-ListComponent'>Total spots: {stats?.total_spots}</p>
+                        <p className='text-white font-ListComponent'>Total likes: {stats?.total_likes}</p>
+                    </div>
+                    <ProfileClient />
+                </div>
             </div>
         </div>
-    </div>
+    );
 }

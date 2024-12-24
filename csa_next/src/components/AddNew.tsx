@@ -41,7 +41,7 @@ const AddNew = ({ type, make }: AddNewProps) => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [addNewRef]);
 
-    return <div className="w-full cursor-pointer">
+    return <div ref={addNewRef} className="w-full cursor-pointer">
         <div className="flex justify-between rounded-sm p-1 border border-[#9ca3af]" onClick={() => {
                 setNewItem("");
                 setUploading(false);

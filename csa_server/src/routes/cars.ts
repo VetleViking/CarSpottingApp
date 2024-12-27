@@ -886,6 +886,7 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
 
         const page = parseInt(req.query.page as string) || 0;
         const sort = req.query.sort as 'recent' | 'hot' | 'top' || 'recent';
+        const search = req.query.search as string;
         const spotsPerPage = 10;
         const startIndex = page * spotsPerPage;
         const endIndex = (page + 1) * spotsPerPage - 1;
@@ -894,10 +895,56 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
 
         let sortedSpotIDs: string[] = [];
 
-        if (sort === 'recent') {
-            sortedSpotIDs = await redisClient.zRange('zset:spots:recent', startIndex, endIndex, { 'REV': true });
-        } else if (sort === 'hot' || sort === 'top') {
-            sortedSpotIDs = await redisClient.zRange('zset:spots:likes', startIndex, endIndex, { 'REV': true });
+        // example searchstring: "make:volvo&model:xc90&tag:offroad&!user:vetle"
+        // should return all volvo xc90 spots with the tag offroad, but not uploaded by vetle
+        // possible keys: user, make, model, tag, likes, notes
+
+        if (search) { // if search, cant use zset
+            const allSpotsKeys = await redisClient.keys(`spots:*`);
+            const allSpots = await Promise.all(allSpotsKeys.map(async key => await redisClient.hGetAll(key)));
+
+            const searchArray = search.split('&');
+
+            const filteredSpots = allSpots.filter((spot, i) => {
+                return searchArray.every(searchString => {
+                    const [keyFull, value] = searchString.toLowerCase().split(':');
+                    const reversed = keyFull.startsWith('!');
+                    const key = reversed ? keyFull.slice(1) : keyFull;
+                    const spotKey = allSpotsKeys[i].toLowerCase();
+
+                    let match = false;
+
+                    if (key === 'user') {
+                        match = spotKey.split(':')[1] === value;
+                    } else if (key === 'make') {
+                        match = spotKey.split(':')[2] === value;
+                    } else if (key === 'model') {
+                        match = spotKey.split(':')[3] === value;
+                    } else if (key === 'tag') {
+                        match = spot['tags'].toLowerCase().includes(value);
+                    } else if (key === 'likes') {
+                        match = spot['likes'] === value;
+                    } else if (key === 'notes') {
+                        match = spot['notes'].toLowerCase().includes(value);
+                    } else if (!key) { // if no key, search in make and model
+                        match = spotKey.split(':')[2] === value || spotKey.split(':')[3] === value;
+                    }
+            
+                    return reversed ? !match : match;
+                });
+            });
+
+            const sortedSpots = filteredSpots.sort((a, b) => new Date(b['uploadDate']).getTime() - new Date(a['uploadDate']).getTime());
+
+            sortedSpotIDs = sortedSpots.map(spot => {
+                return `spots:${spot['user']}:${spot['make']}:${spot['model']}:${spot['key']}`;
+            });
+        } else {
+            if (sort === 'recent') {
+                sortedSpotIDs = await redisClient.zRange('zset:spots:recent', startIndex, endIndex, { 'REV': true });
+            } else if (sort === 'hot' || sort === 'top') {
+                sortedSpotIDs = await redisClient.zRange('zset:spots:likes', startIndex, endIndex, { 'REV': true });
+            }
         }
 
         const spots = await Promise.all(

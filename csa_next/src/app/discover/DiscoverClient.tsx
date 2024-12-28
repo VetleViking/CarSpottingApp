@@ -86,7 +86,7 @@ const SpotCard: React.FC<{ spot: SpotType }> = ({ spot }) => {
                 <p className="p-1">
                     Uploaded by{' '}
                     <a
-                        href={`http://spots.vest.li/makes?username=${spot.user}`}
+                        href={`https://spots.vest.li/makes?username=${spot.user}`}
                         target="_blank"
                         rel="noopener noreferrer"
                     >

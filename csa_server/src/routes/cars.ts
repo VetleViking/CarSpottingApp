@@ -939,6 +939,8 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
             sortedSpotIDs = sortedSpots.map(spot => {
                 return `spots:${spot['user']}:${spot['make']}:${spot['model']}:${spot['key']}`;
             });
+
+            sortedSpotIDs = sortedSpotIDs.slice(startIndex, endIndex + 1);
         } else {
             if (sort === 'recent') {
                 sortedSpotIDs = await redisClient.zRange('zset:spots:recent', startIndex, endIndex, { 'REV': true });

@@ -32,7 +32,7 @@ const SpotCard: React.FC<{ spot: SpotType }> = ({ spot }) => {
     const seconds = Math.floor((sinceUploadMs / 1000) % 60);
 
     const buildSpotLink = (spot: SpotType) =>
-        `http://spots.vest.li/makes/selected/modelselected?make=${encodeURIComponent(
+        `https://spots.vest.li/makes/selected/modelselected?make=${encodeURIComponent(
           spot.make
         )}&model=${encodeURIComponent(spot.model)}&username=${encodeURIComponent(
           spot.user

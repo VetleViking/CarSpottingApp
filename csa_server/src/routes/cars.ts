@@ -730,7 +730,7 @@ router.get('/get_spots/:make/:model', async (req: Request, res: Response, next: 
                 return;
             }
 
-            res.status(200).json(spot);
+            res.status(200).json([spot]);
             return;
         }
 

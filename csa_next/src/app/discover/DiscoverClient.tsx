@@ -3,6 +3,7 @@
 import { discover, like_spot } from "@/api/cars";
 import Button from "@/components/Button";
 import LoadingAnimation from "@/components/LoadingAnim";
+import SearchSpots from "@/components/SearchSpots";
 import Spotimage from "@/components/Spotimage";
 import { useEffect, useMemo, useState } from "react";
 
@@ -120,16 +121,20 @@ const DiscoverClient = () => {
     const [page, setPage] = useState(0);
     const [reachEnd, setReachEnd] = useState(false);
 
+    const [currentSearch, setCurrentSearch] = useState<string | null>(null);
+
     // Loading of spots, with pagination
     useEffect(() => {
         let active = true;       
         
         async function load() {
             if (!active) return;
-            setLoading(true); 
+            setLoading(true);
+            
+            console.log('Loading spots:', page, sort, currentSearch);
             
             try {
-                const res = await discover(page, sort);
+                const res = await discover(page, sort, currentSearch || undefined);
                 if (!active) return;
                 
                 if (page === 0) {
@@ -148,11 +153,23 @@ const DiscoverClient = () => {
 
         load();
         return () => { active = false };
-    }, [sort, page])
+    }, [sort, page, currentSearch]);
+
+    const onSearch = (search: string) => {
+        console.log('Searching for:', search);
+
+        if (search === currentSearch) return;
+
+        setPage(0);
+        setReachEnd(false);
+        setSpots([]);
+        setCurrentSearch(search);
+    }
 
     return <div className='flex flex-col gap-4 items-center mt-4 font-ListComponent'>
         <div className='w-full max-w-96'>
             <div className='mb-2'>
+                <SearchSpots onSearch={onSearch} />
                 <p className='text-white'>Sort by</p>
                 <select value={sort} onChange={e => {
                     setSort(e.target.value as 'recent' | 'hot' | 'top');
@@ -179,6 +196,8 @@ const DiscoverClient = () => {
                 </> 
             ) : loading ?  (
                 <LoadingAnimation text='Loading spots' />
+            ) : spots.length == 0 ? (
+                <p className='text-white text-xl text-nowrap'>No spots found.</p>
             ) : (
                 <p className='text-white text-xl text-nowrap'>Spots could not be loaded.</p>
             )}

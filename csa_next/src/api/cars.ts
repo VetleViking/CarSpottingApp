@@ -199,8 +199,8 @@ export async function get_spotted_images(make: string, model: string, username?:
     });
 }
 
-export async function discover(page?: number, sort?: 'recent' | 'hot' | 'top') {
-    return apiCall('discover', { query: { page, sort } });
+export async function discover(page?: number, sort?: 'recent' | 'hot' | 'top', search?: string) {
+    return apiCall('discover', { query: { page, sort, search } });
 }
 
 export async function fix_spots() {

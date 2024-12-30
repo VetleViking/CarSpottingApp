@@ -905,8 +905,10 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
 
             const searchArray = search.split('&');
 
+            const filteredSpotIds = [];
+
             const filteredSpots = allSpots.filter((spot, i) => {
-                return searchArray.every(searchString => {
+                const searchResult = searchArray.every(searchString => {
                     const [keyFull, value] = searchString.toLowerCase().split(':');
                     const reversed = keyFull.startsWith('!');
                     const key = reversed ? keyFull.slice(1) : keyFull;
@@ -932,15 +934,37 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
             
                     return reversed ? !match : match;
                 });
+
+                if (searchResult) {
+                    filteredSpotIds.push(allSpotsKeys[i]);
+                }
+
+                return searchResult;
             });
 
-            const sortedSpots = filteredSpots.sort((a, b) => new Date(b['uploadDate']).getTime() - new Date(a['uploadDate']).getTime());
+            if (sort === 'recent') {
+                const dateMap: { [key: string]: string } = {};
+                for (const id of filteredSpotIds) {
+                    dateMap[id] = await redisClient.hGet(id, 'uploadDate');
+                }
+                filteredSpotIds.sort((a, b) => {
+                    const dateA = dateMap[a];
+                    const dateB = dateMap[b];
+                    return new Date(dateB).getTime() - new Date(dateA).getTime();
+                });
+            } else if (sort === 'hot' || sort === 'top') {
+                const likesMap: { [key: string]: number } = {};
+                for (const id of filteredSpotIds) {
+                    likesMap[id] = parseInt(await redisClient.hGet(id, 'likes')) || 0;
+                }
+                filteredSpotIds.sort((a, b) => {
+                    const likesA = likesMap[a];
+                    const likesB = likesMap[b];
+                    return likesB - likesA;
+                });
+            }
 
-            sortedSpotIDs = sortedSpots.map(spot => {
-                return `spots:${spot['user']}:${spot['make']}:${spot['model']}:${spot['key']}`;
-            });
-
-            sortedSpotIDs = sortedSpotIDs.slice(startIndex, endIndex + 1);
+            sortedSpotIDs = filteredSpotIds.slice(startIndex, endIndex + 1);
         } else {
             if (sort === 'recent') {
                 sortedSpotIDs = await redisClient.zRange('zset:spots:recent', startIndex, endIndex, { 'REV': true });

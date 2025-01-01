@@ -6,10 +6,10 @@
 
 ## Features
 
-- **AI Recognition (ChatGPT 4.0 lite & OpenAI API):** Identify car makes and models from uploaded images.
-- **Vehicle Details from Statens Vegvesen:** Get technical details and specs of Norwegian-registered cars via the [Statens Vegvesen reg API](https://www.vegvesen.no/om-oss/om-organisasjonen/apne-data/et-utvalg-apne-data/api-for-tekniske-kjoretoyopplysninger/).
+- **AI Recognition (ChatGPT 4.0 lite & OpenAI API):** Identifies car makes and models from uploaded images.
+- **Vehicle Details from Statens Vegvesen:** Gets technical details and specs of Norwegian-registered cars via the [Statens Vegvesen reg API](https://www.vegvesen.no/om-oss/om-organisasjonen/apne-data/et-utvalg-apne-data/api-for-tekniske-kjoretoyopplysninger/).
 - **Frontend Stack:** Built with Next.js, TypeScript, and Tailwind CSS.
-- **Backend:** Uses Express for API endpoints and Redis for data storage.
+- **Backend:** Uses Express for API endpoints and Redis for fast data storage.
 - **CDN Integration:** Save images to a custom CDN and store the image URLs in the database.
 
 ## Technologies Used

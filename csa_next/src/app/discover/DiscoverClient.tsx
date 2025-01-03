@@ -143,7 +143,7 @@ const DiscoverClient = () => {
                     setSpots(prevSpots => [...prevSpots, ...res]);
                 }
     
-                if (res.length === 0) setReachEnd(true);
+                if (res.length < 10) setReachEnd(true);
             } catch (error) {
                 console.error('Error loading spots:', error);
             } finally {

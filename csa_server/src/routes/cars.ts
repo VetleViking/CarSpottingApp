@@ -907,14 +907,17 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
 
             const filteredSpotIds = [];
 
-            const filteredSpots = allSpots.filter((spot, i) => {
+            allSpots.filter((spot, i) => {
                 const searchResult = searchArray.every(searchString => {
-                    const [keyFull, value] = searchString.toLowerCase().split(':');
-                    const reversed = keyFull.startsWith('!');
-                    const key = reversed ? keyFull.slice(1) : keyFull;
+                    const stringSplit = searchString.toLowerCase().split(':');
+                    const reversed = stringSplit[0].startsWith('!');
+                    const key = !stringSplit[1] ? null : reversed ? stringSplit[0].slice(1) : stringSplit[0]; // if no value, use key as value
+                    const value = stringSplit[1] ? stringSplit[1] : stringSplit[0]; // if no value, use key as value
                     const spotKey = allSpotsKeys[i].toLowerCase();
 
                     let match = false;
+
+                    console.log('Key:', key);
 
                     if (key === 'user') {
                         match = spotKey.split(':')[1] === value;
@@ -923,12 +926,15 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                     } else if (key === 'model') {
                         match = spotKey.split(':')[3] === value;
                     } else if (key === 'tag') {
-                        match = spot['tags'].toLowerCase().includes(value);
+                        match = spot['tags']?.toLowerCase().includes(value);
                     } else if (key === 'likes') {
                         match = spot['likes'] === value;
                     } else if (key === 'notes') {
-                        match = spot['notes'].toLowerCase().includes(value);
+                        match = spot['notes']?.toLowerCase().includes(value);
                     } else if (!key) { // if no key, search in make and model
+                        console.log('No key:', spotKey, value);
+                        console.log('Make:', spotKey.split(':')[2], value);
+                        console.log('Model:', spotKey.split(':')[3], value);
                         match = spotKey.split(':')[2] === value || spotKey.split(':')[3] === value;
                     }
             
@@ -965,6 +971,8 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
             }
 
             sortedSpotIDs = filteredSpotIds.slice(startIndex, endIndex + 1);
+
+            console.log('Filtered spots:', filteredSpotIds);
         } else {
             if (sort === 'recent') {
                 sortedSpotIDs = await redisClient.zRange('zset:spots:recent', startIndex, endIndex, { 'REV': true });

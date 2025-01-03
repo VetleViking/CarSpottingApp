@@ -917,8 +917,6 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
 
                     let match = false;
 
-                    console.log('Key:', key);
-
                     if (key === 'user') {
                         match = spotKey.split(':')[1] === value;
                     } else if (key === 'make') {
@@ -932,9 +930,6 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                     } else if (key === 'notes') {
                         match = spot['notes']?.toLowerCase().includes(value);
                     } else if (!key) { // if no key, search in make and model
-                        console.log('No key:', spotKey, value);
-                        console.log('Make:', spotKey.split(':')[2], value);
-                        console.log('Model:', spotKey.split(':')[3], value);
                         match = spotKey.split(':')[2] === value || spotKey.split(':')[3] === value;
                     }
             
@@ -971,8 +966,6 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
             }
 
             sortedSpotIDs = filteredSpotIds.slice(startIndex, endIndex + 1);
-
-            console.log('Filtered spots:', filteredSpotIds);
         } else {
             if (sort === 'recent') {
                 sortedSpotIDs = await redisClient.zRange('zset:spots:recent', startIndex, endIndex, { 'REV': true });

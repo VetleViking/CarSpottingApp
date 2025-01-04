@@ -14,7 +14,7 @@
 
 ## Technologies Used
 
-- **Frontend:** [Next.js](https://nextjs.org/) (TypeScript, Tailwind CSS)
+- **Frontend:** [Next.js](https://nextjs.org/) with TypeScript and Tailwind
 - **Backend:** [Express.js](https://expressjs.com/) and [Redis](https://redis.io/)
 - **AI Integration:** [OpenAI API](https://platform.openai.com/api-keys) (for ChatGPT 4.0 lite)
 - **Data Source:** [Statens Vegvesen reg API](https://www.vegvesen.no/om-oss/om-organisasjonen/apne-data/et-utvalg-apne-data/api-for-tekniske-kjoretoyopplysninger/)

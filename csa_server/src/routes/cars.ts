@@ -496,6 +496,7 @@ router.get('/regnr/:regnr', async (req: Request, res: Response, next: NextFuncti
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
+import { v4 } from 'uuid';
 
 const upload = multer({ 
     storage: multer.memoryStorage(), 
@@ -593,6 +594,67 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
         res.status(201).json({ message: 'Spot added' });
 
         console.timeEnd('ExecutionTime');
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.post('/addcomment', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { key, comment, parentKey } = req.body;
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
+
+        if (!key || !comment) {
+            res.status(400).json({ message: 'Key and comment are required' });
+            return;
+        }
+
+        const data: Record<string, string> = {
+            [`key`]: key,
+            [`comment`]: comment,
+            [`user`]: decodedUser,
+            [`date`]: new Date().toISOString(),
+        };
+
+        if (parentKey) {
+            data[`parentKey`] = parentKey;
+        }
+        
+        const commentId = v4();
+
+        const commentKeyPrefix = `comments:${key}:${commentId}`;
+
+        const validData = {};
+        for (const key in data) {
+            if (key && typeof key === 'string' && (typeof data[key] === 'string' || typeof data[key] === 'number' || Buffer.isBuffer(data[key]))) {
+                validData[key] = data[key];
+            }
+        }
+
+        await redisClient.hSet(commentKeyPrefix, validData);
+
+        res.status(201).json({ message: 'Comment added' });
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.get('/getcomments/:key', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { key } = req.params;
+
+        const allCommentsKeys = await redisClient.keys(`comments:${key}:*`);
+
+        const allComments = [];
+
+        for (const commentKey of allCommentsKeys) {
+            const comment = await redisClient.hGetAll(commentKey);
+            allComments.push(comment);
+        }
+
+        res.status(200).json(allComments);
     } catch (err) {
         next(err);
     }

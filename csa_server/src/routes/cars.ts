@@ -626,6 +626,8 @@ router.post('/addcomment', async (req: Request, res: Response, next: NextFunctio
 
         const commentKeyPrefix = `comments:${key}:${commentId}`;
 
+        data[`commentId`] = commentId;
+
         const validData = {};
         for (const key in data) {
             if (key && typeof key === 'string' && (typeof data[key] === 'string' || typeof data[key] === 'number' || Buffer.isBuffer(data[key]))) {

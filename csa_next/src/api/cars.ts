@@ -199,6 +199,21 @@ export async function get_spotted_images(make: string, model: string, username?:
     });
 }
 
+export async function get_comments(username: string, make: string, model: string, key: string) {
+    const spotKey = `${username}:${make}:${model}:${key}`;
+
+    return apiCall(`comments/${spotKey}`);
+}
+
+export async function add_comment(username: string, make: string, model: string, key: string, comment: string, parentKey?: string) {
+    const spotKey = `${username}:${make}:${model}:${key}`;
+
+    return apiCall('addcomment', {
+        method: 'POST',
+        body: { spotKey, comment, parentKey }
+    });
+}
+
 export async function discover(page?: number, sort?: 'recent' | 'hot' | 'top', search?: string) {
     return apiCall('discover', { query: { page, sort, search } });
 }

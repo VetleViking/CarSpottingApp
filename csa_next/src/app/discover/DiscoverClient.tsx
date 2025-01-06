@@ -1,6 +1,6 @@
 "use client";
 
-import { discover, like_spot } from "@/api/cars";
+import { add_comment, discover, get_comments, like_spot } from "@/api/cars";
 import Button from "@/components/Button";
 import LoadingAnimation from "@/components/LoadingAnim";
 import SearchSpots from "@/components/SearchSpots";
@@ -19,6 +19,59 @@ interface SpotType {
     likes: number;
     uploadDate: string;
     likedByUser: boolean;
+}
+
+const Comments: React.FC<{username: string, make: string, model: string, key: string}> = ({ username, make, model, key }) => {
+    const [open, setOpen] = useState(false);
+    const [comments, setComments] = useState<any[]>([]);
+    const [newComment, setNewComment] = useState('');
+
+    const onComment = (parent?: string) => {
+        if (!newComment) return;
+
+        add_comment(username, make, model, key, newComment, parent).then(() => {
+            setComments(prev => [...prev, { comment: newComment, parent }]);
+            setNewComment('');
+        }).catch(error => {
+            console.error('Error adding comment:', error);
+        });
+    }
+
+    const getComments = () => {
+        get_comments(username, make, model, key).then((res) => {
+            setComments(res);
+        }).catch(error => {
+            console.error('Error getting comments:', error);
+        });
+    }
+
+    return (
+        <div className='w-full'>
+            <div className='flex justify-between'>
+                <p className='text-white text-xl'>Comments</p>
+                <Button 
+                    text={open ? 'Close' : 'Open'} 
+                    onClick={() => {
+                        if (!open) getComments();    
+                        setOpen(!open)
+                    }} 
+                />
+            </div>
+            {open && <div className='bg-white p-2'>
+                <textarea 
+                    className='w-full p-1' 
+                    value={newComment} 
+                    onChange={e => setNewComment(e.target.value)} 
+                    placeholder='Write a comment...'
+                />
+                <Button text='Comment' onClick={() => onComment()} />
+                {comments.map((comment, id) => <div key={id} className='bg-gray-200 p-1 m-1'>
+                    <p>{comment.comment}</p>
+                    <Button text='Reply' onClick={() => onComment(comment.parent)} />
+                </div>)}
+            </div>}
+        </div>
+    );
 }
 
 const SpotCard: React.FC<{ spot: SpotType }> = ({ spot }) => {

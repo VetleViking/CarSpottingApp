@@ -8,6 +8,6 @@ export default async function Discover() {
 
     return <div>
         <Header username={username} />
-        <DiscoverClient />
+        <DiscoverClient username={username} />
     </div >
 }

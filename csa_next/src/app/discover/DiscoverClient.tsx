@@ -21,16 +21,88 @@ interface SpotType {
     likedByUser: boolean;
 }
 
-const Comments: React.FC<{username: string, make: string, model: string, key: string}> = ({ username, make, model, key }) => {
+const getTimeAgo = (date: string) => {
+    const sinceUploadMs = new Date().getTime() - new Date(date).getTime();
+    const days = Math.floor(sinceUploadMs / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((sinceUploadMs / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((sinceUploadMs / (1000 * 60)) % 60);
+    const seconds = Math.floor((sinceUploadMs / 1000) % 60);
+
+    return days
+        ? `${days} ${days === 1 ? 'day' : 'days'} ago`
+        : hours
+        ? `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`
+        : minutes
+        ? `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`
+        : `${seconds} ${seconds === 1 ? 'second' : 'seconds'} ago`;
+}
+
+interface NestedComment {
+    commentId: string;
+    parentId?: string;
+    comment: string;
+    date: string;
+    user: string;
+    children?: NestedComment[];
+}
+
+const Comments: React.FC<{username: string, spotUsername: string, make: string, model: string, spotKey: string}> = ({ username, spotUsername, make, model, spotKey }) => {
     const [open, setOpen] = useState(false);
     const [comments, setComments] = useState<any[]>([]);
     const [newComment, setNewComment] = useState('');
 
+    function buildCommentTree(comments: NestedComment[]): NestedComment[] {
+        const map: Record<string, NestedComment> = {};
+        const roots: NestedComment[] = [];
+      
+        comments.forEach((c) => {
+            map[c.commentId] = { ...c, children: [] };
+        });
+      
+        comments.forEach((c) => {
+            if (c.parentId && map[c.parentId]) {
+                map[c.parentId].children?.push(map[c.commentId]);
+            } else {
+                roots.push(map[c.commentId]);
+            }
+        });
+      
+        return roots;
+    }
+
+    function renderComment(comment: NestedComment, username: string) {
+        const timeAgo = getTimeAgo(comment.date);
+        return (
+            <div key={comment.commentId} className="px-1 mt-2 border-l-2 border-black">
+                <p>
+                    <a
+                        href={`https://spots.vest.li/makes?username=${comment.user}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {comment.user === username ? "You" : comment.user}
+                    </a>{" "}
+                    • {timeAgo}
+                </p>
+                <p>{comment.comment}</p>
+                <Button text="Reply" onClick={() => onComment(comment.commentId)} />
+                {comment.children &&
+                    comment.children.map((child) => renderComment(child, username))
+                }
+            </div>
+        );
+    }
+
     const onComment = (parent?: string) => {
         if (!newComment) return;
 
-        add_comment(username, make, model, key, newComment, parent).then(() => {
-            setComments(prev => [...prev, { comment: newComment, parent }]);
+        add_comment(spotUsername, make, model, spotKey, newComment, parent).then(() => {
+            setComments(prev => [...prev, { 
+                comment: newComment, 
+                parentId: parent, 
+                date: new Date().toISOString(),
+                user: username 
+            }]);
             setNewComment('');
         }).catch(error => {
             console.error('Error adding comment:', error);
@@ -38,7 +110,7 @@ const Comments: React.FC<{username: string, make: string, model: string, key: st
     }
 
     const getComments = () => {
-        get_comments(username, make, model, key).then((res) => {
+        get_comments(spotUsername, make, model, spotKey).then((res) => {
             setComments(res);
         }).catch(error => {
             console.error('Error getting comments:', error);
@@ -48,7 +120,7 @@ const Comments: React.FC<{username: string, make: string, model: string, key: st
     return (
         <div className='w-full'>
             <div className='flex justify-between'>
-                <p className='text-white text-xl'>Comments</p>
+                <p className='text-xl'>Comments</p>
                 <Button 
                     text={open ? 'Close' : 'Open'} 
                     onClick={() => {
@@ -58,32 +130,33 @@ const Comments: React.FC<{username: string, make: string, model: string, key: st
                 />
             </div>
             {open && <div className='bg-white p-2'>
+                <div className='flex gap-2'>
                 <textarea 
-                    className='w-full p-1' 
+                    className='w-full p-1 border border-black rounded' 
                     value={newComment} 
                     onChange={e => setNewComment(e.target.value)} 
                     placeholder='Write a comment...'
                 />
-                <Button text='Comment' onClick={() => onComment()} />
-                {comments.map((comment, id) => <div key={id} className='bg-gray-200 p-1 m-1'>
-                    <p>{comment.comment}</p>
-                    <Button text='Reply' onClick={() => onComment(comment.parent)} />
-                </div>)}
+                <Button text='Comment' className="h-min" onClick={() => onComment()} />
+                </div>
+                <div className="my-2">
+                    {Array.isArray(comments) && comments.length > 0 ? (
+                        buildCommentTree(comments).map((comment) => (
+                        renderComment(comment, username)
+                        ))
+                    ) : (
+                        <p className="text-center ">No comments. Be the first to comment!</p>
+                    )}
+                </div>
             </div>}
         </div>
     );
 }
 
-const SpotCard: React.FC<{ spot: SpotType }> = ({ spot }) => {
+const SpotCard: React.FC<{ spot: SpotType, username: string }> = ({ spot, username }) => {
     const [shared, setShared] = useState(false);
     const [liked, setLiked] = useState(spot.likedByUser);
     const [likeCount, setLikeCount] = useState(spot.likes);
-    
-    const sinceUploadMs = new Date().getTime() - new Date(spot.uploadDate).getTime();
-    const days = Math.floor(sinceUploadMs / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((sinceUploadMs / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((sinceUploadMs / (1000 * 60)) % 60);
-    const seconds = Math.floor((sinceUploadMs / 1000) % 60);
 
     const buildSpotLink = (spot: SpotType) =>
         `https://spots.vest.li/makes/selected/modelselected?make=${encodeURIComponent(
@@ -94,13 +167,7 @@ const SpotCard: React.FC<{ spot: SpotType }> = ({ spot }) => {
     
     const spotLink = useMemo(() => buildSpotLink(spot), [spot]);
 
-    const timeAgo = days
-        ? `${days} ${days === 1 ? 'day' : 'days'}`
-        : hours
-        ? `${hours} ${hours === 1 ? 'hour' : 'hours'}`
-        : minutes
-        ? `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`
-        : `${seconds} ${seconds === 1 ? 'second' : 'seconds'}`;
+    const timeAgo = getTimeAgo(spot.date);
 
     const onLike = () => {
         const prevLiked = liked;
@@ -162,20 +229,21 @@ const SpotCard: React.FC<{ spot: SpotType }> = ({ spot }) => {
                 <Button text="View" className="py-1" onClick={onView} />
                 <Button text={shared ? "Link copied" : "Share"} className="py-1" onClick={onShare} />
             </div>
+            <Comments username={username} spotUsername={spot.user} make={spot.make} model={spot.model} spotKey={spot.key} />
         </div>
     </div>
 };
   
-const DiscoverClient = () => {
+const DiscoverClient: React.FC<{ username: string }> = ({ username }) =>  {
     const [spots, setSpots] = useState<SpotType[]>([]);
     const [sort, setSort] = useState<'recent' | 'hot' | 'top'>("recent");
     const [loading, setLoading] = useState(true);
     
     const [page, setPage] = useState(0);
     const [reachEnd, setReachEnd] = useState(false);
-
+    
     const [currentSearch, setCurrentSearch] = useState<string | null>(null);
-
+    
     // Loading of spots, with pagination
     useEffect(() => {
         let active = true;       
@@ -209,8 +277,6 @@ const DiscoverClient = () => {
     }, [sort, page, currentSearch]);
 
     const onSearch = (search: string) => {
-        console.log('Searching for:', search);
-
         if (search === currentSearch) return;
 
         setPage(0);
@@ -238,6 +304,7 @@ const DiscoverClient = () => {
             {spots.length ? (
                 <>
                     {spots.map((item, id) => <SpotCard 
+                        username={username}
                         key={id} 
                         spot={item} 
                     />)}

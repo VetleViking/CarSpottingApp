@@ -202,15 +202,15 @@ export async function get_spotted_images(make: string, model: string, username?:
 export async function get_comments(username: string, make: string, model: string, key: string) {
     const spotKey = `${username}:${make}:${model}:${key}`;
 
-    return apiCall(`comments/${spotKey}`);
+    return apiCall(`getcomments/${spotKey}`);
 }
 
-export async function add_comment(username: string, make: string, model: string, key: string, comment: string, parentKey?: string) {
+export async function add_comment(username: string, make: string, model: string, key: string, comment: string, parentId?: string) {
     const spotKey = `${username}:${make}:${model}:${key}`;
 
     return apiCall('addcomment', {
         method: 'POST',
-        body: { spotKey, comment, parentKey }
+        body: { key: spotKey, comment, parentId }
     });
 }
 

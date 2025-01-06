@@ -15,7 +15,7 @@ const SearchSpots = ({ onSearch }: SearchSpotProps) => {
 
     useEffect(() => {
         function handleEnter(event: KeyboardEvent) {
-            if (event.key === "Enter" && searchRef.current) {
+            if (event.key === "Enter" && searchRef.current && searchRef.current === document.activeElement) {
                 searchRef.current.blur();
                 console.log("Enter pressed", search);
                 onSearch(search);

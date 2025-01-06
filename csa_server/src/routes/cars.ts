@@ -601,7 +601,7 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
 
 router.post('/addcomment', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { key, comment, parentKey } = req.body;
+        const { key, comment, parentId } = req.body;
         const cookies = parse(req.headers.cookie || '');
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
@@ -618,8 +618,8 @@ router.post('/addcomment', async (req: Request, res: Response, next: NextFunctio
             [`date`]: new Date().toISOString(),
         };
 
-        if (parentKey) {
-            data[`parentKey`] = parentKey;
+        if (parentId) {
+            data[`parentId`] = parentId;
         }
         
         const commentId = v4();
@@ -634,6 +634,9 @@ router.post('/addcomment', async (req: Request, res: Response, next: NextFunctio
                 validData[key] = data[key];
             }
         }
+
+        console.log('Comment:', validData);
+        console.log('Comment Key:', commentKeyPrefix);
 
         await redisClient.hSet(commentKeyPrefix, validData);
 

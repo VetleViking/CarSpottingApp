@@ -6,6 +6,8 @@ import LoadingAnimation from "@/components/LoadingAnim";
 import SearchSpots from "@/components/SearchSpots";
 import Spotimage from "@/components/Spotimage";
 import { useEffect, useMemo, useState } from "react";
+import down_arrow from "@/images/down_arrow.svg";
+import Image from "next/image";
 
 interface SpotType {
     date: string;
@@ -66,12 +68,13 @@ const Comments: React.FC<{username: string, spotUsername: string, make: string, 
                 roots.push(map[c.commentId]);
             }
         });
-      
+
         return roots;
     }
 
     function renderComment(comment: NestedComment, username: string) {
         const timeAgo = getTimeAgo(comment.date);
+
         return (
             <div key={comment.commentId} className="px-1 mt-2 border-l-2 border-black">
                 <p>
@@ -84,7 +87,7 @@ const Comments: React.FC<{username: string, spotUsername: string, make: string, 
                     </a>{" "}
                     • {timeAgo}
                 </p>
-                <p>{comment.comment}</p>
+                <p className="break-words">{comment.comment}</p>
                 <Button text="Reply" onClick={() => onComment(comment.commentId)} />
                 {comment.children &&
                     comment.children.map((child) => renderComment(child, username))
@@ -97,12 +100,7 @@ const Comments: React.FC<{username: string, spotUsername: string, make: string, 
         if (!newComment) return;
 
         add_comment(spotUsername, make, model, spotKey, newComment, parent).then(() => {
-            setComments(prev => [...prev, { 
-                comment: newComment, 
-                parentId: parent, 
-                date: new Date().toISOString(),
-                user: username 
-            }]);
+            getComments();
             setNewComment('');
         }).catch(error => {
             console.error('Error adding comment:', error);
@@ -118,23 +116,27 @@ const Comments: React.FC<{username: string, spotUsername: string, make: string, 
     }
 
     return (
-        <div className='w-full'>
-            <div className='flex justify-between'>
+        <div className='w-full max-w-96'>
+            <div 
+                className='flex gap-2 cursor-pointer m-1'
+                onClick={() => {
+                    if (!open) getComments();    
+                    setOpen(!open)
+                }}
+            >
                 <p className='text-xl'>Comments</p>
-                <Button 
-                    text={open ? 'Close' : 'Open'} 
-                    onClick={() => {
-                        if (!open) getComments();    
-                        setOpen(!open)
-                    }} 
-                />
+                <Image src={down_arrow} alt="Down arrow" width={15} height={15} className={open ? "transform rotate-180" : ""} />
             </div>
-            {open && <div className='bg-white p-2'>
+            {open && <div className='bg-white p-1 w-full'>
                 <div className='flex gap-2'>
                 <textarea 
                     className='w-full p-1 border border-black rounded' 
                     value={newComment} 
-                    onChange={e => setNewComment(e.target.value)} 
+                    onChange={e => {
+                        e.target.style.height = "auto";
+                        e.target.style.height = e.target.scrollHeight + "px";
+                        setNewComment(e.target.value);
+                    }} 
                     placeholder='Write a comment...'
                 />
                 <Button text='Comment' className="h-min" onClick={() => onComment()} />
@@ -251,8 +253,6 @@ const DiscoverClient: React.FC<{ username: string }> = ({ username }) =>  {
         async function load() {
             if (!active) return;
             setLoading(true);
-            
-            console.log('Loading spots:', page, sort, currentSearch);
             
             try {
                 const res = await discover(page, sort, currentSearch || undefined);

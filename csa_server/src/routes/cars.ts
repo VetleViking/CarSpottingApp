@@ -646,6 +646,42 @@ router.post('/addcomment', async (req: Request, res: Response, next: NextFunctio
     }
 });
 
+router.post('/deletecomment', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { key, commentId } = req.body;
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
+        const isAdmin = await redisClient.hGet('admins', decodedUser);
+
+        if (!key || !commentId) {
+            res.status(400).json({ message: 'Key and commentId are required' });
+            return;
+        }
+
+        const commentKey = `comments:${key}:${commentId}`;
+
+        const comment = await redisClient.hGetAll(commentKey);
+
+        if (!comment) {
+            res.status(404).json({ message: 'Comment not found' });
+            return;
+        }
+
+        if (comment['user'] !== decodedUser && !isAdmin) {
+            res.status(403).json({ message: 'Unauthorized' });
+            return;
+        }
+
+        await redisClient.hSet(commentKey, { [`deleted`]: 'true' });
+        await redisClient.hSet(commentKey, { [`deletedBy`]: isAdmin ? 'admin' : 'user' });
+
+        res.status(200).json({ message: 'Comment deleted' });
+    } catch (err) {
+        next(err);
+    }
+});
+
 router.get('/getcomments/:key', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { key } = req.params;
@@ -656,6 +692,11 @@ router.get('/getcomments/:key', async (req: Request, res: Response, next: NextFu
 
         for (const commentKey of allCommentsKeys) {
             const comment = await redisClient.hGetAll(commentKey);
+
+            if (comment['deleted'] === 'true') {
+                comment['comment'] = '[deleted by ' + comment['deletedBy'] + ']';
+            }
+
             allComments.push(comment);
         }
 

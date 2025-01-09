@@ -214,6 +214,15 @@ export async function add_comment(username: string, make: string, model: string,
     });
 }
 
+export async function delete_comment(username: string, make: string, model: string, key: string, commentId: string) {
+    const spotKey = `${username}:${make}:${model}:${key}`;
+
+    return apiCall('deletecomment', {
+        method: 'POST',
+        body: { key: spotKey, commentId }
+    });
+}
+
 export async function discover(page?: number, sort?: 'recent' | 'hot' | 'top', search?: string) {
     return apiCall('discover', { query: { page, sort, search } });
 }

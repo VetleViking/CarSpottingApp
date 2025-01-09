@@ -1,6 +1,6 @@
 "use client";
 
-import { add_comment, discover, get_comments, like_spot } from "@/api/cars";
+import { add_comment, delete_comment, discover, get_comments, like_spot } from "@/api/cars";
 import Button from "@/components/Button";
 import LoadingAnimation from "@/components/LoadingAnim";
 import SearchSpots from "@/components/SearchSpots";
@@ -8,6 +8,7 @@ import Spotimage from "@/components/Spotimage";
 import { useEffect, useMemo, useState } from "react";
 import down_arrow from "@/images/down_arrow.svg";
 import Image from "next/image";
+import { check_admin } from "@/api/users";
 
 interface SpotType {
     date: string;
@@ -53,6 +54,12 @@ const Comments: React.FC<{username: string, spotUsername: string, make: string, 
     const [comments, setComments] = useState<any[]>([]);
     const [newComment, setNewComment] = useState('');
 
+    const [isAdmin, setIsAdmin] = useState(false);
+    
+    check_admin(username).then(res => 
+        setIsAdmin(res.is_admin)).catch(error =>
+            setIsAdmin(false));
+
     function buildCommentTree(comments: NestedComment[]): NestedComment[] {
         const map: Record<string, NestedComment> = {};
         const roots: NestedComment[] = [];
@@ -88,7 +95,14 @@ const Comments: React.FC<{username: string, spotUsername: string, make: string, 
                     • {timeAgo}
                 </p>
                 <p className="break-words">{comment.comment}</p>
-                <Button text="Reply" onClick={() => onComment(comment.commentId)} />
+                <div className="flex gap-2">
+                    <Button text="Reply" onClick={() => onComment(comment.commentId)} />
+                    {isAdmin || username === comment.user && <Button text="Delete" onClick={() => {
+                        delete_comment(spotUsername, make, model, spotKey, comment.commentId).then(() => {
+                            getComments();
+                        });
+                    }} />}
+                </div>
                 {comment.children &&
                     comment.children.map((child) => renderComment(child, username))
                 }
@@ -116,7 +130,7 @@ const Comments: React.FC<{username: string, spotUsername: string, make: string, 
     }
 
     return (
-        <div className='w-full max-w-96'>
+        <div className='w-full max-w-96 overflow-hidden'>
             <div 
                 className='flex gap-2 cursor-pointer m-1'
                 onClick={() => {

@@ -616,6 +616,7 @@ router.post('/addcomment', async (req: Request, res: Response, next: NextFunctio
             [`comment`]: comment,
             [`user`]: decodedUser,
             [`date`]: new Date().toISOString(),
+            [`likes`]: '0'
         };
 
         if (parentId) {
@@ -641,6 +642,37 @@ router.post('/addcomment', async (req: Request, res: Response, next: NextFunctio
         await redisClient.hSet(commentKeyPrefix, validData);
 
         res.status(201).json({ message: 'Comment added' });
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.post('/likecomment', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { key, commentId } = req.body;
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
+
+        if (!key || !commentId) {
+            res.status(400).json({ message: 'Key and commentId are required' });
+            return;
+        }
+
+        const commentKey = `comments:${key}:${commentId}`;
+
+        const comment = await redisClient.hGetAll(commentKey);
+
+        if (!comment) {
+            res.status(404).json({ message: 'Comment not found' });
+            return;
+        }
+
+        const likes = parseInt(comment['likes']) + 1;
+
+        await redisClient.hSet(commentKey, { [`likes`]: likes });
+
+        res.status(200).json({ message: 'Comment liked' });
     } catch (err) {
         next(err);
     }

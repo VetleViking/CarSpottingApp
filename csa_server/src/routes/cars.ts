@@ -731,6 +731,9 @@ router.post('/deletecomment', async (req: Request, res: Response, next: NextFunc
 router.get('/getcomments/:key', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { key } = req.params;
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
 
         const allCommentsKeys = await redisClient.keys(`comments:${key}:*`);
 
@@ -738,6 +741,9 @@ router.get('/getcomments/:key', async (req: Request, res: Response, next: NextFu
 
         for (const commentKey of allCommentsKeys) {
             const comment = await redisClient.hGetAll(commentKey);
+
+            const alreadyLiked = await redisClient.hGet(`likes:comments:${decodedUser}`, `${key}:${comment['commentId']}`);
+            comment['liked'] = alreadyLiked ? 'true' : 'false';	
 
             if (comment['deleted'] === 'true') {
                 comment['comment'] = '[deleted by ' + comment['deletedBy'] + ']';

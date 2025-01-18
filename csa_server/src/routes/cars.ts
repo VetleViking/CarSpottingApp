@@ -654,11 +654,13 @@ router.post('/likecomment', async (req: Request, res: Response, next: NextFuncti
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
-        if (!key || !commentId) {
-            res.status(400).json({ message: 'Key and commentId are required' });
+        if (!key || !commentId || !decodedUser) {
+            res.status(400).json({ message: 'Key, token and commentId are required' });
             return;
         }
 
+        const alreadyLiked = await redisClient.hGet(`likes:comments:${decodedUser}`, `${key}:${commentId}`);
+        
         const commentKey = `comments:${key}:${commentId}`;
 
         const comment = await redisClient.hGetAll(commentKey);
@@ -668,11 +670,23 @@ router.post('/likecomment', async (req: Request, res: Response, next: NextFuncti
             return;
         }
 
-        const likes = parseInt(comment['likes']) + 1;
+        if (alreadyLiked) {
+            await redisClient.hDel(`likes:comments:${decodedUser}`, `${key}:${commentId}`);
 
-        await redisClient.hSet(commentKey, { [`likes`]: likes });
+            const likes = parseInt(comment['likes']) - 1;
 
-        res.status(200).json({ message: 'Comment liked' });
+            await redisClient.hSet(commentKey, { [`likes`]: likes.toString() });
+
+            res.status(200).json({ message: 'Comment unliked' });
+        } else {
+            await redisClient.hSet(`likes:comments:${decodedUser}`, `${key}:${commentId}`, 'true');
+
+            const likes = parseInt(comment['likes']) + 1;
+
+            await redisClient.hSet(commentKey, { [`likes`]: likes.toString() });
+
+            res.status(200).json({ message: 'Comment liked' });
+        }
     } catch (err) {
         next(err);
     }

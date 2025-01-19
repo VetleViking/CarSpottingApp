@@ -46,6 +46,8 @@ interface NestedComment {
     comment: string;
     date: string;
     user: string;
+    likes: number;
+    likedByUser: boolean;
     children?: NestedComment[];
 }
 
@@ -97,6 +99,12 @@ const Comments: React.FC<{username: string, spotUsername: string, make: string, 
                 <p className="break-words">{comment.comment}</p>
                 <div className="flex gap-2">
                     <Button text="Reply" onClick={() => onComment(comment.commentId)} />
+                    <p>{comment.likes} {comment.likes === 1 ? 'like' : 'likes'}</p>
+                    <Button text={comment.likedByUser ? 'Remove like' : 'Like'} onClick={() => {
+                        like_spot(make, model, spotKey, comment.commentId).then(() => {
+                            getComments();
+                        });
+                    }} />
                     {isAdmin || username === comment.user && <Button text="Delete" onClick={() => {
                         delete_comment(spotUsername, make, model, spotKey, comment.commentId).then(() => {
                             getComments();

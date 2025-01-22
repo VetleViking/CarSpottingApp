@@ -1,6 +1,6 @@
 "use client";
 
-import { add_comment, delete_comment, discover, get_comments, like_spot } from "@/api/cars";
+import { add_comment, delete_comment, discover, get_comments, like_comment, like_spot } from "@/api/cars";
 import Button from "@/components/Button";
 import LoadingAnimation from "@/components/LoadingAnim";
 import SearchSpots from "@/components/SearchSpots";
@@ -41,6 +41,7 @@ const getTimeAgo = (date: string) => {
 }
 
 interface NestedComment {
+    key: string;
     commentId: string;
     parentId?: string;
     comment: string;
@@ -83,6 +84,23 @@ const Comments: React.FC<{username: string, spotUsername: string, make: string, 
 
     function renderComment(comment: NestedComment, username: string) {
         const timeAgo = getTimeAgo(comment.date);
+        
+        const [liked, setLiked] = useState(comment.likedByUser);
+        const [likeCount, setLikeCount] = useState(comment.likes || 0);
+
+        const onLike = () => {
+            const prevLiked = liked;
+            const prevLikeCount = likeCount;
+    
+            setLiked(!liked);
+            setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+            like_comment(comment.key, comment.commentId).catch(error => {
+                setLiked(prevLiked);
+                setLikeCount(prevLikeCount);
+    
+                console.error('Error liking the spot:', error);
+            });
+        };
 
         return (
             <div key={comment.commentId} className="px-1 mt-2 border-l-2 border-black">
@@ -98,13 +116,9 @@ const Comments: React.FC<{username: string, spotUsername: string, make: string, 
                 </p>
                 <p className="break-words">{comment.comment}</p>
                 <div className="flex gap-2">
+                <p className="p-1 text-xl">{likeCount} {likeCount === 1 ? 'like' : 'likes'}</p>
+                    <Button text={comment.likedByUser ? 'Remove like' : 'Like'} onClick={onLike} />
                     <Button text="Reply" onClick={() => onComment(comment.commentId)} />
-                    <p>{comment.likes} {comment.likes === 1 ? 'like' : 'likes'}</p>
-                    <Button text={comment.likedByUser ? 'Remove like' : 'Like'} onClick={() => {
-                        like_spot(make, model, spotKey, comment.commentId).then(() => {
-                            getComments();
-                        });
-                    }} />
                     {isAdmin || username === comment.user && <Button text="Delete" onClick={() => {
                         delete_comment(spotUsername, make, model, spotKey, comment.commentId).then(() => {
                             getComments();

@@ -223,6 +223,13 @@ export async function delete_comment(username: string, make: string, model: stri
     });
 }
 
+export async function like_comment(key: string, commentId: string) {
+    return apiCall('likecomment', {
+        method: 'POST',
+        body: { key, commentId }
+    });
+}
+
 export async function discover(page?: number, sort?: 'recent' | 'hot' | 'top', search?: string) {
     return apiCall('discover', { query: { page, sort, search } });
 }

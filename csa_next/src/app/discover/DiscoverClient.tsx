@@ -26,12 +26,18 @@ interface SpotType {
 
 const getTimeAgo = (date: string) => {
     const sinceUploadMs = new Date().getTime() - new Date(date).getTime();
+    const years = Math.floor(sinceUploadMs / (1000 * 60 * 60 * 24 * 365));
+    const months = Math.floor(sinceUploadMs / (1000 * 60 * 60 * 24 * 30));
     const days = Math.floor(sinceUploadMs / (1000 * 60 * 60 * 24));
     const hours = Math.floor((sinceUploadMs / (1000 * 60 * 60)) % 24);
     const minutes = Math.floor((sinceUploadMs / (1000 * 60)) % 60);
     const seconds = Math.floor((sinceUploadMs / 1000) % 60);
 
-    return days
+    return years
+        ? `${years} ${years === 1 ? 'year' : 'years'} ago`
+        : months
+        ? `${months} ${months === 1 ? 'month' : 'months'} ago` 
+        : days 
         ? `${days} ${days === 1 ? 'day' : 'days'} ago`
         : hours
         ? `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`

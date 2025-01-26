@@ -186,7 +186,7 @@ const Comments: React.FC<{username: string, spotUsername: string, make: string, 
                 <div className="my-2">
                     {Array.isArray(comments) && comments.length > 0 ? (
                         buildCommentTree(comments).map((comment) => (
-                        renderComment(comment, username)
+                            renderComment(comment, username)
                         ))
                     ) : (
                         <p className="text-center ">No comments. Be the first to comment!</p>

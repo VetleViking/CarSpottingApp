@@ -1077,7 +1077,7 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
 
                     let match = false;
 
-                    if (key === 'user') {
+                    if (key === 'user') { // tags does not work
                         match = spotKey.split(':')[1] === value;
                     } else if (key === 'make') {
                         match = spotKey.split(':')[2] === value;

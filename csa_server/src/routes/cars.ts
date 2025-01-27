@@ -673,15 +673,19 @@ router.post('/likecomment', async (req: Request, res: Response, next: NextFuncti
         if (alreadyLiked) {
             await redisClient.hDel(`likes:comments:${decodedUser}`, `${key}:${commentId}`);
 
-            const likes = parseInt(comment['likes']) - 1;
+            const likes = (parseInt(comment['likes']) || 0) - 1;
 
             await redisClient.hSet(commentKey, { [`likes`]: likes.toString() });
+
+            console.log('Likes:', likes, decodedUser, key, commentId, comment['likes']);
 
             res.status(200).json({ message: 'Comment unliked' });
         } else {
             await redisClient.hSet(`likes:comments:${decodedUser}`, `${key}:${commentId}`, 'true');
 
-            const likes = parseInt(comment['likes']) + 1;
+            const likes = (parseInt(comment['likes']) || 0) + 1;
+
+            console.log('Likes:', likes, decodedUser, key, commentId, comment['likes']);
 
             await redisClient.hSet(commentKey, { [`likes`]: likes.toString() });
 

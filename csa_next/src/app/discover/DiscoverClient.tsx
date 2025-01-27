@@ -1,14 +1,13 @@
 "use client";
 
-import { add_comment, delete_comment, discover, get_comments, like_comment, like_spot } from "@/api/cars";
+import { discover, like_spot } from "@/api/cars";
 import Button from "@/components/Button";
 import LoadingAnimation from "@/components/LoadingAnim";
 import SearchSpots from "@/components/SearchSpots";
 import Spotimage from "@/components/Spotimage";
 import { useEffect, useMemo, useState } from "react";
-import down_arrow from "@/images/down_arrow.svg";
-import Image from "next/image";
-import { check_admin } from "@/api/users";
+import { getTimeAgo } from "@/functions/functions";
+import Comments from "@/components/Comments";
 
 interface SpotType {
     date: string;
@@ -24,189 +23,16 @@ interface SpotType {
     likedByUser: boolean;
 }
 
-const getTimeAgo = (date: string) => {
-    const sinceUploadMs = new Date().getTime() - new Date(date).getTime();
-    const years = Math.floor(sinceUploadMs / (1000 * 60 * 60 * 24 * 365));
-    const months = Math.floor(sinceUploadMs / (1000 * 60 * 60 * 24 * 30));
-    const days = Math.floor(sinceUploadMs / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((sinceUploadMs / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((sinceUploadMs / (1000 * 60)) % 60);
-    const seconds = Math.floor((sinceUploadMs / 1000) % 60);
-
-    return years
-        ? `${years} ${years === 1 ? 'year' : 'years'} ago`
-        : months
-        ? `${months} ${months === 1 ? 'month' : 'months'} ago` 
-        : days 
-        ? `${days} ${days === 1 ? 'day' : 'days'} ago`
-        : hours
-        ? `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`
-        : minutes
-        ? `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`
-        : `${seconds} ${seconds === 1 ? 'second' : 'seconds'} ago`;
-}
-
-interface NestedComment {
-    key: string;
-    commentId: string;
-    parentId?: string;
-    comment: string;
-    date: string;
-    user: string;
-    likes: number;
-    likedByUser: boolean;
-    children?: NestedComment[];
-}
-
-const Comments: React.FC<{username: string, spotUsername: string, make: string, model: string, spotKey: string}> = ({ username, spotUsername, make, model, spotKey }) => {
-    const [open, setOpen] = useState(false);
-    const [comments, setComments] = useState<any[]>([]);
-    const [newComment, setNewComment] = useState('');
-
-    const [isAdmin, setIsAdmin] = useState(false);
-    
-    check_admin(username).then(res => 
-        setIsAdmin(res.is_admin)).catch(error =>
-            setIsAdmin(false));
-
-    function buildCommentTree(comments: NestedComment[]): NestedComment[] {
-        const map: Record<string, NestedComment> = {};
-        const roots: NestedComment[] = [];
-      
-        comments.forEach((c) => {
-            map[c.commentId] = { ...c, children: [] };
-        });
-      
-        comments.forEach((c) => {
-            if (c.parentId && map[c.parentId]) {
-                map[c.parentId].children?.push(map[c.commentId]);
-            } else {
-                roots.push(map[c.commentId]);
-            }
-        });
-
-        return roots;
-    }
-
-    function renderComment(comment: NestedComment, username: string) {
-        const timeAgo = getTimeAgo(comment.date);
-        
-        const [liked, setLiked] = useState(comment.likedByUser);
-        const [likeCount, setLikeCount] = useState(comment.likes || 0);
-
-        const onLike = () => {
-            const prevLiked = liked;
-            const prevLikeCount = likeCount;
-    
-            setLiked(!liked);
-            setLikeCount(liked ? likeCount - 1 : likeCount + 1);
-            like_comment(comment.key, comment.commentId).catch(error => {
-                setLiked(prevLiked);
-                setLikeCount(prevLikeCount);
-    
-                console.error('Error liking the spot:', error);
-            });
-        };
-
-        return (
-            <div key={comment.commentId} className="px-1 mt-2 border-l-2 border-black">
-                <p>
-                    <a
-                        href={`https://spots.vest.li/makes?username=${comment.user}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        {comment.user === username ? "You" : comment.user}
-                    </a>{" "}
-                    • {timeAgo}
-                </p>
-                <p className="break-words">{comment.comment}</p>
-                <div className="flex gap-2">
-                <p className="p-1 text-xl">{likeCount} {likeCount === 1 ? 'like' : 'likes'}</p>
-                    <Button text={comment.likedByUser ? 'Remove like' : 'Like'} onClick={onLike} />
-                    <Button text="Reply" onClick={() => onComment(comment.commentId)} />
-                    {isAdmin || username === comment.user && <Button text="Delete" onClick={() => {
-                        delete_comment(spotUsername, make, model, spotKey, comment.commentId).then(() => {
-                            getComments();
-                        });
-                    }} />}
-                </div>
-                {comment.children &&
-                    comment.children.map((child) => renderComment(child, username))
-                }
-            </div>
-        );
-    }
-
-    const onComment = (parent?: string) => {
-        if (!newComment) return;
-
-        add_comment(spotUsername, make, model, spotKey, newComment, parent).then(() => {
-            getComments();
-            setNewComment('');
-        }).catch(error => {
-            console.error('Error adding comment:', error);
-        });
-    }
-
-    const getComments = () => {
-        get_comments(spotUsername, make, model, spotKey).then((res) => {
-            setComments(res);
-        }).catch(error => {
-            console.error('Error getting comments:', error);
-        });
-    }
-
-    return (
-        <div className='w-full max-w-96 overflow-hidden'>
-            <div 
-                className='flex gap-2 cursor-pointer m-1'
-                onClick={() => {
-                    if (!open) getComments();    
-                    setOpen(!open)
-                }}
-            >
-                <p className='text-xl'>Comments</p>
-                <Image src={down_arrow} alt="Down arrow" width={15} height={15} className={open ? "transform rotate-180" : ""} />
-            </div>
-            {open && <div className='bg-white p-1 w-full'>
-                <div className='flex gap-2'>
-                <textarea 
-                    className='w-full p-1 border border-black rounded' 
-                    value={newComment} 
-                    onChange={e => {
-                        e.target.style.height = "auto";
-                        e.target.style.height = e.target.scrollHeight + "px";
-                        setNewComment(e.target.value);
-                    }} 
-                    placeholder='Write a comment...'
-                />
-                <Button text='Comment' className="h-min" onClick={() => onComment()} />
-                </div>
-                <div className="my-2">
-                    {Array.isArray(comments) && comments.length > 0 ? (
-                        buildCommentTree(comments).map((comment) => (
-                            renderComment(comment, username)
-                        ))
-                    ) : (
-                        <p className="text-center ">No comments. Be the first to comment!</p>
-                    )}
-                </div>
-            </div>}
-        </div>
-    );
-}
-
-const SpotCard: React.FC<{ spot: SpotType, username: string }> = ({ spot, username }) => {
+const SpotCard: React.FC<{ spot: SpotType, username: string, isAdmin: boolean }> = ({ spot, username, isAdmin }) => {
     const [shared, setShared] = useState(false);
     const [liked, setLiked] = useState(spot.likedByUser);
     const [likeCount, setLikeCount] = useState(spot.likes);
 
     const buildSpotLink = (spot: SpotType) =>
         `https://spots.vest.li/makes/selected/modelselected?make=${encodeURIComponent(
-          spot.make
+            spot.make
         )}&model=${encodeURIComponent(spot.model)}&username=${encodeURIComponent(
-          spot.user
+            spot.user
         )}&key=${encodeURIComponent(spot.key)}`;
     
     const spotLink = useMemo(() => buildSpotLink(spot), [spot]);
@@ -273,12 +99,12 @@ const SpotCard: React.FC<{ spot: SpotType, username: string }> = ({ spot, userna
                 <Button text="View" className="py-1" onClick={onView} />
                 <Button text={shared ? "Link copied" : "Share"} className="py-1" onClick={onShare} />
             </div>
-            <Comments username={username} spotUsername={spot.user} make={spot.make} model={spot.model} spotKey={spot.key} />
+            <Comments username={username} spotUsername={spot.user} make={spot.make} model={spot.model} spotKey={spot.key} isAdmin={isAdmin} />
         </div>
     </div>
 };
   
-const DiscoverClient: React.FC<{ username: string }> = ({ username }) =>  {
+const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ username, isAdmin }) =>  {
     const [spots, setSpots] = useState<SpotType[]>([]);
     const [sort, setSort] = useState<'recent' | 'hot' | 'top'>("recent");
     const [loading, setLoading] = useState(true);
@@ -349,6 +175,7 @@ const DiscoverClient: React.FC<{ username: string }> = ({ username }) =>  {
                         username={username}
                         key={id} 
                         spot={item} 
+                        isAdmin={isAdmin}
                     />)}
                     <div className='flex justify-center m-4'>
                         {reachEnd ? <p className='text-white text-xl'>No more spots.</p> 

@@ -71,6 +71,6 @@ export async function decode_jwt(token: string) {
     });
 }
 
-export async function check_admin(username: string) {
-    return apiCall(`checkadmin/${encodeURIComponent(username)}`);
+export async function check_admin() {
+    return apiCall(`check_admin`);
 }

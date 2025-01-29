@@ -279,13 +279,13 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
         // if not searched bofore, save search and get from apininja instead
         const searchedBefore = await redisClient.hGet(`searched:${make}`, query);
 
-        if (!searchedBefore) {
+        if (!searchedBefore) { // TODO: apininjas fucked shit up, gotta change api
             await redisClient.hSet(`searched:${make}`, query, query);
 
             const params = new URLSearchParams();
             params.append('make', make);
             params.append('model', query);
-            params.append('limit', '50');
+            // params.append('limit', '50');
 
             const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
                 headers: {
@@ -294,6 +294,8 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
             });
 
             const data = await response.json();
+
+            console.log('Data:', data);
 
             const uniqueModels = data.filter((item: any, index: any, self: any) =>
                 index === self.findIndex((t: any) => (
@@ -1079,6 +1081,11 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                     const value = stringSplit[1] ? stringSplit[1] : stringSplit[0]; // if no value, use key as value
                     const spotKey = allSpotsKeys[i].toLowerCase();
 
+                    const tags = Object.keys(spot).filter(key => key.startsWith('tag')).map(key => spot[key]).map(tag => tag.toLowerCase());
+                    
+                    console.log(tags, value);
+                    console.log(tags.includes(value));
+
                     let match = false;
 
                     if (key === 'user') { // tags does not work
@@ -1088,7 +1095,7 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                     } else if (key === 'model') {
                         match = spotKey.split(':')[3] === value;
                     } else if (key === 'tag') {
-                        match = spot['tags']?.toLowerCase().includes(value);
+                        match = tags.includes(value);
                     } else if (key === 'likes') {
                         match = spot['likes'] === value;
                     } else if (key === 'notes') {
@@ -1150,7 +1157,7 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                     notes: spot['notes'],
                     date: spot['date'],
                     images,
-                    tags: spot['tags'], // may not work, debug later
+                    tags: Object.keys(spot).filter(key => key.startsWith('tag')).map(key => spot[key]),
                     user: spotID.split(':')[1],
                     make: spotID.split(':')[2],
                     model: spotID.split(':')[3],

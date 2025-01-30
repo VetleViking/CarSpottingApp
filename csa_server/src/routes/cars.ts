@@ -55,42 +55,48 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
-        // if not searched bofore, save search and get from apininja instead
-        const searchedBefore = await redisClient.hGet(`searched:unknown`, ' ');
+        // if not searched bofore, save search and get from nhtsa instead
+        const searchedBefore = await redisClient.hGet(`searchedmakes`, 'unknown');
 
         if (!searchedBefore) {
-            await redisClient.hSet(`searched:unknown`, ' ', ' ');
+            await redisClient.hSet(`searchedmakes`, 'unknown', 'unknown');
 
-            const params = new URLSearchParams();
-            params.append('model', 'a');
-            params.append('limit', '50');
+            const makes1 = await redisClient.hGetAll(`makes:${decodedUser}`);
+            const makes2 = await redisClient.hGetAll('makes');
 
-            const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
-                headers: {
-                    'X-Api-Key': process.env.API_NINJAS_KEY
+            const makes = Object.values(makes1).concat(Object.values(makes2));
+
+            let modelsArray: { make: string, model: string }[] = [];
+
+            for (const make of makes) {
+                const responsePassenger = await fetch(
+                    `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/vehicleType/Passenger%20Car?format=json`
+                );
+                const dataPassenger = await responsePassenger.json();
+            
+                const responseMPV = await fetch(
+                    `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/vehicleType/Multipurpose%20Passenger%20Vehicle%20(MPV)?format=json`
+                );
+                const dataMPV = await responseMPV.json();
+            
+                const data = dataPassenger.Results.concat(dataMPV.Results);
+            
+                const uniqueModels = data.filter((item: any, index: number, self: any[]) =>
+                    index === self.findIndex((t: any) => t.Model_Name === item.Model_Name)
+                );
+            
+                for (const model of uniqueModels) {
+                    redisClient.hSet(`make:${make}`, model.Model_Name, model.Model_Name);
+                    modelsArray.push({ make, model: model.Model_Name });
                 }
-            });
+            }
 
-            const data = await response.json();
+            if (modelsArray.length > 50) {
+                res.status(200).json(modelsArray.slice(0, 50));
+                return;
+            }
 
-            const uniqueModels = data.filter((item: any, index: any, self: any) =>
-                index === self.findIndex((t: any) => (
-                    t.model === item.model
-                ))
-            );
-
-            const makesObject = await redisClient.hGetAll('makes');
-            const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
-            const makesArray = Object.keys(makesObject).map(key => makesObject[key])
-                .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
-
-            uniqueModels.forEach(async model => {
-                const make = makesArray.find(make => make.toLowerCase() === model.make.toLowerCase()) || 'other';
-                model.make = make;
-                redisClient.hSet(`make:${model.make}`, model.model, model.model);
-            });
-
-            res.status(200).json(uniqueModels);
+            res.status(200).json(modelsArray);
             return;
         }
 
@@ -132,43 +138,50 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
-        // if not searched bofore, save search and get from apininja instead
-        const searchedBefore = await redisClient.hGet('searched:unknown', query);
+        // if not searched bofore, save search and get from nhtsa instead
+        const searchedBefore = await redisClient.hGet(`searchedmakes`, 'unknown');
 
         if (!searchedBefore) {
-            await redisClient.hSet('searched:unknown', query, query);
+            await redisClient.hSet(`searchedmakes`, 'unknown', 'unknown');
 
-            const params = new URLSearchParams();
-            params.append('model', query);
-            if (query.length == 0) params.append('model', 'a');
-            params.append('limit', '50');
+            const makes1 = await redisClient.hGetAll(`makes:${decodedUser}`);
+            const makes2 = await redisClient.hGetAll('makes');
 
-            const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
-                headers: {
-                    'X-Api-Key': process.env.API_NINJAS_KEY
+            const makes = Object.values(makes1).concat(Object.values(makes2));
+
+            let modelsArray: { make: string, model: string }[] = [];
+
+            for (const make of makes) {
+                const responsePassenger = await fetch(
+                    `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/vehicleType/Passenger%20Car?format=json`
+                );
+                const dataPassenger = await responsePassenger.json();
+            
+                const responseMPV = await fetch(
+                    `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/vehicleType/Multipurpose%20Passenger%20Vehicle%20(MPV)?format=json`
+                );
+                const dataMPV = await responseMPV.json();
+            
+                const data = dataPassenger.Results.concat(dataMPV.Results);
+            
+                const uniqueModels = data.filter((item: any, index: number, self: any[]) =>
+                    index === self.findIndex((t: any) => t.Model_Name === item.Model_Name)
+                );
+            
+                for (const model of uniqueModels) {
+                    redisClient.hSet(`make:${make}`, model.Model_Name, model.Model_Name);
+                    modelsArray.push({ make, model: model.Model_Name });
                 }
-            });
+            }
 
-            const data = await response.json();
+            const filteredModels = modelsArray.filter(model => model.model.toLowerCase().includes(query.toLowerCase()));
 
-            const uniqueModels = data.filter((item: any, index: any, self: any) =>
-                index === self.findIndex((t: any) => (
-                    t.model === item.model
-                ))
-            );
+            if (filteredModels.length > 50) {
+                res.status(200).json(filteredModels.slice(0, 50));
+                return;
+            }
 
-            const makesObject = await redisClient.hGetAll('makes');
-            const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
-            const makesArray = Object.keys(makesObject).map(key => makesObject[key])
-                .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
-
-            uniqueModels.forEach(async model => {
-                const make = makesArray.find(make => make.toLowerCase() === model.make.toLowerCase()) || 'other';
-                model.make = make;
-                redisClient.hSet(`make:${make}`, model.model, model.model);
-            });
-
-            res.status(200).json(uniqueModels);
+            res.status(200).json(filteredModels);
             return;
         }
 
@@ -213,37 +226,38 @@ router.get('/makes/:make/models/', async (req: Request, res: Response, next: Nex
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
-        // if not searched bofore, save search and get from apininja instead
-        const searchedBefore = await redisClient.hGet(`searched:${make}`, ' ');
+        // if not searched bofore, save search and get from nhtsa instead
+        const searchedBefore = await redisClient.hGet(`searchedmakes`, make);
 
         if (!searchedBefore) {
-            await redisClient.hSet(`searched:${make}`, ' ', ' ');
+            await redisClient.hSet(`searchedmakes`, make, make);
 
-            const params = new URLSearchParams();
-            params.append('make', make);
-            params.append('model', 'a');
-            params.append('limit', '50');
+            const responsePassenger = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/vehicleType/Passenger%20Car?format=json`);
+            const dataPassenger = await responsePassenger.json();
 
-            const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
-                headers: {
-                    'X-Api-Key': process.env.API_NINJAS_KEY
-                }
-            });
+            const responseMPV = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/vehicleType/Multipurpose%20Passenger%20Vehicle%20(MPV)?format=json`);
+            const dataMPV = await responseMPV.json();
 
-            const data = await response.json();
+            const data = dataPassenger.Results.concat(dataMPV.Results);
 
             const uniqueModels = data.filter((item: any, index: any, self: any) =>
                 index === self.findIndex((t: any) => (
-                    t.model === item.model
+                    t.Model_Name === item.Model_Name
                 ))
             );
 
             uniqueModels.forEach(async model => {
-                model.make = make;
-                redisClient.hSet(`make:${make}`, model.model, model.model);
+                redisClient.hSet(`make:${make}`, model.Model_Name, model.Model_Name);
             });
 
-            res.status(200).json(uniqueModels);
+            const modelsArray = uniqueModels.map(model => ({ make, model: model.Model_Name }));
+
+            if (modelsArray.length > 50) {
+                res.status(200).json(modelsArray.slice(0, 50));
+                return;
+            }
+
+            res.status(200).json(modelsArray);
             return;
         }
 
@@ -267,7 +281,6 @@ router.get('/makes/:make/models/', async (req: Request, res: Response, next: Nex
     }
 });
 
-
 router.get('/makes/:make/models/:query', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, query } = req.params;
@@ -276,39 +289,42 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
-        // if not searched bofore, save search and get from apininja instead
-        const searchedBefore = await redisClient.hGet(`searched:${make}`, query);
+        // if not searched bofore, save search and get from nhtsa instead
+        const searchedBefore = await redisClient.hGet(`searchedmakes`, make);
 
-        if (!searchedBefore) { // TODO: apininjas fucked shit up, gotta change api
-            await redisClient.hSet(`searched:${make}`, query, query);
+        if (!searchedBefore) {
+            await redisClient.hSet(`searchedmakes`, make, make);
 
-            const params = new URLSearchParams();
-            params.append('make', make);
-            params.append('model', query);
-            // params.append('limit', '50');
+            const responsePassenger = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/vehicleType/Passenger%20Car?format=json`);
+            const dataPassenger = await responsePassenger.json();
 
-            const response = await fetch(`https://api.api-ninjas.com/v1/cars` + '?' + params.toString(), {
-                headers: {
-                    'X-Api-Key': process.env.API_NINJAS_KEY
-                }
-            });
+            const responseMPV = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/vehicleType/Multipurpose%20Passenger%20Vehicle%20(MPV)?format=json`);
+            const dataMPV = await responseMPV.json();
 
-            const data = await response.json();
-
-            console.log('Data:', data);
+            const data = dataPassenger.Results.concat(dataMPV.Results);
 
             const uniqueModels = data.filter((item: any, index: any, self: any) =>
                 index === self.findIndex((t: any) => (
-                    t.model === item.model
+                    t.Model_Name === item.Model_Name
                 ))
             );
 
             uniqueModels.forEach(async model => {
-                model.make = make;
-                redisClient.hSet(`make:${make}`, model.model, model.model);
+                redisClient.hSet(`make:${make}`, model.Model_Name, model.Model_Name);
             });
 
-            res.status(200).json(uniqueModels);
+            const modelsArray = uniqueModels.map(model => ({ make, model: model.Model_Name }));
+
+            const filteredModels = modelsArray.filter(model => model.model.toLowerCase().includes(query.toLowerCase()));
+
+            console.log('Models Array:', filteredModels);
+
+            if (filteredModels.length > 50) {
+                res.status(200).json(filteredModels.slice(0, 50));
+                return;
+            }
+
+            res.status(200).json(filteredModels);
             return;
         }
 

@@ -1117,12 +1117,12 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                     } else if (key === 'notes') {
                         match = spot['notes']?.toLowerCase().includes(value);
                     } else if (!key) { // if no key, search in make and model
-                        const parts = value.split(' ');
+                        const [ , , rawMake, rawModel ] = spotKey.split(':');
+                        const combined = (rawMake + ' ' + rawModel).toLowerCase();
 
-                        const makeMatch = parts.some(part => spotKey.split(':')[2].includes(part));
-                        const modelMatch = parts.some(part => spotKey.split(':')[3].includes(part));
-
-                        match = makeMatch || modelMatch;
+                        const parts = value.toLowerCase().split(' ');
+                        
+                        match = parts.every(part => combined.includes(part));
                     }
             
                     return reversed ? !match : match;

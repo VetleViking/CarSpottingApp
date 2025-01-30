@@ -85,7 +85,7 @@ const SpotCard: React.FC<{ spot: SpotType, username: string, isAdmin: boolean }>
                     </a>
                 </p>
                 <p className="p-1">•</p>
-                <p className="p-1">{timeAgo} ago</p>
+                <p className="p-1">{timeAgo}</p>
             </div>
             <Spotimage 
                 images={spot.images.map((img) => `https://images.vest.li${img}`)} 

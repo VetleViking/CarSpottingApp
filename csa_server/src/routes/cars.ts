@@ -1104,12 +1104,12 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
 
                     let match = false;
 
-                    if (key === 'user') { // tags does not work
+                    if (key === 'user') {
                         match = spotKey.split(':')[1] === value;
                     } else if (key === 'make') {
-                        match = spotKey.split(':')[2] === value;
+                        match = spotKey.split(':')[2].includes(value);
                     } else if (key === 'model') {
-                        match = spotKey.split(':')[3] === value;
+                        match = spotKey.split(':')[3].includes(value);
                     } else if (key === 'tag') {
                         match = tags.includes(value);
                     } else if (key === 'likes') {
@@ -1117,7 +1117,12 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                     } else if (key === 'notes') {
                         match = spot['notes']?.toLowerCase().includes(value);
                     } else if (!key) { // if no key, search in make and model
-                        match = spotKey.split(':')[2] === value || spotKey.split(':')[3] === value;
+                        const parts = value.split(' ');
+
+                        const makeMatch = parts.some(part => spotKey.split(':')[2].includes(part));
+                        const modelMatch = parts.some(part => spotKey.split(':')[3].includes(part));
+
+                        match = makeMatch || modelMatch;
                     }
             
                     return reversed ? !match : match;

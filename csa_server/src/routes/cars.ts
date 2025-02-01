@@ -1077,10 +1077,6 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
 
         let sortedSpotIDs: string[] = [];
 
-        // example searchstring: "make:volvo&model:xc90&tag:offroad&!user:vetle"
-        // should return all volvo xc90 spots with the tag offroad, but not uploaded by vetle
-        // possible keys: user, make, model, tag, likes, notes
-
         if (search) { // if search, cant use zset
             const allSpotsKeys = await redisClient.keys(`spots:*`);
             const allSpots = await Promise.all(allSpotsKeys.map(async key => await redisClient.hGetAll(key)));

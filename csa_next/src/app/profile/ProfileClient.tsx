@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Button from '@/components/Button';
 import { delete_user } from '@/api/users';
+import { cookies } from 'next/headers';
 
 export default function ProfileClient() {
     const [delete_confirm, setDeleteConfirm] = useState(false);
@@ -27,7 +28,7 @@ export default function ProfileClient() {
             />
             <Button
                 onClick={() => {
-                    localStorage.removeItem('token'); // TODO: replace with cookies.remove('token') or something
+                    cookies().set('token', '');
                     window.location.href = '/login';
                 }}
                 text='Logout'

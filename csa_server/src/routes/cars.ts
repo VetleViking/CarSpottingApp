@@ -317,8 +317,6 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
 
             const filteredModels = modelsArray.filter(model => model.model.toLowerCase().includes(query.toLowerCase()));
 
-            console.log('Models Array:', filteredModels);
-
             if (filteredModels.length > 50) {
                 res.status(200).json(filteredModels.slice(0, 50));
                 return;
@@ -570,8 +568,6 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             }
         });
 
-        console.log('Offset: ', offset);
-
         const rootDir = path.resolve(__dirname, '../../');
         const userDir = path.join(rootDir, 'uploads', decodedUser, `${make}_${model}`);
         await fs.promises.mkdir(userDir, { recursive: true });
@@ -654,9 +650,6 @@ router.post('/addcomment', async (req: Request, res: Response, next: NextFunctio
             }
         }
 
-        console.log('Comment:', validData);
-        console.log('Comment Key:', commentKeyPrefix);
-
         await redisClient.hSet(commentKeyPrefix, validData);
 
         res.status(201).json({ message: 'Comment added' });
@@ -695,15 +688,11 @@ router.post('/likecomment', async (req: Request, res: Response, next: NextFuncti
 
             await redisClient.hSet(commentKey, { [`likes`]: likes.toString() });
 
-            console.log('Likes:', likes, decodedUser, key, commentId, comment['likes']);
-
             res.status(200).json({ message: 'Comment unliked' });
         } else {
             await redisClient.hSet(`likes:comments:${decodedUser}`, `${key}:${commentId}`, 'true');
 
             const likes = (parseInt(comment['likes']) || 0) + 1;
-
-            console.log('Likes:', likes, decodedUser, key, commentId, comment['likes']);
 
             await redisClient.hSet(commentKey, { [`likes`]: likes.toString() });
 
@@ -1095,9 +1084,6 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
 
                     const tags = Object.keys(spot).filter(key => key.startsWith('tag')).map(key => spot[key]).map(tag => tag.toLowerCase());
                     
-                    console.log(tags, value);
-                    console.log(tags.includes(value));
-
                     let match = false;
 
                     if (key === 'user') {

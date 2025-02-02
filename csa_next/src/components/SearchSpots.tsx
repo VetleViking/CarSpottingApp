@@ -17,7 +17,6 @@ const SearchSpots = ({ onSearch }: SearchSpotProps) => {
         function handleEnter(event: KeyboardEvent) {
             if (event.key === "Enter" && searchRef.current && searchRef.current === document.activeElement) {
                 searchRef.current.blur();
-                console.log("Enter pressed", search);
                 onSearch(search);
             }
         }
@@ -37,7 +36,6 @@ const SearchSpots = ({ onSearch }: SearchSpotProps) => {
                     value={search}
                     onChange={e => {
                         setSearch(e.target.value)
-                        console.log("Search:", e.target.value);
                     }}
                 />
                 <Image 

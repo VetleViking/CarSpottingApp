@@ -540,22 +540,6 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             return;
         }
 
-        if (process.env.PRODUCTION !== 'true') {
-            console.log('Make:', make);
-            console.log('Model:', model);
-            console.log('Notes:', notes);
-            console.log('Date:', date);
-            console.log('Tags:', tagsArray);
-            console.log('Images:', images);
-            
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            console.timeEnd('ExecutionTime');
-
-            res.status(201).json({ message: 'Spot added (not really, dev is on :P)' });
-            return;
-        }
-
         const allSpots = await redisClient.keys(`spots:${decodedUser}:${make}:${model}:*`);
 
         let offset = 0;
@@ -568,18 +552,6 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             }
         });
 
-        const rootDir = path.resolve(__dirname, '../../');
-        const userDir = path.join(rootDir, 'uploads', decodedUser, `${make}_${model}`);
-        await fs.promises.mkdir(userDir, { recursive: true });
-
-        const imagePaths: string[] = [];
-        for (const [index, image] of images.entries()) {
-            const imageName = `${offset}_${index}.jpg`;  // Unique image name
-            const imagePath = path.join(userDir, imageName);
-            await fs.promises.writeFile(imagePath, image.buffer);  // Write image buffer to file
-            imagePaths.push(`/${decodedUser}/${make}_${model}/${imageName}`);
-        }
-
         const data: Record<string, string> = {
             [`notes`]: notes,
             [`date`]: date,
@@ -587,9 +559,35 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             [`likes`]: '0'
         };
 
-        imagePaths.forEach((item, index) => {
-            data[`image${index}`] = item; 
-        });
+        if (process.env.PRODUCTION !== 'true') { // if not prod, dont try to save images
+            const imagePaths: string[] = [];
+            for (const [index] of images.entries()) {
+                const imageName = `${offset}_${index}.jpg`;  // Unique image name
+                imagePaths.push(`/${decodedUser}/${make}_${model}/${imageName}`);
+            }
+
+            imagePaths.forEach((item, index) => {
+                data[`image${index}`] = item; 
+            });
+        } else {
+            const rootDir = path.resolve(__dirname, '../../');
+            const userDir = path.join(rootDir, 'uploads', decodedUser, `${make}_${model}`);
+            await fs.promises.mkdir(userDir, { recursive: true });
+
+            const imagePaths: string[] = [];
+            for (const [index, image] of images.entries()) {
+                const imageName = `${offset}_${index}.jpg`;  // Unique image name
+                const imagePath = path.join(userDir, imageName);
+                await fs.promises.writeFile(imagePath, image.buffer);  // Write image buffer to file
+                imagePaths.push(`/${decodedUser}/${make}_${model}/${imageName}`);
+            }
+
+            imagePaths.forEach((item, index) => {
+                data[`image${index}`] = item; 
+            });
+        }
+
+        
 
         if (tagsArray && tagsArray.length > 0) {
             tagsArray.forEach((tag, index) => {

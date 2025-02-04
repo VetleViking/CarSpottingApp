@@ -5,7 +5,7 @@ import Button from "@/components/Button";
 import LoadingAnimation from "@/components/LoadingAnim";
 import SearchSpots from "@/components/SearchSpots";
 import Spotimage from "@/components/Spotimage";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getTimeAgo } from "@/functions/functions";
 import Comments from "@/components/Comments";
 
@@ -107,50 +107,75 @@ const SpotCard: React.FC<{ spot: SpotType, username: string, isAdmin: boolean }>
 const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ username, isAdmin }) =>  {
     const [spots, setSpots] = useState<SpotType[]>([]);
     const [sort, setSort] = useState<'recent' | 'hot' | 'top'>("recent");
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     
     const [page, setPage] = useState(0);
     const [reachEnd, setReachEnd] = useState(false);
+    const [shouldFetch, setShouldFetch] = useState(true)
+    const observerRef = useRef<HTMLDivElement | null>(null);
     
     const [currentSearch, setCurrentSearch] = useState<string | null>(null);
     
-    // Loading of spots, with pagination
     useEffect(() => {
-        let active = true;       
-        
-        async function load() {
-            if (!active) return;
+        if (!shouldFetch) return;
+        if (reachEnd) return;
+        if (loading) return;
+      
+        const getSpots = async () => {
             setLoading(true);
-            
             try {
+                console.log(page)
                 const res = await discover(page, sort, currentSearch || undefined);
-                if (!active) return;
-                
-                if (page === 0) {
-                    setSpots(res);
-                } else {
-                    setSpots(prevSpots => [...prevSpots, ...res]);
-                }
-    
+                setSpots((prev) => (page === 0 ? res : [...prev, ...res]));
+                setPage(prevPage => prevPage + 1);
                 if (res.length < 10) setReachEnd(true);
-            } catch (error) {
-                console.error('Error loading spots:', error);
+            } catch (e) {
+                console.error('Error loading spots:', e);
             } finally {
+                setShouldFetch(false)
                 setLoading(false);
             }
+        };
+        
+        getSpots();
+    }, [page, sort, currentSearch, reachEnd, discover, shouldFetch]);
+      
+    useEffect(() => {
+        if (reachEnd) return;
+    
+        const observer = new IntersectionObserver(
+            entries => {
+                const firstEntry = entries[0];
+                if (firstEntry.isIntersecting) {
+                    console.log("test")
+                    setShouldFetch(true);
+                }
+            }, 
+            {
+                threshold: 0,
+                rootMargin: "200px"
+            }
+        );
+    
+        if (observerRef.current) {
+            observer.observe(observerRef.current);
         }
-
-        load();
-        return () => { active = false };
-    }, [sort, page, currentSearch]);
-
+    
+        return () => {
+            if (observerRef.current) {
+                observer.unobserve(observerRef.current);
+            }
+        };
+    }, [reachEnd]);
+    
     const onSearch = (search: string) => {
         if (search === currentSearch) return;
 
+        setCurrentSearch(search);
         setPage(0);
         setReachEnd(false);
         setSpots([]);
-        setCurrentSearch(search);
+        setShouldFetch(true);
     }
 
     return <div className='flex flex-col gap-4 items-center mt-4 font-ListComponent'>
@@ -163,6 +188,7 @@ const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ user
                     setPage(0);
                     setReachEnd(false);
                     setSpots([]);
+                    setShouldFetch(true);
                 }}>
                     <option value='recent'>Recent</option>
                     <option value='hot'>Hot</option>
@@ -179,17 +205,17 @@ const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ user
                     />)}
                     <div className='flex justify-center m-4'>
                         {reachEnd ? <p className='text-white text-xl'>No more spots.</p> 
-                                  : loading ? <LoadingAnimation text='Loading spots' /> 
-                                            : <Button text='Load more' onClick={() => setPage(page + 1)} />}
+                                  : <LoadingAnimation text='Loading spots' />}
                     </div>
                 </> 
-            ) : loading ?  (
+            ) : (loading || shouldFetch) ?  (
                 <LoadingAnimation text='Loading spots' />
             ) : spots.length == 0 ? (
                 <p className='text-white text-xl text-nowrap'>No spots found.</p>
             ) : (
                 <p className='text-white text-xl text-nowrap'>Spots could not be loaded.</p>
             )}
+            {!reachEnd && <div ref={observerRef} style={{ height: '1px' }} />}
         </div>
     </div>
 };

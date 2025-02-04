@@ -22,7 +22,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
             return;
         }
 
-        //const isPasswordValid = await bcrypt.compare(password, userExists); not using bcrypt yet
+        //const isPasswordValid = await bcrypt.compare(password, userExists); //not using bcrypt yet
         const isPasswordValid = userExists === password;
         if (!isPasswordValid) {
             res.status(400).json({ message: 'Invalid credentials' });
@@ -36,14 +36,13 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
             secure: true, // Set to true if served over HTTPS
             maxAge: 60 * 60 * 24 * 31, // 1 month expiration
             sameSite: process.env.PRODUCTION === "true" ? 'none' : 'lax',
-            domain: process.env.PRODUCTION == "true" ? '.vest.li' : 'localhost',
+            domain: process.env.PRODUCTION === "true" ? '.vest.li' : 'localhost',
             path: '/', // Cookie is accessible on all routes
         });
 
         res.setHeader('Set-Cookie', cookie);
 
         res.status(200).json({ message: 'Logged in' });
-
     } catch (err) {
         next(err);
     }

@@ -51,8 +51,6 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
 
 router.get('/get_username', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        console.log("decoded")
-
         const cookies = parse(req.headers.cookie || '');
 
         const token = cookies.auth_token;

@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Button from '@/components/Button';
 import { delete_user } from '@/api/users';
-import { cookies } from 'next/headers';
 
 export default function ProfileClient() {
     const [delete_confirm, setDeleteConfirm] = useState(false);

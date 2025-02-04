@@ -5,7 +5,7 @@ import Button from "@/components/Button";
 import LoadingAnimation from "@/components/LoadingAnim";
 import SearchSpots from "@/components/SearchSpots";
 import Spotimage from "@/components/Spotimage";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getTimeAgo } from "@/functions/functions";
 import Comments from "@/components/Comments";
 
@@ -37,7 +37,7 @@ const SpotCard: React.FC<{ spot: SpotType, username: string, isAdmin: boolean }>
     
     const spotLink = useMemo(() => buildSpotLink(spot), [spot]);
 
-    const timeAgo = getTimeAgo(spot.date);
+    const timeAgo = getTimeAgo(spot.uploadDate);
 
     const onLike = () => {
         const prevLiked = liked;
@@ -124,7 +124,6 @@ const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ user
         const getSpots = async () => {
             setLoading(true);
             try {
-                console.log(page)
                 const res = await discover(page, sort, currentSearch || undefined);
                 setSpots((prev) => (page === 0 ? res : [...prev, ...res]));
                 setPage(prevPage => prevPage + 1);
@@ -132,7 +131,7 @@ const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ user
             } catch (e) {
                 console.error('Error loading spots:', e);
             } finally {
-                setShouldFetch(false)
+                setShouldFetch(false);
                 setLoading(false);
             }
         };
@@ -147,7 +146,6 @@ const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ user
             entries => {
                 const firstEntry = entries[0];
                 if (firstEntry.isIntersecting) {
-                    console.log("test")
                     setShouldFetch(true);
                 }
             }, 

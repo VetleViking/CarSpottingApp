@@ -29,9 +29,9 @@ export default function ProfileClient() {
 
     return (
         <div>
-        <Button onClick={deleteHandler} text={delete_message} className="text-xl mx-4" />
-        <Button onClick={logoutHandler} text="Logout" className="text-xl" />
-      </div>
+            <Button onClick={deleteHandler} text={delete_message} className="text-xl mx-4" />
+            <Button onClick={logoutHandler} text="Logout" className="text-xl" />
+        </div>
     );
 }
 

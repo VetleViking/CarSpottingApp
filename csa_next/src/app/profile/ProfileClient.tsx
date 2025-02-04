@@ -16,25 +16,22 @@ export default function ProfileClient() {
             setDeleteConfirm(true);
             return;
         }
-        delete_user().then(() => window.location.href = '/login');
+        delete_user().then(() => {
+            document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            window.location.href = "/login";
+        });
+    }
+
+    function logoutHandler() {
+        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        window.location.href = "/login";
     }
 
     return (
         <div>
-            <Button
-                onClick={deleteHandler}
-                text={delete_message}
-                className='text-xl mx-4'
-            />
-            <Button
-                onClick={() => {
-                    cookies().set('token', '');
-                    window.location.href = '/login';
-                }}
-                text='Logout'
-                className='text-xl'
-            />
-        </div>
+        <Button onClick={deleteHandler} text={delete_message} className="text-xl mx-4" />
+        <Button onClick={logoutHandler} text="Logout" className="text-xl" />
+      </div>
     );
 }
 

@@ -228,8 +228,12 @@ router.get('/makes/:make/models/', async (req: Request, res: Response, next: Nex
 
         // if not searched bofore, save search and get from nhtsa instead
         const searchedBefore = await redisClient.hGet(`searchedmakes`, make);
+        
+        console.log('searchedBefore', searchedBefore);
 
         if (!searchedBefore) {
+            console.log("test");
+
             await redisClient.hSet(`searchedmakes`, make, make);
 
             const responsePassenger = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/vehicleType/Passenger%20Car?format=json`);

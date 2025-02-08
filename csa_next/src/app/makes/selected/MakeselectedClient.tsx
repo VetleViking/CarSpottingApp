@@ -7,6 +7,7 @@ import SearchReg from "@/components/SearchReg";
 import AddNew from "@/components/AddNew";
 import Header from "@/components/Header";
 import Search from "@/components/Search";
+import LoadingAnimation from "@/components/LoadingAnim";
 
 interface MakeSelectedClientProps {
     altUsername: string;
@@ -24,6 +25,7 @@ interface Model {
 const MakeSelectedClient = ({altUsername, username, make, children}: MakeSelectedClientProps) => {
     const [search, setSearch] = useState('');
     const [data, setData] = useState<Model[]>([]);
+    const [loading, setLoading] = useState(true);
 
     function selectedModel(make: string, model: string) {
         const url = `/makes/selected/modelselected?make=${make}&model=${model}`;
@@ -38,6 +40,7 @@ const MakeSelectedClient = ({altUsername, username, make, children}: MakeSelecte
             setData(
                 models.sort((a: Model, b: Model) => a.model.localeCompare(b.model))
             );
+            setLoading(false);
         };
       
         fetchData();
@@ -60,6 +63,8 @@ const MakeSelectedClient = ({altUsername, username, make, children}: MakeSelecte
                         <ListComponent title={make == "unknown" ? item.make + " " + item.model : item.model} />
                     </div>
                 )
+            ) : loading ? (
+                <LoadingAnimation text="Loading" />
             ) : (
                 <div className="text-white font-ListComponent px-1 text-nowrap text-center">
                     No models found

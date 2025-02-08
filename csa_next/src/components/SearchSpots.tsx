@@ -13,18 +13,6 @@ const SearchSpots = ({ onSearch }: SearchSpotProps) => {
     const searchRef = useRef<HTMLInputElement>(null);
     const [search, setSearch] = useState("");
 
-    useEffect(() => {
-        function handleEnter(event: KeyboardEvent) {
-            if (event.key === "Enter" && searchRef.current && searchRef.current === document.activeElement) {
-                searchRef.current.blur();
-                onSearch(search);
-            }
-        }
-
-        document.addEventListener("keydown", handleEnter);
-        return () => document.removeEventListener("keydown", handleEnter);
-    }, [search]);
-
     return (
         <div className="flex justify-center mb-4">
             <div className="flex items-center justify-center  rounded-lg w-full">
@@ -37,6 +25,13 @@ const SearchSpots = ({ onSearch }: SearchSpotProps) => {
                     onChange={e => {
                         setSearch(e.target.value)
                     }}
+                    onKeyDown={(e) => {
+                        if(e.key === 'Enter' && searchRef.current) {
+                            searchRef.current.blur();
+                            onSearch(search);
+                        }
+                    }}
+                    // onSubmit={() => onSearch(search)} // If enter does not work on mobile, debug later
                 />
                 <Image 
                     src={search_icon} 

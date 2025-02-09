@@ -8,6 +8,7 @@ import AddNew from "@/components/AddNew";
 import Header from "@/components/Header";
 import Search from "@/components/Search";
 import Link from "next/link";
+import LoadingAnimation from "@/components/LoadingAnim";
 
 interface MakesClientProps {
     altUsername: string;
@@ -17,18 +18,14 @@ interface MakesClientProps {
 const MakesClient = ({altUsername, username}: MakesClientProps) => {
     const [search, setSearch] = useState('');
     const [data, setData] = useState<{ name: string; }[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
-            if (username) {
-                const data = await get_spotted_makes(search, username);
-                data.sort((a: string, b: string) => a.localeCompare(b));
-                setData(data);
-            } else {
-                const data = await get_makes(search);
-                data.sort((a: string, b: string) => a.localeCompare(b));
-                setData(data);
-            }
+            const data = username ? await get_spotted_makes(search, username) : await get_makes(search);
+            data.sort((a: string, b: string) => a.localeCompare(b));
+            setData(data);
+            setLoading(false);
         };
 
         fetchData();
@@ -59,6 +56,8 @@ const MakesClient = ({altUsername, username}: MakesClientProps) => {
                     </Link>
                 </div>
             )
+        ) : loading ? (
+            <LoadingAnimation text="Loading" />
         ) : (
             <p className='text-white font-ListComponent px-1 text-nowrap text-center'>
                 No makes found.

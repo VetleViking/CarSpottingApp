@@ -39,7 +39,7 @@ const MakesClient = ({altUsername, username}: MakesClientProps) => {
         <Search search={search} setSearch={setSearch} />
         <div className='flex gap-2 mx-1 mb-4 flex-wrap md:flex-nowrap'>
             <div className="bg-black border border-[#9ca3af] cursor-pointer w-full">
-                <Link href="/makes/selected?make=unknown">
+                <Link href={`/makes/selected?make=unknown${username ? `&username=${username}` : ''}`}>
                     <p className="text-[#9ca3af] font-ListComponent px-1 py-2 text-nowrap">
                         Don&apos;t know
                     </p>

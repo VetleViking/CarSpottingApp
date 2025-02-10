@@ -517,6 +517,7 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { v4 } from 'uuid';
+import sharp from 'sharp';
 
 const upload = multer({ 
     storage: multer.memoryStorage(), 
@@ -540,8 +541,7 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
         const decodedUser = await get_user(token);
 
         if (!make || !model || images.length === 0) {
-            res.status(400).json({ message: 'Make, model, and at least one image are required' });
-            return;
+            return res.status(400).json({ message: 'Make, model, and at least one image are required' });
         }
 
         const allSpots = await redisClient.keys(`spots:${decodedUser}:${make}:${model}:*`);
@@ -563,33 +563,38 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             [`likes`]: '0'
         };
 
-        if (process.env.PRODUCTION !== 'true') { // if not prod, dont try to save images
-            const imagePaths: string[] = [];
-            for (const [index] of images.entries()) {
-                const imageName = `${offset}_${index}.jpg`;  // Unique image name
-                imagePaths.push(`/${decodedUser}/${make}_${model}/${imageName}`);
-            }
-
-            imagePaths.forEach((item, index) => {
-                data[`image${index}`] = item; 
-            });
-        } else {
+        if (process.env.PRODUCTION === 'true') {
             const rootDir = path.resolve(__dirname, '../../');
             const userDir = path.join(rootDir, 'uploads', decodedUser, `${make}_${model}`);
             await fs.promises.mkdir(userDir, { recursive: true });
-
+      
             const imagePaths: string[] = [];
+      
             for (const [index, image] of images.entries()) {
-                const imageName = `${offset}_${index}.jpg`;  // Unique image name
-                const imagePath = path.join(userDir, imageName);
-                await fs.promises.writeFile(imagePath, image.buffer);  // Write image buffer to file
-                imagePaths.push(`/${decodedUser}/${make}_${model}/${imageName}`);
+              const imageName = `${offset}_${index}.webp`;
+              const imagePath = path.join(userDir, imageName);
+      
+              await sharp(image.buffer)
+                .webp({ quality: 80 })
+                .toFile(imagePath);
+      
+              imagePaths.push(`/${decodedUser}/${make}_${model}/${imageName}`);
             }
-
+      
             imagePaths.forEach((item, index) => {
-                data[`image${index}`] = item; 
+              data[`image${index}`] = item;
             });
-        }
+          } else {
+            const imagePaths: string[] = [];
+            for (const [index] of images.entries()) {
+              // Not actually saving the files, just storing a path
+              const imageName = `${offset}_${index}.webp`;
+              imagePaths.push(`/${decodedUser}/${make}_${model}/${imageName}`);
+            }
+            imagePaths.forEach((item, index) => {
+              data[`image${index}`] = item;
+            });
+          }
 
         
 

@@ -1342,6 +1342,8 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
             return;
         }
 
+        const rootUploadsDir = path.resolve(__dirname, '../../uploads');
+
         const users = await redisClient.hGetAll('users');
 
         for (const user of Object.keys(users)) {
@@ -1355,31 +1357,57 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                 // from here you have all the spots for all users
                 // update one at a time
 
-                let newSpot = spot;
+                let newSpot = {...spot};
                 
-                const images = Object.keys(newSpot).filter(key => key.startsWith('image')).map(key => newSpot[key]);
-                const make = key.split(':')[2];
-                const model = key.split(':')[3];
-                const offset = key.split(':')[4];
-
-                const rootDir = path.resolve(__dirname, '../../');
-                const userDir = path.join(rootDir, 'uploads', user, `${make}_${model}`);
-                await fs.promises.mkdir(userDir, { recursive: true });
-        
-                const imagePaths: string[] = [];
-                for (const [index, image] of images.entries()) {
-                    const imageName = `${offset}_${index}.jpg`;  // Unique image name
-                    const imagePath = path.join(userDir, imageName);
-                    const imageBuffer = Buffer.from(image, 'base64');
-                    await fs.promises.writeFile(imagePath, imageBuffer);  // Write image buffer to file
-                    imagePaths.push(`/${user}/${make}_${model}/${imageName}`);
+                const imageFields = Object.keys(spot).filter((field) => field.startsWith('image'));
+                if (imageFields.length === 0) {
+                    // no images, nothing to convert
+                    continue;
                 }
-        
-                imagePaths.forEach((item, index) => {
-                    newSpot[`image${index}`] = item;  // Store path instead of base64
-                });
 
-                console.log(newSpot);
+                for (const imageField of imageFields) {
+                    const oldImagePath = spot[imageField];  // e.g. "/Vetle/Porsche_911/0_0.jpg"
+                    if (!oldImagePath) continue;
+
+                    // Build the absolute path to the old file
+                    // Remove leading slash so path.join works cleanly
+                    const oldRelPath = oldImagePath.replace(/^\/+/, '');
+                    const absOldPath = path.join(rootUploadsDir, oldRelPath);
+
+                    // Only convert if it's a typical image extension
+                    const ext = path.extname(absOldPath).toLowerCase();
+                    if (!['.jpg', '.jpeg', '.png'].includes(ext)) {
+                        // Already .webp or some other format – skip
+                        continue;
+                    }
+
+                    // Build the new path under "webp/"
+                    // Example: oldRelPath = "Vetle/Porsche_911/0_0.jpg"
+                    // => newRelPath = "webp/Vetle/Porsche_911/0_0.webp"
+                    const baseWithoutExt = oldRelPath.slice(0, oldRelPath.length - ext.length); 
+                    const newRelPath = path.join('webp', baseWithoutExt + '.webp');
+                    const absNewPath = path.join(rootUploadsDir, newRelPath);
+
+                    // Ensure the directory exists
+                    await fs.promises.mkdir(path.dirname(absNewPath), { recursive: true });
+
+                    // Convert to WebP at quality 80
+                    try {
+                        await sharp(absOldPath)
+                            .webp({ quality: 80 })
+                            .toFile(absNewPath);
+
+                        // Update the field in the newSpot to point to the .webp
+                        // with a leading slash (so it's consistent with old format)
+                        newSpot[imageField] = '/' + newRelPath.replace(/\\/g, '/');
+                    } catch (error) {
+                        console.error(`Failed to convert ${oldImagePath} to WebP:`, error);
+                        // If conversion fails, skip updating
+                    }
+                }
+
+                console.log('Old Spot:', spot);
+                console.log('New Spot:', newSpot);
 
                 //await redisClient.del(key);
 

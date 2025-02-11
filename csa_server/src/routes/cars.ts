@@ -1376,10 +1376,10 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
 
                     // Only convert if it's a typical image extension
                     const ext = path.extname(absOldPath).toLowerCase();
-                    if (!['.jpg', '.jpeg', '.png'].includes(ext)) {
-                        // Already .webp or some other format – skip
-                        continue;
-                    }
+                    // if (!['.jpg', '.jpeg', '.png'].includes(ext)) {
+                    //     // Already .webp or some other format – skip
+                    //     continue;
+                    // }
 
                     // Build the new path under "webp/"
                     // Example: oldRelPath = "Vetle/Porsche_911/0_0.jpg"
@@ -1389,13 +1389,13 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                     const absNewPath = path.join(rootUploadsDir, newRelPath);
 
                     // Ensure the directory exists
-                    await fs.promises.mkdir(path.dirname(absNewPath), { recursive: true });
+                    //await fs.promises.mkdir(path.dirname(absNewPath), { recursive: true });
 
                     // Convert to WebP at quality 80
                     try {
-                        await sharp(absOldPath)
-                            .webp({ quality: 80 })
-                            .toFile(absNewPath);
+                        // await sharp(absOldPath)
+                        //     .webp({ quality: 80 })
+                        //     .toFile(absNewPath);
 
                         // Update the field in the newSpot to point to the .webp
                         // with a leading slash (so it's consistent with old format)

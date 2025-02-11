@@ -1366,44 +1366,11 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                 }
 
                 for (const imageField of imageFields) {
-                    const oldImagePath = spot[imageField];  // e.g. "/Vetle/Porsche_911/0_0.jpg"
+                    const oldImagePath = spot[imageField];  // e.g. "webp/Vetle/Porsche_911/0_0.webp"
                     if (!oldImagePath) continue;
 
-                    // Build the absolute path to the old file
-                    // Remove leading slash so path.join works cleanly
-                    const oldRelPath = oldImagePath.replace(/^\/+/, '');
-                    const absOldPath = path.join(rootUploadsDir, oldRelPath);
-
-                    // Only convert if it's a typical image extension
-                    const ext = path.extname(absOldPath).toLowerCase();
-                    // if (!['.jpg', '.jpeg', '.png'].includes(ext)) {
-                    //     // Already .webp or some other format – skip
-                    //     continue;
-                    // }
-
-                    // Build the new path under "webp/"
-                    // Example: oldRelPath = "Vetle/Porsche_911/0_0.jpg"
-                    // => newRelPath = "webp/Vetle/Porsche_911/0_0.webp"
-                    const baseWithoutExt = oldRelPath.slice(0, oldRelPath.length - ext.length); 
-                    const newRelPath = path.join('webp', baseWithoutExt + '.webp');
-                    const absNewPath = path.join(rootUploadsDir, newRelPath);
-
-                    // Ensure the directory exists
-                    //await fs.promises.mkdir(path.dirname(absNewPath), { recursive: true });
-
-                    // Convert to WebP at quality 80
-                    try {
-                        // await sharp(absOldPath)
-                        //     .webp({ quality: 80 })
-                        //     .toFile(absNewPath);
-
-                        // Update the field in the newSpot to point to the .webp
-                        // with a leading slash (so it's consistent with old format)
-                        newSpot[imageField] = '/' + newRelPath.replace(/\\/g, '/');
-                    } catch (error) {
-                        console.error(`Failed to convert ${oldImagePath} to WebP:`, error);
-                        // If conversion fails, skip updating
-                    }
+                    const newPath = oldImagePath.replace('webp/', "").replace('.webp', '.jpg');
+                    newSpot[imageField] = newPath;
                 }
 
                 console.log('Old Spot:', spot);

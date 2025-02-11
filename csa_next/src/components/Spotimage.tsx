@@ -100,7 +100,7 @@ const Spotimage = ({ images, tags, notes, date, alt, spotdata }: ImageProps) => 
 
                 <div className="flex flex-col gap-1">
                     {images.map((image, id) => 
-                        <Image key={id} src={image} alt={alt ?? ""} width={800} height={1000}/>
+                        <img key={id} src={image} alt={alt ?? ""} width={800} height={1000}/>
                     )}
                 </div>
                 <div className="flex justify-between gap-4">

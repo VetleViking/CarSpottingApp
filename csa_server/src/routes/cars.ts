@@ -563,38 +563,33 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             [`likes`]: '0'
         };
 
-        if (process.env.PRODUCTION === 'true') {
+        if (process.env.PRODUCTION !== 'true') { // if not prod, dont try to save images
+            const imagePaths: string[] = [];
+            for (const [index] of images.entries()) {
+                const imageName = `${offset}_${index}.jpg`;  // Unique image name
+                imagePaths.push(`/${decodedUser}/${make}_${model}/${imageName}`);
+            }
+
+            imagePaths.forEach((item, index) => {
+                data[`image${index}`] = item; 
+            });
+        } else {
             const rootDir = path.resolve(__dirname, '../../');
             const userDir = path.join(rootDir, 'uploads', decodedUser, `${make}_${model}`);
             await fs.promises.mkdir(userDir, { recursive: true });
-      
+
             const imagePaths: string[] = [];
-      
             for (const [index, image] of images.entries()) {
-              const imageName = `${offset}_${index}.webp`;
-              const imagePath = path.join(userDir, imageName);
-      
-              await sharp(image.buffer)
-                .webp({ quality: 80 })
-                .toFile(imagePath);
-      
-              imagePaths.push(`/${decodedUser}/${make}_${model}/${imageName}`);
+                const imageName = `${offset}_${index}.jpg`;  // Unique image name
+                const imagePath = path.join(userDir, imageName);
+                await fs.promises.writeFile(imagePath, image.buffer);  // Write image buffer to file
+                imagePaths.push(`/${decodedUser}/${make}_${model}/${imageName}`);
             }
-      
+
             imagePaths.forEach((item, index) => {
-              data[`image${index}`] = item;
+                data[`image${index}`] = item; 
             });
-          } else {
-            const imagePaths: string[] = [];
-            for (const [index] of images.entries()) {
-              // Not actually saving the files, just storing a path
-              const imageName = `${offset}_${index}.webp`;
-              imagePaths.push(`/${decodedUser}/${make}_${model}/${imageName}`);
-            }
-            imagePaths.forEach((item, index) => {
-              data[`image${index}`] = item;
-            });
-          }
+        }
 
         
 

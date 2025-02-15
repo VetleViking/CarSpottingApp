@@ -136,11 +136,7 @@ export async function startBackgroundUpload(registration: ServiceWorkerRegistrat
             icons: [{ src: '/icon.png', sizes: '192x192', type: 'image/png' }],
             downloadTotal: files.reduce((acc, file) => acc + file.size, 0),
         });
-
-        // TODO: test, maybe use later
-        // bgFetch.addEventListener('progress', () => {
-        //     console.log(`Downloaded ${bgFetch.downloaded} of ${bgFetch.downloadTotal} bytes`);
-        // });
+        
         // handled by service worker
     } catch (error) {
         console.error('Background fetch registration failed:', error);

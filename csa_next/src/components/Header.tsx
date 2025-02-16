@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, { useState } from "react";
 
 interface HeaderProps {
@@ -22,75 +23,76 @@ const Header = ({ username }: HeaderProps) => {
                         </button>
                         <div className="w-full flex gap-8 justify-between md:justify-center md:gap-24 items-center">
                             <div className="flex gap-4">
-                                <button
-                                    onClick={() => (window.location.href = `/makes`)}
+                                <Link
+                                    href="/makes"
                                     className="italic p-1 text-nowrap hidden md:block"
                                 >
                                     Upload <span className="text-[#e72328]">spot</span>
-                                </button>
-                                <button
-                                    onClick={() =>
-                                    (window.location.href = `/makes?username=${username}`)
-                                    }
-                                    className="italic p-1 text-nowrap hidden md:block"
-                                >
-                                    Your <span className="text-[#e72328]">spots</span>
-                                </button>
-                                <button
-                                    onClick={() => (window.location.href = `/discover`)}
+                                </Link>
+                                <Link
+                                    href="/discover"
                                     className="italic p-1 text-nowrap hidden md:block"
                                 >
                                     Discover <span className="text-[#e72328]">spots</span>
-                                </button>
-                                <button
-                                    onClick={() => (window.location.href = `/`)}
+                                </Link>
+                                <Link
+                                    href="/"
                                     className="italic p-1 text-nowrap hidden md:block"
                                 >
                                     Home <span className="text-[#e72328]">page</span>
-                                </button>
-                                <button
-                                    onClick={() => (window.location.href = `/profile`)}
+                                </Link>
+                                <Link
+                                    href={`/makes?username=${username}`}
+                                    className="italic p-1 text-nowrap hidden md:block"
+                                >
+                                    Your <span className="text-[#e72328]">spots</span>
+                                </Link>
+                                <Link
+                                    href="/profile"
                                     className="italic p-1 text-nowrap hidden md:block"
                                 >
                                     Your <span className="text-[#e72328]">profile</span>
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     </div>
                     {isOpen && (
                         <div className="md:hidden flex flex-col gap-4 px-4 py-3">
-                            <button
-                                onClick={() =>
-                                    (window.location.href = `/makes?username=${username}`)
-                                }
+                            <Link
+                                href="/makes"
                                 className="italic p-1 text-nowrap w-max"
-                            >
-                                Your <span className="text-[#e72328]">spots</span>
-                            </button>
-                            <button
-                                onClick={() => (window.location.href = `/makes`)}
-                                className="italic p-1 text-nowrap w-max"
+                                onClick={() => setIsOpen(false)}
                             >
                                 Upload <span className="text-[#e72328]">spot</span>
-                            </button>
-                            <button
-                                onClick={() => (window.location.href = `/discover`)}
+                            </Link>
+                            <Link
+                                href="/discover"
                                 className="italic p-1 text-nowrap w-max"
+                                onClick={() => setIsOpen(false)}
                             >
                                 Discover <span className="text-[#e72328]">spots</span>
-                            </button>
-                            <button
-                                onClick={() => (window.location.href = `/`)}
+                            </Link>
+                            <Link
+                                href="/"
                                 className="italic p-1 text-nowrap w-max"
+                                onClick={() => setIsOpen(false)}
                             >
                                 Home <span className="text-[#e72328]">page</span>
-                            </button>
-                            <button
-                                onClick={() => (window.location.href = `/profile`)}
+                            </Link>
+                            <Link
+                                href={`/makes?username=${username}`}
                                 className="italic p-1 text-nowrap w-max"
+                                onClick={() => setIsOpen(false)}
+                            >
+                                Your <span className="text-[#e72328]">spots</span>
+                            </Link>
+                            <Link
+                                href="/profile"
+                                className="italic p-1 text-nowrap w-max"
+                                onClick={() => setIsOpen(false)}
                             >
                                 Your <span className="text-[#e72328]">profile</span>
-                            </button>
+                            </Link>
                         </div>
                     )}
                 </div>

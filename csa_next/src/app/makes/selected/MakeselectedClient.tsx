@@ -21,7 +21,6 @@ interface Model {
     model: string;
 }
   
-
 const MakeSelectedClient = ({altUsername, username, make, children}: MakeSelectedClientProps) => {
     const [search, setSearch] = useState('');
     const [data, setData] = useState<Model[]>([]);

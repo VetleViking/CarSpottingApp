@@ -119,7 +119,7 @@ const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ user
     const observerRef = useRef<HTMLDivElement | null>(null);
     
     const [currentSearch, setCurrentSearch] = useState<string | null>(searchParams.get('search') || null);
-    
+    const [search, setSearch] = useState<string>(searchParams.get('search') || '');
     
 
     useEffect(() => {
@@ -194,7 +194,7 @@ const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ user
     return <div className='flex flex-col gap-4 items-center mt-4 font-ListComponent'>
         <div className='w-full max-w-96'>
             <div className='mb-2'>
-                <SearchSpots onSearch={onSearch} initialSearch={currentSearch || ""} />
+                <SearchSpots onSearch={onSearch} search={search} setSearch={setSearch} />
                 <p className='text-white'>Sort by</p>
                 <select value={sort} onChange={e => {
                     setSort(e.target.value as 'recent' | 'hot' | 'top');

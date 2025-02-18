@@ -7,32 +7,32 @@ import crossmark from "@/images/crossmark.svg";
 
 type SearchSpotProps = {
     onSearch: (search: string) => void;
-    initialSearch?: string;
+    search: string;
+    setSearch: (search: string) => void;
 };
 
-const SearchSpots = ({ onSearch, initialSearch }: SearchSpotProps) => {
+const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
     const searchRef = useRef<HTMLInputElement>(null);
-    const [search, setSearch] = useState("");
+
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        searchRef.current?.blur();
+        onSearch(search);
+    }
 
     return (
         <div className="flex justify-center mb-4">
-            <div className="flex items-center justify-center  rounded-lg w-full">
+            <form
+                onSubmit={handleSubmit} 
+                className="flex items-center justify-center  rounded-lg w-full"
+            >
                 <input
                     ref={searchRef}
                     className={`w-full max-w-2xl mr-1 p-1 rounded-lg border border-black font-ListComponent`}
                     type="text"
                     placeholder="Search..."
-                    value={search || initialSearch}
-                    onChange={e => {
-                        setSearch(e.target.value)
-                    }}
-                    onKeyDown={(e) => {
-                        if(e.key === 'Enter' && searchRef.current) {
-                            searchRef.current.blur();
-                            onSearch(search);
-                        }
-                    }}
-                    onSubmit={() => onSearch(search)} // If enter does not work on mobile, debug later
+                    value={search}
+                    onChange={e => {setSearch(e.target.value) }}
                 />
                 <Image 
                     src={search_icon} 
@@ -55,7 +55,7 @@ const SearchSpots = ({ onSearch, initialSearch }: SearchSpotProps) => {
                         className="cursor-pointer pl-1"
                     />
                 )}
-            </div>
+            </form>
         </div>
     );
 };

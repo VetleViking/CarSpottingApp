@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import Image from "next/image";
 import search_icon from "@/images/search_icon.svg";
 import crossmark from "@/images/crossmark.svg";
 
 type SearchSpotProps = {
     onSearch: (search: string) => void;
+    initialSearch?: string;
 };
 
-const SearchSpots = ({ onSearch }: SearchSpotProps) => {
+const SearchSpots = ({ onSearch, initialSearch }: SearchSpotProps) => {
     const searchRef = useRef<HTMLInputElement>(null);
     const [search, setSearch] = useState("");
 
@@ -21,7 +22,7 @@ const SearchSpots = ({ onSearch }: SearchSpotProps) => {
                     className={`w-full max-w-2xl mr-1 p-1 rounded-lg border border-black font-ListComponent`}
                     type="text"
                     placeholder="Search..."
-                    value={search}
+                    value={search || initialSearch}
                     onChange={e => {
                         setSearch(e.target.value)
                     }}
@@ -31,7 +32,7 @@ const SearchSpots = ({ onSearch }: SearchSpotProps) => {
                             onSearch(search);
                         }
                     }}
-                    // onSubmit={() => onSearch(search)} // If enter does not work on mobile, debug later
+                    onSubmit={() => onSearch(search)} // If enter does not work on mobile, debug later
                 />
                 <Image 
                     src={search_icon} 

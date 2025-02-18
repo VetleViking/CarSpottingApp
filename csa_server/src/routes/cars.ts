@@ -591,8 +591,6 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             });
         }
 
-        
-
         if (tagsArray && tagsArray.length > 0) {
             tagsArray.forEach((tag, index) => {
                 redisClient.hSet(`tags:${decodedUser}:${tag}`, `spots:${decodedUser}:${make}:${model}:${offset}`, index);

@@ -194,7 +194,7 @@ const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ user
     return <div className='flex flex-col gap-4 items-center mt-4 font-ListComponent'>
         <div className='w-full max-w-96'>
             <div className='mb-2'>
-                <SearchSpots onSearch={onSearch} />
+                <SearchSpots onSearch={onSearch} initialSearch={currentSearch || ""} />
                 <p className='text-white'>Sort by</p>
                 <select value={sort} onChange={e => {
                     setSort(e.target.value as 'recent' | 'hot' | 'top');

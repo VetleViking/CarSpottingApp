@@ -8,6 +8,7 @@ import Spotimage from "@/components/Spotimage";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getTimeAgo } from "@/functions/functions";
 import Comments from "@/components/Comments";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 interface SpotType {
     date: string;
@@ -105,17 +106,22 @@ const SpotCard: React.FC<{ spot: SpotType, username: string, isAdmin: boolean }>
 };
   
 const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ username, isAdmin }) =>  {
-    const [spots, setSpots] = useState<SpotType[]>([]);
-    const [sort, setSort] = useState<'recent' | 'hot' | 'top'>("recent");
-    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
     
+    const [spots, setSpots] = useState<SpotType[]>([]);
+    const [sort, setSort] = useState<'recent' | 'hot' | 'top'>(searchParams.get('sort') as 'recent' | 'hot' | 'top' || 'recent');
+    const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(0);
     const [reachEnd, setReachEnd] = useState(false);
     const [shouldFetch, setShouldFetch] = useState(true)
     const observerRef = useRef<HTMLDivElement | null>(null);
     
-    const [currentSearch, setCurrentSearch] = useState<string | null>(null);
+    const [currentSearch, setCurrentSearch] = useState<string | null>(searchParams.get('search') || null);
     
+    
+
     useEffect(() => {
         if (!shouldFetch) return;
         if (reachEnd) return;
@@ -128,6 +134,15 @@ const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ user
                 setSpots((prev) => (page === 0 ? res : [...prev, ...res]));
                 setPage(prevPage => prevPage + 1);
                 if (res.length < 10) setReachEnd(true);
+                
+                const params = new URLSearchParams(searchParams.toString());
+
+                params.set('sort', sort);
+                currentSearch ? params.set('search', currentSearch) : params.delete('search');
+
+                const newUrl = `${pathname}?${params.toString()}`;
+
+                router.push(newUrl);
             } catch (e) {
                 console.error('Error loading spots:', e);
             } finally {

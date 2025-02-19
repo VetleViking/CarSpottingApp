@@ -1180,6 +1180,82 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
 });
 
 
+router.get('/search_autocomplete', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { query } = req.query;
+
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        const decodedUser = await get_user(token);
+
+        if (!query || typeof query !== 'string') {
+            res.status(400).json({ message: 'Query is required' });
+            return;
+        }
+
+        const searchArray = query.split('&');
+        const currentSearch = searchArray[searchArray.length - 1];
+
+        const allSpotsKeys = await redisClient.keys(`spots:*`);
+        const allSpots = await Promise.all(allSpotsKeys.map(async key => await redisClient.hGetAll(key)));
+        
+        const filteredSpotIds = [];
+
+        // filter the finished queries
+        allSpots.filter((spot, i) => {
+            const searchResult = searchArray.every(searchString => {
+                const stringSplit = searchString.toLowerCase().split(':');
+                const reversed = stringSplit[0].startsWith('!');
+                const key = !stringSplit[1] ? null : reversed ? stringSplit[0].slice(1) : stringSplit[0]; // if no value, use key as value
+                const value = stringSplit[1] ? stringSplit[1] : stringSplit[0]; // if no value, use key as value
+                const spotKey = allSpotsKeys[i].toLowerCase();
+
+                const tags = Object.keys(spot).filter(key => key.startsWith('tag')).map(key => spot[key]).map(tag => tag.toLowerCase());
+                
+                let match = false;
+
+                if (key === 'user') {
+                    match = spotKey.split(':')[1] === value;
+                } else if (key === 'make') {
+                    match = spotKey.split(':')[2].includes(value);
+                } else if (key === 'model') {
+                    match = spotKey.split(':')[3].includes(value);
+                } else if (key === 'tag') {
+                    match = tags.includes(value);
+                } else if (key === 'likes') {
+                    match = spot['likes'] === value;
+                } else if (key === 'notes') {
+                    match = spot['notes']?.toLowerCase().includes(value);
+                } else if (!key) { // if no key, search in make and model
+                    const [ , , rawMake, rawModel ] = spotKey.split(':');
+                    const combined = (rawMake + ' ' + rawModel).toLowerCase();
+
+                    const parts = value.toLowerCase().split(' ');
+                    
+                    match = parts.every(part => combined.includes(part));
+                }
+        
+                return reversed ? !match : match;
+            })
+
+            if (searchResult) {
+                filteredSpotIds.push(allSpotsKeys[i]);
+            }
+
+            return searchResult;
+        });
+
+
+        const serchStrings = filteredSpotIds.map(spot => {
+
+        });
+
+        res.status(200).json([]);
+    } catch (err) {
+        next(err);
+    }
+});
+
 router.post('/likespot', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model, key, user } = req.body;

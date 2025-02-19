@@ -26,11 +26,11 @@ const UploadSpot = ({ make, model, username }: SpotProps) => {
     const [tagList, setTagList] = useState<string[]>([]);
     const [tagOpen, setTagOpen] = useState(false);
     const [newTag, setNewTag] = useState('');
-    const [tagFetch, setTagFetch] = useState(false);
+    const [tagFetched, setTagFetched] = useState(false);
 
-    if (!tagFetch && typeof window !== 'undefined') get_tags().then((tags) => {
+    if (!tagFetched && typeof window !== 'undefined') get_tags().then((tags) => {
         setTagList(tags)
-        setTagFetch(true);
+        setTagFetched(true);
     });
 
     useEffect(() => {
@@ -43,7 +43,6 @@ const UploadSpot = ({ make, model, username }: SpotProps) => {
             urls.forEach(url => URL.revokeObjectURL(url));
         };
     }, [files]);
-
 
     const upload = async () => {
         if (!files) return;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import search_icon from "@/images/search_icon.svg";
 import crossmark from "@/images/crossmark.svg";
@@ -18,6 +18,8 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
     const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
     const [activeSuggestionIndex, setActiveSuggestionIndex] = useState<number>(-1);
     const [tempSearch, setTempSearch] = useState<boolean>(false);
+
+    const listItemRefs = useRef<Array<HTMLLIElement | null>>([]);
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -85,6 +87,17 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
         }
     }
 
+    useEffect(() => {
+        if (
+          activeSuggestionIndex >= 0 &&
+          listItemRefs.current[activeSuggestionIndex]
+        ) {
+          listItemRefs.current[activeSuggestionIndex]?.scrollIntoView({
+            block: "nearest",
+          });
+        }
+      }, [activeSuggestionIndex]);
+
     return (
         <div className="flex justify-center mb-4">
             <div className="relative w-full">
@@ -141,6 +154,9 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
                         {searchSuggestions.map((suggestion, index) => (
                             <li
                                 key={index}
+                                ref={(el) => {
+                                    listItemRefs.current[index] = el;
+                                }}
                                 className={`p-2 cursor-pointer ${
                                     index === activeSuggestionIndex ? "bg-gray-200" : ""
                                 }`}

@@ -1255,6 +1255,8 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
         } else { // if no key, search in make and model
             const parts = value.toLowerCase().indexOf(' ') === -1 ? [value.toLowerCase()] : [value.substring(0, value.indexOf(' ')).toLowerCase(), value.substring(value.indexOf(' ') + 1).toLowerCase()];
 
+            console.log(parts);
+
             let result = [];
 
             if (parts.length === 1) { // if only one part, search in make
@@ -1283,6 +1285,8 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
                 } else {
                     result = filteredMakes.map(make => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${make}`);
                 }
+
+            console.log(result);
             } else if (parts.length === 2) { // if multiple parts, search in make and model
                 const make = parts[0];
 

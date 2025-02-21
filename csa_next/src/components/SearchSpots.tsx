@@ -24,6 +24,7 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
         onSearch(search);
         searchRef.current?.blur();
         setSearchSuggestions([]);
+        setTempSearch(false);
     }
 
     async function handleSearchAutocomplete(query: string) {
@@ -38,6 +39,7 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
         searchRef.current?.blur();
         setSearchSuggestions([]);
         setActiveSuggestionIndex(-1);
+        setTempSearch(false);
     }
 
     function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -114,6 +116,7 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
                         onClick={() => {
                             onSearch(search)
                             setSearchSuggestions([]);
+                            setTempSearch(false);
                         }}
                         className="cursor-pointer pr-1"
                     />
@@ -127,6 +130,7 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
                                 setSearch("");
                                 onSearch("");
                                 setSearchSuggestions([]);
+                                setTempSearch(false);
                             }}
                             className="cursor-pointer pl-1"
                         />

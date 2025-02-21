@@ -1288,7 +1288,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             } else if (parts.length === 2) { // if multiple parts, search in make and model
                 const make = parts[0];
 
-                const modelsObject = await redisClient.hGetAll(`make:${make}`);
+                const modelsObject = await redisClient.hGetAll(`make:${make}`); // TODO: error with casing here, fix
                 const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);
                 const modelsArray = Object.keys(modelsObject).map(key => modelsObject[key])
                     .concat(Object.keys(modelsObjectUser).map(key => modelsObjectUser[key]));

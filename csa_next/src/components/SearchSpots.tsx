@@ -4,6 +4,7 @@ import React, { useRef, useState } from "react";
 import Image from "next/image";
 import search_icon from "@/images/search_icon.svg";
 import crossmark from "@/images/crossmark.svg";
+import { search_autocomplete } from "@/api/cars";
 
 type SearchSpotProps = {
     onSearch: (search: string) => void;
@@ -32,7 +33,10 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
                     type="text"
                     placeholder="Search..."
                     value={search}
-                    onChange={e => {setSearch(e.target.value) }}
+                    onChange={e => {
+                        search_autocomplete(e.target.value);
+                        setSearch(e.target.value) 
+                    }}
                 />
                 <Image 
                     src={search_icon} 

@@ -1195,62 +1195,138 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
 
         const searchArray = query.split('&');
         const currentSearch = searchArray[searchArray.length - 1];
+        const searchFinished = searchArray.slice(0, searchArray.length - 1);
 
-        const allSpotsKeys = await redisClient.keys(`spots:*`);
-        const allSpots = await Promise.all(allSpotsKeys.map(async key => await redisClient.hGetAll(key)));
+        const stringSplit = currentSearch.toLowerCase().split(':');
+        const reversed = stringSplit[0].startsWith('!');
+        const key = stringSplit[1] === undefined ? null : reversed ? stringSplit[0].slice(1) : stringSplit[0]; // if no value, use key as value
+        const value = stringSplit[1] !== undefined ? stringSplit[1] : stringSplit[0]; // if no value, use key as value
+
+        console.log(key, value, stringSplit, reversed, stringSplit[1]);
+
+        const searchStrings = [];
+
+        if (key === 'user') {
+            console.log('searching for user');
+            const allUsers = await redisClient.hGetAll('users');
+            const users = Object.keys(allUsers).map(key => allUsers[key]);
+            
+            const filteredUsers = users.filter(user => user.toLowerCase().startsWith(value));
+
+            console.log(filteredUsers, users);
         
-        const filteredSpotIds = [];
+            searchStrings.push(...filteredUsers.map(user => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}user:${user}`));
+        } else if (key === 'tag') {
+            console.log('searching for tag');
+            const tagsUser = await redisClient.hGetAll(`tags:${decodedUser}`);
+            const allTags = await redisClient.hGetAll(`tags`);
+            const tags = Object.keys(tagsUser).map(key => tagsUser[key]).concat(Object.keys(allTags).map(key => allTags[key]));
 
-        // filter the finished queries
-        allSpots.filter((spot, i) => {
-            const searchResult = searchArray.every(searchString => {
-                const stringSplit = searchString.toLowerCase().split(':');
-                const reversed = stringSplit[0].startsWith('!');
-                const key = !stringSplit[1] ? null : reversed ? stringSplit[0].slice(1) : stringSplit[0]; // if no value, use key as value
-                const value = stringSplit[1] ? stringSplit[1] : stringSplit[0]; // if no value, use key as value
-                const spotKey = allSpotsKeys[i].toLowerCase();
+            const filteredTags = tags.filter(tag => tag.toLowerCase().startsWith(value));
 
-                const tags = Object.keys(spot).filter(key => key.startsWith('tag')).map(key => spot[key]).map(tag => tag.toLowerCase());
-                
-                let match = false;
+            searchStrings.push(...filteredTags.map(tag => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}tag:${tag}`));
 
-                if (key === 'user') {
-                    match = spotKey.split(':')[1] === value;
-                } else if (key === 'make') {
-                    match = spotKey.split(':')[2].includes(value);
-                } else if (key === 'model') {
-                    match = spotKey.split(':')[3].includes(value);
-                } else if (key === 'tag') {
-                    match = tags.includes(value);
-                } else if (key === 'likes') {
-                    match = spot['likes'] === value;
-                } else if (key === 'notes') {
-                    match = spot['notes']?.toLowerCase().includes(value);
-                } else if (!key) { // if no key, search in make and model
-                    const [ , , rawMake, rawModel ] = spotKey.split(':');
-                    const combined = (rawMake + ' ' + rawModel).toLowerCase();
+            console.log(filteredTags, tags);
+        } else if (key === 'likes' || key === 'notes') { // Dont do anything
+        } else if (key === 'make') {
+            console.log('searching for make');
+            const makes = await redisClient.hGetAll('makes');
+            const makesUser = await redisClient.hGetAll(`makes:${decodedUser}`);
+            const makesArray = Object.keys(makes).map(key => makes[key]).concat(Object.keys(makesUser).map(key => makesUser[key]));
 
-                    const parts = value.toLowerCase().split(' ');
-                    
-                    match = parts.every(part => combined.includes(part));
-                }
-        
-                return reversed ? !match : match;
-            })
+            const filteredMakes = makesArray.filter(make => make.toLowerCase().startsWith(value));
 
-            if (searchResult) {
-                filteredSpotIds.push(allSpotsKeys[i]);
+            searchStrings.push(...filteredMakes.map(make => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}make:${make}`));
+
+            console.log(filteredMakes, makesArray);
+        } else if (key === 'model') {
+            console.log('searching for model');
+
+            const makesArray = [];
+
+            const queryMake = searchFinished.find(search => search.startsWith('make:'));
+
+            if (!queryMake) {
+                const makesObject = await redisClient.hGetAll('makes');
+                const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
+                makesArray.push(...Object.keys(makesObject).map(key => makesObject[key])
+                    .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key])));
+            } else {
+                makesArray.push(queryMake.split(':')[1]);
             }
 
-            return searchResult;
-        });
+            const modelsArray = [];
+    
+            for (const make of makesArray) {
+                const modelsObject = await redisClient.hGetAll(`make:${make}`);
+                const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);
+                const models = Object.keys(modelsObject).map(key => modelsObject[key])
+                    .concat(Object.keys(modelsObjectUser).map(key => modelsObjectUser[key]));
 
+                const filteredModels = models.filter(model => model.toLowerCase().startsWith(value));
 
-        const serchStrings = filteredSpotIds.map(spot => {
+                modelsArray.push(...filteredModels);
+            }
 
-        });
+            searchStrings.push(...modelsArray.map(model => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}model:${model}`));
+        } else { // if no key, search in make and model
+            console.log('searching for make and model');
+            
+            const parts = value.toLowerCase().split(' ', 2);
 
-        res.status(200).json([]);
+            console.log(parts);
+
+            let result = [];
+
+            if (parts.length === 1) { // if only one part, search in make
+                console.log('searching for make');
+
+                const makesObject = await redisClient.hGetAll('makes');
+                const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
+                const makesArray = Object.keys(makesObject).map(key => makesObject[key])
+                    .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
+
+                const filteredMakes = makesArray.filter(make => make.toLowerCase().startsWith(value));
+                
+                if (filteredMakes.length === 0) { // if no makes, search in models
+                    const modelsArray = [] as { make: string, model: string }[];
+    
+                    for (const make of makesArray) {
+                        const modelsObject = await redisClient.hGetAll(`make:${make}`);
+                        const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);
+                        const models = Object.keys(modelsObject).map(key => modelsObject[key])
+                            .concat(Object.keys(modelsObjectUser).map(key => modelsObjectUser[key]));
+        
+                        const filteredModels = models.filter(model => model.toLowerCase().startsWith(value));
+        
+                        modelsArray.push(...filteredModels.map(model => ({ make, model })));
+                    }
+
+                    result = modelsArray.map(({ make, model }) => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${make + " " + model}`);
+                } else {
+                    result = filteredMakes.map(make => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${make}`);
+                }
+            } else if (parts.length === 2) { // if multiple parts, search in make and model
+                console.log('searching for model with make');
+
+                const make = parts[0];
+
+                const modelsObject = await redisClient.hGetAll(`make:${make}`);
+                const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);
+                const modelsArray = Object.keys(modelsObject).map(key => modelsObject[key])
+                    .concat(Object.keys(modelsObjectUser).map(key => modelsObjectUser[key]));
+
+                const filteredModels = modelsArray.filter(model => model.toLowerCase().startsWith(parts[1]));
+
+                result = filteredModels.map(model => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${make}:${model}`);
+            } else { // no
+                result = [];
+            }
+
+            searchStrings.push(...result);
+        }
+
+        res.status(200).json(searchStrings);
     } catch (err) {
         next(err);
     }

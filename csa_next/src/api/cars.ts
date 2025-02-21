@@ -230,6 +230,10 @@ export async function discover(page?: number, sort?: 'recent' | 'hot' | 'top', s
     return apiCall('discover', { query: { page, sort, search } });
 }
 
+export async function search_autocomplete(query: string) {
+    return apiCall('search_autocomplete', { query: { query } });
+}
+
 export async function fix_spots() {
     return apiCall('fixspots');
 }

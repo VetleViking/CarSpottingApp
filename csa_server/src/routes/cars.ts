@@ -229,11 +229,7 @@ router.get('/makes/:make/models/', async (req: Request, res: Response, next: Nex
         // if not searched bofore, save search and get from nhtsa instead
         const searchedBefore = await redisClient.hGet(`searchedmakes`, make);
         
-        console.log('searchedBefore', searchedBefore);
-
         if (!searchedBefore) {
-            console.log("test");
-
             await redisClient.hSet(`searchedmakes`, make, make);
 
             const responsePassenger = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/vehicleType/Passenger%20Car?format=json`);
@@ -1202,22 +1198,16 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
         const key = stringSplit[1] === undefined ? null : reversed ? stringSplit[0].slice(1) : stringSplit[0]; // if no value, use key as value
         const value = stringSplit[1] !== undefined ? stringSplit[1] : stringSplit[0]; // if no value, use key as value
 
-        console.log(key, value, stringSplit, reversed, stringSplit[1]);
-
         const searchStrings = [];
 
         if (key === 'user') {
-            console.log('searching for user');
             const allUsers = await redisClient.hGetAll('users');
             const users = Object.keys(allUsers).map(key => allUsers[key]);
             
             const filteredUsers = users.filter(user => user.toLowerCase().startsWith(value));
 
-            console.log(filteredUsers, users);
-        
             searchStrings.push(...filteredUsers.map(user => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}user:${user}`));
         } else if (key === 'tag') {
-            console.log('searching for tag');
             const tagsUser = await redisClient.hGetAll(`tags:${decodedUser}`);
             const allTags = await redisClient.hGetAll(`tags`);
             const tags = Object.keys(tagsUser).map(key => tagsUser[key]).concat(Object.keys(allTags).map(key => allTags[key]));
@@ -1225,11 +1215,8 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             const filteredTags = tags.filter(tag => tag.toLowerCase().startsWith(value));
 
             searchStrings.push(...filteredTags.map(tag => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}tag:${tag}`));
-
-            console.log(filteredTags, tags);
         } else if (key === 'likes' || key === 'notes') { // Dont do anything
         } else if (key === 'make') {
-            console.log('searching for make');
             const makes = await redisClient.hGetAll('makes');
             const makesUser = await redisClient.hGetAll(`makes:${decodedUser}`);
             const makesArray = Object.keys(makes).map(key => makes[key]).concat(Object.keys(makesUser).map(key => makesUser[key]));
@@ -1237,11 +1224,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             const filteredMakes = makesArray.filter(make => make.toLowerCase().startsWith(value));
 
             searchStrings.push(...filteredMakes.map(make => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}make:${make}`));
-
-            console.log(filteredMakes, makesArray);
         } else if (key === 'model') {
-            console.log('searching for model');
-
             const makesArray = [];
 
             const queryMake = searchFinished.find(search => search.startsWith('make:'));
@@ -1270,17 +1253,11 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
 
             searchStrings.push(...modelsArray.map(model => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}model:${model}`));
         } else { // if no key, search in make and model
-            console.log('searching for make and model');
-            
             const parts = value.toLowerCase().indexOf(' ') === -1 ? [value.toLowerCase()] : [value.substring(0, value.indexOf(' ')).toLowerCase(), value.substring(value.indexOf(' ') + 1).toLowerCase()];
-
-            console.log(parts);
 
             let result = [];
 
             if (parts.length === 1) { // if only one part, search in make
-                console.log('searching for make');
-
                 const makesObject = await redisClient.hGetAll('makes');
                 const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
                 const makesArray = Object.keys(makesObject).map(key => makesObject[key])
@@ -1307,8 +1284,6 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
                     result = filteredMakes.map(make => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${make}`);
                 }
             } else if (parts.length === 2) { // if multiple parts, search in make and model
-                console.log('searching for model with make');
-
                 const make = parts[0];
 
                 const modelsObject = await redisClient.hGetAll(`make:${make}`);

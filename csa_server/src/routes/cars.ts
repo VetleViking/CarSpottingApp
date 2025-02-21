@@ -1285,8 +1285,6 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
                 } else {
                     result = filteredMakes.map(make => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${make}`);
                 }
-
-            console.log(result);
             } else if (parts.length === 2) { // if multiple parts, search in make and model
                 const make = parts[0];
 
@@ -1296,6 +1294,8 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
                     .concat(Object.keys(modelsObjectUser).map(key => modelsObjectUser[key]));
 
                 const filteredModels = modelsArray.filter(model => model.toLowerCase().startsWith(parts[1]));
+
+                console.log(modelsArray, filteredModels);
 
                 result = filteredModels.map(model => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${make} ${model}`);
             } else { // no :(

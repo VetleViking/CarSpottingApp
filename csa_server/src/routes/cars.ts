@@ -1272,7 +1272,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
         } else { // if no key, search in make and model
             console.log('searching for make and model');
             
-            const parts = value.toLowerCase().split(' ', 2);
+            const parts = value.toLowerCase().indexOf(' ') === -1 ? [value.toLowerCase()] : [value.substring(0, value.indexOf(' ')).toLowerCase(), value.substring(value.indexOf(' ') + 1).toLowerCase()];
 
             console.log(parts);
 
@@ -1318,8 +1318,8 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
 
                 const filteredModels = modelsArray.filter(model => model.toLowerCase().startsWith(parts[1]));
 
-                result = filteredModels.map(model => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${make}:${model}`);
-            } else { // no
+                result = filteredModels.map(model => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${make} ${model}`);
+            } else { // no :(
                 result = [];
             }
 

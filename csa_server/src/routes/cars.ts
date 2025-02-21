@@ -1295,7 +1295,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
 
                 const filteredModels = modelsArray.filter(model => model.toLowerCase().startsWith(parts[1]));
 
-                console.log(modelsArray, filteredModels);
+                console.log(modelsObject, modelsObjectUser, modelsArray, filteredModels);
 
                 result = filteredModels.map(model => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${make} ${model}`);
             } else { // no :(

@@ -1286,7 +1286,12 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
                     result = filteredMakes.map(make => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${make}`);
                 }
             } else if (parts.length === 2) { // if multiple parts, search in make and model
-                const make = parts[0];
+                const makesObject = await redisClient.hGetAll('makes');
+                const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
+                const makesArray = Object.keys(makesObject).map(key => makesObject[key])
+                    .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
+
+                const make = makesArray.find(make => make.toLowerCase() === parts[0]);
 
                 const modelsObject = await redisClient.hGetAll(`make:${make}`); // TODO: error with casing here, fix
                 const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);

@@ -1293,7 +1293,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
 
                 const make = makesArray.find(make => make.toLowerCase() === parts[0]);
 
-                const modelsObject = await redisClient.hGetAll(`make:${make}`); // TODO: error with casing here, fix
+                const modelsObject = await redisClient.hGetAll(`make:${make}`);
                 const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);
                 const modelsArray = Object.keys(modelsObject).map(key => modelsObject[key])
                     .concat(Object.keys(modelsObjectUser).map(key => modelsObjectUser[key]));

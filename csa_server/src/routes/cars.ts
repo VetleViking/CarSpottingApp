@@ -1255,8 +1255,6 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
         } else { // if no key, search in make and model
             const parts = value.toLowerCase().indexOf(' ') === -1 ? [value.toLowerCase()] : [value.substring(0, value.indexOf(' ')).toLowerCase(), value.substring(value.indexOf(' ') + 1).toLowerCase()];
 
-            console.log(parts);
-
             let result = [];
 
             if (parts.length === 1) { // if only one part, search in make
@@ -1300,8 +1298,6 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
 
                 const filteredModels = modelsArray.filter(model => model.toLowerCase().startsWith(parts[1]));
 
-                console.log(modelsObject, modelsObjectUser, modelsArray, filteredModels);
-
                 result = filteredModels.map(model => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${make} ${model}`);
             } else { // no :(
                 result = [];
@@ -1314,7 +1310,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             (a, b) => a.length - b.length || a.localeCompare(b)
         );
 
-        res.status(200).json(searchStrings);
+        res.status(200).json(sortedSearchStrings);
     } catch (err) {
         next(err);
     }

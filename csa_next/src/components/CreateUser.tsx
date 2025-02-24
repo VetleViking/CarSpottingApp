@@ -14,7 +14,7 @@ const CreateUser = () => {
         if (data.message === "User created") {
             const loginData = await login(username, password);
 
-            if (!loginData.token) setErrormessage(loginData.message);
+            loginData.message === 'Logged in' ? window.location.href = '/' : setErrormessage(loginData.message || 'An error occurred');
         } else setErrormessage(data.message || 'An error occurred');
     }
 

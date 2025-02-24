@@ -1310,6 +1310,10 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             searchStrings.push(...result);
         }
 
+        const sortedSearchStrings = searchStrings.sort(
+            (a, b) => a.length - b.length || a.localeCompare(b)
+        );
+
         res.status(200).json(searchStrings);
     } catch (err) {
         next(err);

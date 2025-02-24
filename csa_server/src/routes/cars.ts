@@ -1202,7 +1202,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
 
         if (key === 'user') {
             const allUsers = await redisClient.hGetAll('users');
-            const users = Object.keys(allUsers).map(key => allUsers[key]);
+            const users = Object.keys(allUsers);
             
             const filteredUsers = users.filter(user => user.toLowerCase().startsWith(value));
 

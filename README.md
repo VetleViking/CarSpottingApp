@@ -39,18 +39,16 @@
    - Copy the `.env.example` files in both `frontend` and `backend` directories and rename them to `.env`.
    - Update the `.env` files with your own API keys, Redis connection info, and CDN URLs.
 
-3. **Install dependencies and run the Frontend:**
+3. **Install dependencies in the frontend and backend:**
    ```bash
-   # from the frontend directory
+   # from both the frontend and the backend directory
    npm install
-   npm run dev
    ```
 
-4. **Install dependencies and run the Backend:**
+4. **Final install and run both:**
    ```bash
-   # from the backend directory
+   # from the root directory
    npm install
-   docker-compose up -d
    npm run dev
    ```
 

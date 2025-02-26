@@ -150,7 +150,7 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
                     )}
                 </form>
                 {searchSuggestions.length > 0 && (
-                    <ul className="absolute bg-white border border-black rounded-lg mt-1 w-full max-h-60 overflow-auto">
+                    <ul className="absolute bg-white border border-black rounded-lg mt-1 w-full max-h-60 overflow-y-auto overflow-x-hidden">
                         {searchSuggestions.map((suggestion, index) => (
                             <li
                                 key={index}

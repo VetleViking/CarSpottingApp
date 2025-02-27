@@ -1,13 +1,13 @@
 import { NextFunction, Request, Response, Router } from 'express';
-import { redisClient } from '../redis-source';
+import { getCombinedMakes, getCombinedModels } from '../utils/cars';
 import { get_user, getAllUsers } from '../utils/user';
-import dotenv from "dotenv";
+import { redisClient } from '../redis-source';
 import { parse } from 'cookie';
+import dotenv from "dotenv";
 import multer from 'multer';
-import fs from 'fs';
-import path from 'path';
 import { v4 } from 'uuid';
-import { getCombinedMakes, getCombinedModels, getGlobalMakes, getGlobalModels, getUserMakes, getUserModels } from '../utils/cars';
+import path from 'path';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -19,12 +19,9 @@ router.get('/makes', async (req: Request, res: Response, next: NextFunction) => 
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
-        const makesObject = await redisClient.hGetAll('makes');
-        const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
-        const makesArray = Object.keys(makesObject).map(key => makesObject[key])
-            .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
+        const makes = await getCombinedMakes(decodedUser);
 
-        res.status(200).json(makesArray);
+        res.status(200).json(makes);
         return;
 
     } catch (err) {
@@ -39,16 +36,11 @@ router.get('/makes/:query', async (req: Request, res: Response, next: NextFuncti
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
-        const makesObject = await redisClient.hGetAll('makes');
-        const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
-        const makesArray = Object.keys(makesObject).map(key => makesObject[key])
-            .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
+        const makes = await getCombinedMakes(decodedUser);
 
-        const filteredMakes = makesArray.filter(make => make.toLowerCase().includes(query.toLowerCase()));
+        const filteredMakes = makes.filter(make => make.toLowerCase().includes(query.toLowerCase()));
 
         res.status(200).json(filteredMakes);
-        return;
-
     } catch (err) {
         next(err);
     }
@@ -96,29 +88,17 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
                 }
             }
 
-            if (modelsArray.length > 50) {
-                res.status(200).json(modelsArray.slice(0, 50));
-                return;
-            }
-
-            res.status(200).json(modelsArray);
+            res.status(200).json(modelsArray.slice(0, 50));
             return;
         }
 
-        // Else, get all makes from Redis
-        const makesObject = await redisClient.hGetAll('makes');
-        const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
-        const makesArray = Object.keys(makesObject).map(key => makesObject[key])
-            .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
+        // Else, get all models from Redis
+        const makes = await getCombinedMakes(decodedUser);
 
         let modelsArray: { make: string, model: string }[] = [];
 
-        for (const make of makesArray) {
-            const modelsObject = await redisClient.hGetAll(`make:${make}`);
-            const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);
-            const models = Object.keys(modelsObject).map(key => modelsObject[key])
-                .concat(Object.keys(modelsObjectUser).map(key => modelsObjectUser[key]));
-
+        for (const make of makes) {
+            const models = await getCombinedModels(decodedUser, make);
             const modelsWithMake = models.map(model => ({ make, model }));
 
             modelsArray = modelsArray.concat(modelsWithMake);
@@ -128,9 +108,7 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
             }
         }
 
-        res.status(200).json(modelsArray);
-        return;
-
+        res.status(200).json(modelsArray.slice(0, 50));
     } catch (err) {
         next(err);
     }
@@ -181,29 +159,18 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
 
             const filteredModels = modelsArray.filter(model => model.model.toLowerCase().includes(query.toLowerCase()));
 
-            if (filteredModels.length > 50) {
-                res.status(200).json(filteredModels.slice(0, 50));
-                return;
-            }
-
-            res.status(200).json(filteredModels);
+            res.status(200).json(filteredModels.slice(0, 50));
             return;
         }
 
         // Else, get all makes from Redis
-        const makesObject = await redisClient.hGetAll('makes');
-        const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
-        const makesArray = Object.keys(makesObject).map(key => makesObject[key])
-            .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
-        makesArray.push('other');
+        const makes = await getCombinedMakes(decodedUser);
+        makes.push('other');
 
         let modelsArray: { make: string, model: string }[] = [];
 
-        for (const make of makesArray) {
-            const modelsObject = await redisClient.hGetAll(`make:${make}`);
-            const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);
-            const models = Object.keys(modelsObject).map(key => modelsObject[key])
-                .concat(Object.keys(modelsObjectUser).map(key => modelsObjectUser[key]));
+        for (const make of makes) {
+            const models = await getCombinedModels(decodedUser, make);
 
             const filteredModels = models.filter(model => model.toLowerCase().includes(query.toLowerCase()));
 
@@ -216,9 +183,7 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
             }
         }
 
-        res.status(200).json(modelsArray);
-        return;
-
+        res.status(200).json(modelsArray.slice(0, 50));
     } catch (err) {
         next(err);
     }
@@ -257,30 +222,15 @@ router.get('/makes/:make/models/', async (req: Request, res: Response, next: Nex
 
             const modelsArray = uniqueModels.map(model => ({ make, model: model.Model_Name }));
 
-            if (modelsArray.length > 50) {
-                res.status(200).json(modelsArray.slice(0, 50));
-                return;
-            }
-
-            res.status(200).json(modelsArray);
-            return;
-        }
-
-        // Else, get all makes from Redis
-        const modelsObject = await redisClient.hGetAll(`make:${make}`);
-        const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);
-        const modelsArray = Object.keys(modelsObject).map(key => ({ make, model: modelsObject[key] }))
-            .concat(Object.keys(modelsObjectUser).map(key => ({ make, model: modelsObjectUser[key] })));
-
-
-        if (modelsArray.length > 50) {
             res.status(200).json(modelsArray.slice(0, 50));
             return;
         }
 
-        res.status(200).json(modelsArray);
-        return;
+        // Else, get all models from Redis
+        const models = await getCombinedModels(decodedUser, make)
+        const modelsArray = models.map(model => ({ make, model }));
 
+        res.status(200).json(modelsArray.slice(0, 50));
     } catch (err) {
         next(err);
     }
@@ -331,22 +281,13 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
             return;
         }
 
-        // Else, get all makes from Redis
-        const modelsObject = await redisClient.hGetAll(`make:${make}`);
-        const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);
-        const modelsArray = Object.keys(modelsObject).map(key => ({ make, model: modelsObject[key] }))
-            .concat(Object.keys(modelsObjectUser).map(key => ({ make, model: modelsObjectUser[key] })));
-
+        // Else, get all models from Redis
+        const models = await getCombinedModels(decodedUser, make)
+        const modelsArray = models.map(model => ({ make, model }));
+        
         const filteredModels = modelsArray.filter(model => model.model.toLowerCase().includes(query.toLowerCase()));
 
-        if (filteredModels.length > 50) {
-            res.status(269).json(filteredModels.slice(0, 50));
-            return;
-        }
-
-        res.status(269).json(filteredModels);
-        return;
-
+        res.status(269).json(filteredModels.slice(0, 50));
     } catch (err) {
         next(err);
     }
@@ -361,20 +302,10 @@ router.get('/spots/:make/percentage', async (req: Request, res: Response, next: 
         const token = cookies.auth_token;
         const decodedUser = await get_user(token);
 
-        const modelsObject = await redisClient.hGetAll(`make:${make}`);
-        const modelsObjectUser = await redisClient.hGetAll(`makes:${username || decodedUser}:${make}`);
-
-        const modelsSet = new Set([
-            ...Object.values(modelsObject),
-            ...Object.values(modelsObjectUser)
-        ]);
-
-        const modelsArray = Array.from(modelsSet).map(model => ({ make, model }));
-
+        const modelsArray = await getCombinedModels(decodedUser, make);
         const spotsKeys = await redisClient.keys(`spots:${username || decodedUser}:${make}:*`);
-
         const uniqueModels = new Set(spotsKeys.map(key => key.split(':')[3]));
-
+        
         const percentage = modelsArray.length > 0 ? Math.floor((uniqueModels.size / modelsArray.length) * 100) : 0;
 
         res.status(200).json({ percentage: percentage, numSpots: uniqueModels.size, numModels: modelsArray.length });
@@ -401,8 +332,6 @@ router.post('/addmake', async (req: Request, res: Response, next: NextFunction) 
         await redisClient.hSet(`makes:${decodedUser}`, make, make);
 
         res.status(201).json({ message: 'Make created' });
-        return;
-
     } catch (err) {
         next(err);
     }
@@ -425,8 +354,6 @@ router.post('/addmodel', async (req: Request, res: Response, next: NextFunction)
         await redisClient.hSet(`makes:${decodedUser}:${make}`, model, model);
 
         res.status(201).json({ message: 'Model created' });
-        return;
-
     } catch (err) {
         next(err);
     }
@@ -449,8 +376,6 @@ router.post('/addtag', async (req: Request, res: Response, next: NextFunction) =
         await redisClient.hSet(`tags:${decodedUser}`, tag, tag);
 
         res.status(201).json({ message: 'Tag created' });
-        return;
-
     } catch (err) {
         next(err);
     }
@@ -468,8 +393,6 @@ router.get('/tags', async (req: Request, res: Response, next: NextFunction) => {
             .concat(Object.keys(tagsObjectUser).map(key => tagsObjectUser[key]));
 
         res.status(200).json(tagsArray);
-        return;
-
     } catch (err) {
         next(err);
     }
@@ -918,8 +841,6 @@ router.get('/spots/makes/', async (req: Request, res: Response, next: NextFuncti
         const makesArray = keys.map(key => key.split(':')[2]).filter((item, index, self) => self.indexOf(item) === index);
 
         res.status(200).json(makesArray);
-        return;
-
     } catch (err) {
         next(err);
     }
@@ -941,8 +862,6 @@ router.get('/spots/makes/:query', async (req: Request, res: Response, next: Next
         const filteredMakes = Array.from(makesArray).filter(make => make.toLowerCase().includes((query as string).toLowerCase()));
 
         res.status(200).json(filteredMakes);
-        return;
-
     } catch (err) {
         next(err);
     }
@@ -963,8 +882,6 @@ router.get('/spots/makes/unknown/models/', async (req: Request, res: Response, n
         const combinedArray = modelsArray.map((model, index) => ({ make: makesArray[index], model }));
 
         res.status(200).json(combinedArray);
-        return;
-
     } catch (err) {
         next(err);
     }
@@ -989,8 +906,6 @@ router.get('/spots/makes/unknown/models/:query', async (req: Request, res: Respo
         const combinedArray = filteredModels.map((model, index) => ({ make: makesArray[index], model }));
 
         res.status(200).json(combinedArray);
-        return;
-
     } catch (err) {
         next(err);
     }
@@ -1012,8 +927,6 @@ router.get('/spots/makes/:make/models/', async (req: Request, res: Response, nex
         const combinedArray = modelsArray.map(model => ({ make, model }));
 
         res.status(200).json(combinedArray);
-        return;
-
     } catch (err) {
         next(err);
     }
@@ -1037,8 +950,6 @@ router.get('/spots/makes/:make/models/:query', async (req: Request, res: Respons
         const combinedArray = filteredModels.map(model => ({ make, model }));
 
         res.status(200).json(combinedArray);
-        return;
-
     } catch (err) {
         next(err);
     }
@@ -1339,8 +1250,6 @@ router.post('/makes/:make', async (req: Request, res: Response, next: NextFuncti
         await redisClient.hSet('makes', make, make);
 
         res.status(201).json({ message: 'Make created' });
-        return;
-
     } catch (err) {
         next(err);
     }

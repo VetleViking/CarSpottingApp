@@ -1,8 +1,13 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { redisClient } from '../redis-source';
-import { get_user } from '../utils/user';
+import { get_user, getAllUsers } from '../utils/user';
 import dotenv from "dotenv";
 import { parse } from 'cookie';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+import { v4 } from 'uuid';
+import { getCombinedMakes, getCombinedModels, getGlobalMakes, getGlobalModels, getUserMakes, getUserModels } from '../utils/cars';
 
 dotenv.config();
 
@@ -508,12 +513,6 @@ router.get('/regnr/:regnr', async (req: Request, res: Response, next: NextFuncti
         next(error);
     }
 });
-
-import multer from 'multer';
-import fs from 'fs';
-import path from 'path';
-import { v4 } from 'uuid';
-import sharp from 'sharp';
 
 const upload = multer({ 
     storage: multer.memoryStorage(), 
@@ -1201,9 +1200,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
         const searchStrings = [];
 
         if (key === 'user') {
-            const allUsers = await redisClient.hGetAll('users');
-            const users = Object.keys(allUsers);
-            
+            const users = await getAllUsers();
             const filteredUsers = users.filter(user => user.toLowerCase().startsWith(value));
 
             searchStrings.push(...filteredUsers.map(user => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}user:${user}`));
@@ -1211,17 +1208,13 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             const tagsUser = await redisClient.hGetAll(`tags:${decodedUser}`);
             const allTags = await redisClient.hGetAll(`tags`);
             const tags = Object.keys(tagsUser).map(key => tagsUser[key]).concat(Object.keys(allTags).map(key => allTags[key]));
-
             const filteredTags = tags.filter(tag => tag.toLowerCase().startsWith(value));
 
             searchStrings.push(...filteredTags.map(tag => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}tag:${tag}`));
         } else if (key === 'likes' || key === 'notes') { // Dont do anything
         } else if (key === 'make') {
-            const makes = await redisClient.hGetAll('makes');
-            const makesUser = await redisClient.hGetAll(`makes:${decodedUser}`);
-            const makesArray = Object.keys(makes).map(key => makes[key]).concat(Object.keys(makesUser).map(key => makesUser[key]));
-
-            const filteredMakes = makesArray.filter(make => make.toLowerCase().startsWith(value));
+            const makes = await getCombinedMakes(decodedUser);
+            const filteredMakes = makes.filter(make => make.toLowerCase().startsWith(value));
 
             searchStrings.push(...filteredMakes.map(make => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}make:${make}`));
         } else if (key === 'model') {
@@ -1230,10 +1223,8 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             const queryMake = searchFinished.find(search => search.startsWith('make:'));
 
             if (!queryMake) {
-                const makesObject = await redisClient.hGetAll('makes');
-                const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
-                makesArray.push(...Object.keys(makesObject).map(key => makesObject[key])
-                    .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key])));
+                const makes = await getCombinedMakes(decodedUser);
+                makesArray.push(...makes);
             } else {
                 makesArray.push(queryMake.split(':')[1]);
             }
@@ -1241,11 +1232,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             const modelsArray = [];
     
             for (const make of makesArray) {
-                const modelsObject = await redisClient.hGetAll(`make:${make}`);
-                const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);
-                const models = Object.keys(modelsObject).map(key => modelsObject[key])
-                    .concat(Object.keys(modelsObjectUser).map(key => modelsObjectUser[key]));
-
+                const models = await getCombinedModels(decodedUser, make);
                 const filteredModels = models.filter(model => model.toLowerCase().startsWith(value));
 
                 modelsArray.push(...filteredModels);
@@ -1258,22 +1245,14 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             let result = [];
 
             if (parts.length === 1) { // if only one part, search in make
-                const makesObject = await redisClient.hGetAll('makes');
-                const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
-                const makesArray = Object.keys(makesObject).map(key => makesObject[key])
-                    .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
-
-                const filteredMakes = makesArray.filter(make => make.toLowerCase().startsWith(value));
+                const makes = await getCombinedMakes(decodedUser);
+                const filteredMakes = makes.filter(make => make.toLowerCase().startsWith(value));
                 
                 if (filteredMakes.length === 0) { // if no makes, search in models
                     const modelsArray = [] as { make: string, model: string }[];
     
-                    for (const make of makesArray) {
-                        const modelsObject = await redisClient.hGetAll(`make:${make}`);
-                        const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);
-                        const models = Object.keys(modelsObject).map(key => modelsObject[key])
-                            .concat(Object.keys(modelsObjectUser).map(key => modelsObjectUser[key]));
-        
+                    for (const make of makes) {
+                        const models = await getCombinedModels(decodedUser, make);
                         const filteredModels = models.filter(model => model.toLowerCase().startsWith(value));
         
                         modelsArray.push(...filteredModels.map(model => ({ make, model })));
@@ -1284,18 +1263,10 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
                     result = filteredMakes.map(make => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${make}`);
                 }
             } else if (parts.length === 2) { // if multiple parts, search in make and model
-                const makesObject = await redisClient.hGetAll('makes');
-                const makesObjectUser = await redisClient.hGetAll(`makes:${decodedUser}`);
-                const makesArray = Object.keys(makesObject).map(key => makesObject[key])
-                    .concat(Object.keys(makesObjectUser).map(key => makesObjectUser[key]));
+                const makes = await getCombinedMakes(decodedUser);
+                const make = makes.find(make => make.toLowerCase() === parts[0]);
 
-                const make = makesArray.find(make => make.toLowerCase() === parts[0]);
-
-                const modelsObject = await redisClient.hGetAll(`make:${make}`);
-                const modelsObjectUser = await redisClient.hGetAll(`makes:${decodedUser}:${make}`);
-                const modelsArray = Object.keys(modelsObject).map(key => modelsObject[key])
-                    .concat(Object.keys(modelsObjectUser).map(key => modelsObjectUser[key]));
-
+                const modelsArray = make ? await getCombinedModels(decodedUser, make) : [];
                 const filteredModels = modelsArray.filter(model => model.toLowerCase().startsWith(parts[1]));
 
                 result = filteredModels.map(model => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${make} ${model}`);

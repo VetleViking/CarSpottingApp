@@ -1197,26 +1197,26 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
         const key = stringSplit[1] === undefined ? null : reversed ? stringSplit[0].slice(1) : stringSplit[0]; // if no value, use key as value
         const value = stringSplit[1] !== undefined ? stringSplit[1] : stringSplit[0]; // if no value, use key as value
 
-        const searchStrings = [];
+        const searchStringsEnd = [];
 
         if (key === 'user') {
             const users = await getAllUsers();
             const filteredUsers = users.filter(user => user.toLowerCase().startsWith(value));
 
-            searchStrings.push(...filteredUsers.map(user => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}user:${user}`));
+            searchStringsEnd.push(...filteredUsers.map(user => `user:${user}`));
         } else if (key === 'tag') {
             const tagsUser = await redisClient.hGetAll(`tags:${decodedUser}`);
             const allTags = await redisClient.hGetAll(`tags`);
             const tags = Object.keys(tagsUser).map(key => tagsUser[key]).concat(Object.keys(allTags).map(key => allTags[key]));
             const filteredTags = tags.filter(tag => tag.toLowerCase().startsWith(value));
 
-            searchStrings.push(...filteredTags.map(tag => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}tag:${tag}`));
+            searchStringsEnd.push(...filteredTags.map(tag => `tag:${tag}`));
         } else if (key === 'likes' || key === 'notes') { // Dont do anything
         } else if (key === 'make') {
             const makes = await getCombinedMakes(decodedUser);
             const filteredMakes = makes.filter(make => make.toLowerCase().startsWith(value));
 
-            searchStrings.push(...filteredMakes.map(make => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}make:${make}`));
+            searchStringsEnd.push(...filteredMakes.map(make => `make:${make}`));
         } else if (key === 'model') {
             const makesArray = [];
 
@@ -1238,29 +1238,28 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
                 modelsArray.push(...filteredModels);
             }
 
-            searchStrings.push(...modelsArray.map(model => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}model:${model}`));
+            searchStringsEnd.push(...modelsArray.map(model => `model:${model}`));
         } else { // if no key, search in make and model
-            const parts = value.toLowerCase().indexOf(' ') === -1 ? [value.toLowerCase()] : [value.substring(0, value.indexOf(' ')).toLowerCase(), value.substring(value.indexOf(' ') + 1).toLowerCase()];
-
-            let result = [];
+            const parts = value.toLowerCase().indexOf(' ') === -1 
+                ? [value.toLowerCase()] 
+                : [
+                    value.substring(0, value.indexOf(' ')).toLowerCase(), 
+                    value.substring(value.indexOf(' ') + 1).toLowerCase()
+                ];
 
             if (parts.length === 1) { // if only one part, search in make
                 const makes = await getCombinedMakes(decodedUser);
                 const filteredMakes = makes.filter(make => make.toLowerCase().startsWith(value));
                 
                 if (filteredMakes.length === 0) { // if no makes, search in models
-                    const modelsArray = [] as { make: string, model: string }[];
-    
                     for (const make of makes) {
                         const models = await getCombinedModels(decodedUser, make);
                         const filteredModels = models.filter(model => model.toLowerCase().startsWith(value));
         
-                        modelsArray.push(...filteredModels.map(model => ({ make, model })));
+                        searchStringsEnd.push(...filteredModels.map(model => `${make} ${model}`));
                     }
-
-                    result = modelsArray.map(({ make, model }) => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${make + " " + model}`);
                 } else {
-                    result = filteredMakes.map(make => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${make}`);
+                    searchStringsEnd.push(...filteredMakes);
                 }
             } else if (parts.length === 2) { // if multiple parts, search in make and model
                 const makes = await getCombinedMakes(decodedUser);
@@ -1269,13 +1268,11 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
                 const modelsArray = make ? await getCombinedModels(decodedUser, make) : [];
                 const filteredModels = modelsArray.filter(model => model.toLowerCase().startsWith(parts[1]));
 
-                result = filteredModels.map(model => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${make} ${model}`);
-            } else { // no :(
-                result = [];
+                searchStringsEnd.push(...filteredModels.map(model => `${make} ${model}`));
             }
-
-            searchStrings.push(...result);
         }
+
+        const searchStrings = searchStringsEnd.map(searchString => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${searchString}`);
 
         const sortedSearchStrings = searchStrings.sort(
             (a, b) => a.length - b.length || a.localeCompare(b)
@@ -1362,12 +1359,9 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
             return;
         }
 
-        const rootUploadsDir = path.resolve(__dirname, '../../uploads');
+        const users = await getAllUsers();
 
-        const users = await redisClient.hGetAll('users');
-
-        for (const user of Object.keys(users)) {
-            // Update to new format from here
+        for (const user of users) {
 
             const keys = await redisClient.keys(`spots:${user}:*`);
 
@@ -1378,27 +1372,9 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                 // update one at a time
 
                 let newSpot = {...spot};
-                
-                const imageFields = Object.keys(spot).filter((field) => field.startsWith('image'));
-                if (imageFields.length === 0) {
-                    // no images, nothing to convert
-                    continue;
-                }
-
-                for (const imageField of imageFields) {
-                    const oldImagePath = spot[imageField];  // e.g. "webp/Vetle/Porsche_911/0_0.webp"
-                    if (!oldImagePath) continue;
-
-                    const newPath = oldImagePath.replace('webp/', "").replace('.webp', '.jpg');
-                    newSpot[imageField] = newPath;
-                }
 
                 console.log('Old Spot:', spot);
                 console.log('New Spot:', newSpot);
-
-                await redisClient.del(key);
-
-                await redisClient.hSet(key, newSpot);
             }
         }
 

@@ -3,7 +3,7 @@ import { redisClient } from "../redis-source";
 export const getGlobalMakes = async () => {
     const makesObject = await redisClient.hGetAll('makes');
     const makesArray = Object.keys(makesObject).map(key => makesObject[key]);
-    
+
     return makesArray;
 }
 
@@ -30,7 +30,7 @@ export const getAllMakes = async () => {
         const userMakes = await getUserMakes(user);
         makesArray.push(...userMakes);
     }
-    
+
     return makesArray;
 }
 

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { getCombinedMakes, getCombinedModels } from '../utils/cars';
-import { get_user, getAllUsers } from '../utils/user';
+import { get_user, getAllUsers, userFromCookies } from '../utils/user';
 import { redisClient } from '../redis-source';
 import { parse } from 'cookie';
 import dotenv from "dotenv";
@@ -15,11 +15,9 @@ const router = Router();
 
 router.get('/makes', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
-        const makes = await getCombinedMakes(decodedUser);
+        const makes = await getCombinedMakes(user);
 
         res.status(200).json(makes);
         return;
@@ -32,11 +30,9 @@ router.get('/makes', async (req: Request, res: Response, next: NextFunction) => 
 router.get('/makes/:query', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { query } = req.params;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
-        const makes = await getCombinedMakes(decodedUser);
+        const makes = await getCombinedMakes(user);
 
         const filteredMakes = makes.filter(make => make.toLowerCase().includes(query.toLowerCase()));
 
@@ -48,9 +44,7 @@ router.get('/makes/:query', async (req: Request, res: Response, next: NextFuncti
 
 router.get('/makes/unknown/models/', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
         // if not searched bofore, save search and get from nhtsa instead
         const searchedBefore = await redisClient.hGet(`searchedmakes`, 'unknown');
@@ -58,7 +52,7 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
         if (!searchedBefore) {
             await redisClient.hSet(`searchedmakes`, 'unknown', 'unknown');
 
-            const makes1 = await redisClient.hGetAll(`makes:${decodedUser}`);
+            const makes1 = await redisClient.hGetAll(`makes:${user}`);
             const makes2 = await redisClient.hGetAll('makes');
 
             const makes = Object.values(makes1).concat(Object.values(makes2));
@@ -70,18 +64,18 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
                     `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/vehicleType/Passenger%20Car?format=json`
                 );
                 const dataPassenger = await responsePassenger.json();
-            
+
                 const responseMPV = await fetch(
                     `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/vehicleType/Multipurpose%20Passenger%20Vehicle%20(MPV)?format=json`
                 );
                 const dataMPV = await responseMPV.json();
-            
+
                 const data = dataPassenger.Results.concat(dataMPV.Results);
-            
+
                 const uniqueModels = data.filter((item: any, index: number, self: any[]) =>
                     index === self.findIndex((t: any) => t.Model_Name === item.Model_Name)
                 );
-            
+
                 for (const model of uniqueModels) {
                     redisClient.hSet(`make:${make}`, model.Model_Name, model.Model_Name);
                     modelsArray.push({ make, model: model.Model_Name });
@@ -93,12 +87,12 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
         }
 
         // Else, get all models from Redis
-        const makes = await getCombinedMakes(decodedUser);
+        const makes = await getCombinedMakes(user);
 
         let modelsArray: { make: string, model: string }[] = [];
 
         for (const make of makes) {
-            const models = await getCombinedModels(decodedUser, make);
+            const models = await getCombinedModels(user, make);
             const modelsWithMake = models.map(model => ({ make, model }));
 
             modelsArray = modelsArray.concat(modelsWithMake);
@@ -117,9 +111,7 @@ router.get('/makes/unknown/models/', async (req: Request, res: Response, next: N
 router.get('/makes/unknown/models/:query', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { query } = req.params;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
         // if not searched bofore, save search and get from nhtsa instead
         const searchedBefore = await redisClient.hGet(`searchedmakes`, 'unknown');
@@ -127,7 +119,7 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
         if (!searchedBefore) {
             await redisClient.hSet(`searchedmakes`, 'unknown', 'unknown');
 
-            const makes1 = await redisClient.hGetAll(`makes:${decodedUser}`);
+            const makes1 = await redisClient.hGetAll(`makes:${user}`);
             const makes2 = await redisClient.hGetAll('makes');
 
             const makes = Object.values(makes1).concat(Object.values(makes2));
@@ -139,18 +131,18 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
                     `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/vehicleType/Passenger%20Car?format=json`
                 );
                 const dataPassenger = await responsePassenger.json();
-            
+
                 const responseMPV = await fetch(
                     `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/vehicleType/Multipurpose%20Passenger%20Vehicle%20(MPV)?format=json`
                 );
                 const dataMPV = await responseMPV.json();
-            
+
                 const data = dataPassenger.Results.concat(dataMPV.Results);
-            
+
                 const uniqueModels = data.filter((item: any, index: number, self: any[]) =>
                     index === self.findIndex((t: any) => t.Model_Name === item.Model_Name)
                 );
-            
+
                 for (const model of uniqueModels) {
                     redisClient.hSet(`make:${make}`, model.Model_Name, model.Model_Name);
                     modelsArray.push({ make, model: model.Model_Name });
@@ -164,13 +156,13 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
         }
 
         // Else, get all makes from Redis
-        const makes = await getCombinedMakes(decodedUser);
+        const makes = await getCombinedMakes(user);
         makes.push('other');
 
         let modelsArray: { make: string, model: string }[] = [];
 
         for (const make of makes) {
-            const models = await getCombinedModels(decodedUser, make);
+            const models = await getCombinedModels(user, make);
 
             const filteredModels = models.filter(model => model.toLowerCase().includes(query.toLowerCase()));
 
@@ -192,13 +184,11 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
 router.get('/makes/:make/models/', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make } = req.params;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
         // if not searched bofore, save search and get from nhtsa instead
         const searchedBefore = await redisClient.hGet(`searchedmakes`, make);
-        
+
         if (!searchedBefore) {
             await redisClient.hSet(`searchedmakes`, make, make);
 
@@ -227,7 +217,7 @@ router.get('/makes/:make/models/', async (req: Request, res: Response, next: Nex
         }
 
         // Else, get all models from Redis
-        const models = await getCombinedModels(decodedUser, make)
+        const models = await getCombinedModels(user, make)
         const modelsArray = models.map(model => ({ make, model }));
 
         res.status(200).json(modelsArray.slice(0, 50));
@@ -239,10 +229,7 @@ router.get('/makes/:make/models/', async (req: Request, res: Response, next: Nex
 router.get('/makes/:make/models/:query', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, query } = req.params;
-
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
         // if not searched bofore, save search and get from nhtsa instead
         const searchedBefore = await redisClient.hGet(`searchedmakes`, make);
@@ -282,9 +269,9 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
         }
 
         // Else, get all models from Redis
-        const models = await getCombinedModels(decodedUser, make)
+        const models = await getCombinedModels(user, make)
         const modelsArray = models.map(model => ({ make, model }));
-        
+
         const filteredModels = modelsArray.filter(model => model.model.toLowerCase().includes(query.toLowerCase()));
 
         res.status(269).json(filteredModels.slice(0, 50));
@@ -297,15 +284,13 @@ router.get('/spots/:make/percentage', async (req: Request, res: Response, next: 
     try {
         const { make } = req.params;
         const username = req.query.username;
-        
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
 
-        const modelsArray = await getCombinedModels(decodedUser, make);
-        const spotsKeys = await redisClient.keys(`spots:${username || decodedUser}:${make}:*`);
+        const user = await userFromCookies(req.headers.cookie);
+
+        const modelsArray = await getCombinedModels(user, make);
+        const spotsKeys = await redisClient.keys(`spots:${username || user}:${make}:*`);
         const uniqueModels = new Set(spotsKeys.map(key => key.split(':')[3]));
-        
+
         const percentage = modelsArray.length > 0 ? Math.floor((uniqueModels.size / modelsArray.length) * 100) : 0;
 
         res.status(200).json({ percentage: percentage, numSpots: uniqueModels.size, numModels: modelsArray.length });
@@ -317,19 +302,17 @@ router.get('/spots/:make/percentage', async (req: Request, res: Response, next: 
 router.post('/addmake', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make } = req.body;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
         const alreadyExists = await redisClient.hGet('makes', make);
-        const alreadyExistsUser = await redisClient.hGet(`makes:${decodedUser}`, make);
+        const alreadyExistsUser = await redisClient.hGet(`makes:${user}`, make);
 
         if (alreadyExists || alreadyExistsUser) {
             res.status(400).json({ message: 'Make already exists' });
             return;
         }
 
-        await redisClient.hSet(`makes:${decodedUser}`, make, make);
+        await redisClient.hSet(`makes:${user}`, make, make);
 
         res.status(201).json({ message: 'Make created' });
     } catch (err) {
@@ -340,18 +323,16 @@ router.post('/addmake', async (req: Request, res: Response, next: NextFunction) 
 router.post('/addmodel', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model } = req.body;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
-        const alreadyExists = await redisClient.hGet(`makes:${decodedUser}:${make}`, model);
+        const alreadyExists = await redisClient.hGet(`makes:${user}:${make}`, model);
 
         if (alreadyExists) {
             res.status(400).json({ message: 'Model already exists' });
             return;
         }
 
-        await redisClient.hSet(`makes:${decodedUser}:${make}`, model, model);
+        await redisClient.hSet(`makes:${user}:${make}`, model, model);
 
         res.status(201).json({ message: 'Model created' });
     } catch (err) {
@@ -362,18 +343,16 @@ router.post('/addmodel', async (req: Request, res: Response, next: NextFunction)
 router.post('/addtag', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { tag } = req.body;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
-        const alreadyExists = await redisClient.hGet('tags', tag) || await redisClient.hGet(`tags:${decodedUser}`, tag);
+        const alreadyExists = await redisClient.hGet('tags', tag) || await redisClient.hGet(`tags:${user}`, tag);
 
         if (alreadyExists) {
             res.status(400).json({ message: 'Tag already exists' });
             return;
         }
 
-        await redisClient.hSet(`tags:${decodedUser}`, tag, tag);
+        await redisClient.hSet(`tags:${user}`, tag, tag);
 
         res.status(201).json({ message: 'Tag created' });
     } catch (err) {
@@ -437,8 +416,8 @@ router.get('/regnr/:regnr', async (req: Request, res: Response, next: NextFuncti
     }
 });
 
-const upload = multer({ 
-    storage: multer.memoryStorage(), 
+const upload = multer({
+    storage: multer.memoryStorage(),
     limits: { fileSize: 50 * 1024 * 1024 } // 50 MB
 });
 
@@ -489,7 +468,7 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             }
 
             imagePaths.forEach((item, index) => {
-                data[`image${index}`] = item; 
+                data[`image${index}`] = item;
             });
         } else {
             const rootDir = path.resolve(__dirname, '../../');
@@ -505,7 +484,7 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             }
 
             imagePaths.forEach((item, index) => {
-                data[`image${index}`] = item; 
+                data[`image${index}`] = item;
             });
         }
 
@@ -554,7 +533,7 @@ router.post('/addcomment', async (req: Request, res: Response, next: NextFunctio
         if (parentId) {
             data[`parentId`] = parentId;
         }
-        
+
         const commentId = v4();
 
         const commentKeyPrefix = `comments:${key}:${commentId}`;
@@ -589,7 +568,7 @@ router.post('/likecomment', async (req: Request, res: Response, next: NextFuncti
         }
 
         const alreadyLiked = await redisClient.hGet(`likes:comments:${decodedUser}`, `${key}:${commentId}`);
-        
+
         const commentKey = `comments:${key}:${commentId}`;
 
         const comment = await redisClient.hGetAll(commentKey);
@@ -672,7 +651,7 @@ router.get('/getcomments/:key', async (req: Request, res: Response, next: NextFu
             const comment = await redisClient.hGetAll(commentKey);
 
             const alreadyLiked = await redisClient.hGet(`likes:comments:${decodedUser}`, `${key}:${comment['commentId']}`);
-            comment['liked'] = alreadyLiked ? 'true' : 'false';	
+            comment['liked'] = alreadyLiked ? 'true' : 'false';
 
             if (comment['deleted'] === 'true') {
                 comment['comment'] = '[deleted by ' + comment['deletedBy'] + ']';
@@ -989,7 +968,7 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                     const spotKey = allSpotsKeys[i].toLowerCase();
 
                     const tags = Object.keys(spot).filter(key => key.startsWith('tag')).map(key => spot[key]).map(tag => tag.toLowerCase());
-                    
+
                     let match = false;
 
                     if (key === 'user') {
@@ -1005,14 +984,14 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                     } else if (key === 'notes') {
                         match = spot['notes']?.toLowerCase().includes(value);
                     } else if (!key) { // if no key, search in make and model
-                        const [ , , rawMake, rawModel ] = spotKey.split(':');
+                        const [, , rawMake, rawModel] = spotKey.split(':');
                         const combined = (rawMake + ' ' + rawModel).toLowerCase();
 
                         const parts = value.toLowerCase().split(' ');
-                        
+
                         match = parts.every(part => combined.includes(part));
                     }
-            
+
                     return reversed ? !match : match;
                 });
 
@@ -1141,7 +1120,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             }
 
             const modelsArray = [];
-    
+
             for (const make of makesArray) {
                 const models = await getCombinedModels(decodedUser, make);
                 const filteredModels = models.filter(model => model.toLowerCase().startsWith(value));
@@ -1151,22 +1130,22 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
 
             searchStringsEnd.push(...modelsArray.map(model => `model:${model}`));
         } else { // if no key, search in make and model
-            const parts = value.toLowerCase().indexOf(' ') === -1 
-                ? [value.toLowerCase()] 
+            const parts = value.toLowerCase().indexOf(' ') === -1
+                ? [value.toLowerCase()]
                 : [
-                    value.substring(0, value.indexOf(' ')).toLowerCase(), 
+                    value.substring(0, value.indexOf(' ')).toLowerCase(),
                     value.substring(value.indexOf(' ') + 1).toLowerCase()
                 ];
 
             if (parts.length === 1) { // if only one part, search in make
                 const makes = await getCombinedMakes(decodedUser);
                 const filteredMakes = makes.filter(make => make.toLowerCase().startsWith(value));
-                
+
                 if (filteredMakes.length === 0) { // if no makes, search in models
                     for (const make of makes) {
                         const models = await getCombinedModels(decodedUser, make);
                         const filteredModels = models.filter(model => model.toLowerCase().startsWith(value));
-        
+
                         searchStringsEnd.push(...filteredModels.map(model => `${make} ${model}`));
                     }
                 } else {
@@ -1280,7 +1259,7 @@ router.post('/updatespots', async (req: Request, res: Response, next: NextFuncti
                 // from here you have all the spots for all users
                 // update one at a time
 
-                let newSpot = {...spot};
+                let newSpot = { ...spot };
 
                 console.log('Old Spot:', spot);
                 console.log('New Spot:', newSpot);

@@ -362,12 +362,10 @@ router.post('/addtag', async (req: Request, res: Response, next: NextFunction) =
 
 router.get('/tags', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
         const tagsObject = await redisClient.hGetAll('tags');
-        const tagsObjectUser = await redisClient.hGetAll(`tags:${decodedUser}`);
+        const tagsObjectUser = await redisClient.hGetAll(`tags:${user}`);
         const tagsArray = Object.keys(tagsObject).map(key => tagsObject[key])
             .concat(Object.keys(tagsObjectUser).map(key => tagsObjectUser[key]));
 
@@ -433,15 +431,13 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
                 ? [tags]
                 : [];
         const images = req.files as Express.Multer.File[];
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
         if (!make || !model || images.length === 0) {
             return res.status(400).json({ message: 'Make, model, and at least one image are required' });
         }
 
-        const allSpots = await redisClient.keys(`spots:${decodedUser}:${make}:${model}:*`);
+        const allSpots = await redisClient.keys(`spots:${user}:${make}:${model}:*`);
 
         let offset = 0;
 
@@ -464,7 +460,7 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             const imagePaths: string[] = [];
             for (const [index] of images.entries()) {
                 const imageName = `${offset}_${index}.jpg`;  // Unique image name
-                imagePaths.push(`/${decodedUser}/${make}_${model}/${imageName}`);
+                imagePaths.push(`/${user}/${make}_${model}/${imageName}`);
             }
 
             imagePaths.forEach((item, index) => {
@@ -472,7 +468,7 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
             });
         } else {
             const rootDir = path.resolve(__dirname, '../../');
-            const userDir = path.join(rootDir, 'uploads', decodedUser, `${make}_${model}`);
+            const userDir = path.join(rootDir, 'uploads', user, `${make}_${model}`);
             await fs.promises.mkdir(userDir, { recursive: true });
 
             const imagePaths: string[] = [];
@@ -480,7 +476,7 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
                 const imageName = `${offset}_${index}.jpg`;  // Unique image name
                 const imagePath = path.join(userDir, imageName);
                 await fs.promises.writeFile(imagePath, image.buffer);  // Write image buffer to file
-                imagePaths.push(`/${decodedUser}/${make}_${model}/${imageName}`);
+                imagePaths.push(`/${user}/${make}_${model}/${imageName}`);
             }
 
             imagePaths.forEach((item, index) => {
@@ -490,7 +486,7 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
 
         if (tagsArray && tagsArray.length > 0) {
             tagsArray.forEach((tag, index) => {
-                redisClient.hSet(`tags:${decodedUser}:${tag}`, `spots:${decodedUser}:${make}:${model}:${offset}`, index);
+                redisClient.hSet(`tags:${user}:${tag}`, `spots:${user}:${make}:${model}:${offset}`, index);
                 data[`tag${index}`] = tag;
             });
         }
@@ -498,9 +494,9 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
         if (!notes) delete data[`notes`];
         if (!date) delete data[`date`];
 
-        await redisClient.zAdd('zset:spots:recent', { score: new Date(data['uploadDate']).getTime(), value: `spots:${decodedUser}:${make}:${model}:${offset}` });
-        await redisClient.zAdd('zset:spots:likes', { score: parseInt(data['likes']), value: `spots:${decodedUser}:${make}:${model}:${offset}` })
-        await redisClient.hSet(`spots:${decodedUser}:${make}:${model}:${offset}`, data);
+        await redisClient.zAdd('zset:spots:recent', { score: new Date(data['uploadDate']).getTime(), value: `spots:${user}:${make}:${model}:${offset}` });
+        await redisClient.zAdd('zset:spots:likes', { score: parseInt(data['likes']), value: `spots:${user}:${make}:${model}:${offset}` })
+        await redisClient.hSet(`spots:${user}:${make}:${model}:${offset}`, data);
 
         res.status(201).json({ message: 'Spot added' });
 
@@ -513,9 +509,7 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
 router.post('/addcomment', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { key, comment, parentId } = req.body;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
         if (!key || !comment) {
             res.status(400).json({ message: 'Key and comment are required' });
@@ -525,7 +519,7 @@ router.post('/addcomment', async (req: Request, res: Response, next: NextFunctio
         const data: Record<string, string> = {
             [`key`]: key,
             [`comment`]: comment,
-            [`user`]: decodedUser,
+            [`user`]: user,
             [`date`]: new Date().toISOString(),
             [`likes`]: '0'
         };
@@ -558,16 +552,14 @@ router.post('/addcomment', async (req: Request, res: Response, next: NextFunctio
 router.post('/likecomment', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { key, commentId } = req.body;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
-        if (!key || !commentId || !decodedUser) {
-            res.status(400).json({ message: 'Key, token and commentId are required' });
+        if (!key || !commentId) {
+            res.status(400).json({ message: 'Key and commentId are required' });
             return;
         }
 
-        const alreadyLiked = await redisClient.hGet(`likes:comments:${decodedUser}`, `${key}:${commentId}`);
+        const alreadyLiked = await redisClient.hGet(`likes:comments:${user}`, `${key}:${commentId}`);
 
         const commentKey = `comments:${key}:${commentId}`;
 
@@ -579,7 +571,7 @@ router.post('/likecomment', async (req: Request, res: Response, next: NextFuncti
         }
 
         if (alreadyLiked) {
-            await redisClient.hDel(`likes:comments:${decodedUser}`, `${key}:${commentId}`);
+            await redisClient.hDel(`likes:comments:${user}`, `${key}:${commentId}`);
 
             const likes = (parseInt(comment['likes']) || 0) - 1;
 
@@ -587,7 +579,7 @@ router.post('/likecomment', async (req: Request, res: Response, next: NextFuncti
 
             res.status(200).json({ message: 'Comment unliked' });
         } else {
-            await redisClient.hSet(`likes:comments:${decodedUser}`, `${key}:${commentId}`, 'true');
+            await redisClient.hSet(`likes:comments:${user}`, `${key}:${commentId}`, 'true');
 
             const likes = (parseInt(comment['likes']) || 0) + 1;
 
@@ -603,10 +595,8 @@ router.post('/likecomment', async (req: Request, res: Response, next: NextFuncti
 router.post('/deletecomment', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { key, commentId } = req.body;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
-        const isAdmin = await redisClient.hGet('admins', decodedUser);
+        const user = await userFromCookies(req.headers.cookie);
+        const isAdmin = await redisClient.hGet('admins', user);
 
         if (!key || !commentId) {
             res.status(400).json({ message: 'Key and commentId are required' });
@@ -622,7 +612,7 @@ router.post('/deletecomment', async (req: Request, res: Response, next: NextFunc
             return;
         }
 
-        if (comment['user'] !== decodedUser && !isAdmin) {
+        if (comment['user'] !== user && !isAdmin) {
             res.status(403).json({ message: 'Unauthorized' });
             return;
         }
@@ -639,9 +629,7 @@ router.post('/deletecomment', async (req: Request, res: Response, next: NextFunc
 router.get('/getcomments/:key', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { key } = req.params;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
         const allCommentsKeys = await redisClient.keys(`comments:${key}:*`);
 
@@ -650,7 +638,7 @@ router.get('/getcomments/:key', async (req: Request, res: Response, next: NextFu
         for (const commentKey of allCommentsKeys) {
             const comment = await redisClient.hGetAll(commentKey);
 
-            const alreadyLiked = await redisClient.hGet(`likes:comments:${decodedUser}`, `${key}:${comment['commentId']}`);
+            const alreadyLiked = await redisClient.hGet(`likes:comments:${user}`, `${key}:${comment['commentId']}`);
             comment['liked'] = alreadyLiked ? 'true' : 'false';
 
             if (comment['deleted'] === 'true') {
@@ -669,9 +657,7 @@ router.get('/getcomments/:key', async (req: Request, res: Response, next: NextFu
 router.post('/editspot', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model, key, notes, date, tags } = req.body;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
         const tagsArray: string[] = Array.isArray(tags)
             ? tags
@@ -684,7 +670,7 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
             return;
         }
 
-        const spotKeyPrefix = `spots:${decodedUser}:${make}:${model}:${key}`;
+        const spotKeyPrefix = `spots:${user}:${make}:${model}:${key}`;
         const allSpots = await redisClient.hGetAll(spotKeyPrefix);
 
         if (!allSpots) {
@@ -695,7 +681,7 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
         const data: Record<string, string> = {};
 
         if (tagsArray && tagsArray.length > 0) {
-            const allTagsData = await redisClient.hGetAll(`tags:${decodedUser}`);
+            const allTagsData = await redisClient.hGetAll(`tags:${user}`);
             const allTags: string[] = Array.isArray(allTagsData) ? allTagsData : []
 
             allTags.forEach(tag => {
@@ -728,24 +714,22 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
 router.post('/deletespot', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model, key } = req.body;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
         if (!make || !model || (key === undefined || key === null)) {
             res.status(400).json({ message: 'Make, model, and key are required' });
             return;
         }
 
-        await redisClient.zRem('zset:spots:recent', `spots:${decodedUser}:${make}:${model}:${key}`);
-        await redisClient.zRem('zset:spots:likes', `spots:${decodedUser}:${make}:${model}:${key}`);
+        await redisClient.zRem('zset:spots:recent', `spots:${user}:${make}:${model}:${key}`);
+        await redisClient.zRem('zset:spots:likes', `spots:${user}:${make}:${model}:${key}`);
 
-        await redisClient.del(`spots:${decodedUser}:${make}:${model}:${key}`);
+        await redisClient.del(`spots:${user}:${make}:${model}:${key}`);
 
-        const tagsObject = await redisClient.hGetAll(`tags:${decodedUser}`);
+        const tagsObject = await redisClient.hGetAll(`tags:${user}`);
 
         for (const tag in tagsObject) {
-            await redisClient.hDel(`tags:${decodedUser}:${tag}`, `spots:${decodedUser}:${make}:${model}:${key}`);
+            await redisClient.hDel(`tags:${user}:${tag}`, `spots:${user}:${make}:${model}:${key}`);
         }
 
         res.status(200).json({ message: 'Spot deleted' });
@@ -760,16 +744,14 @@ router.get('/get_spots/:make/:model', async (req: Request, res: Response, next: 
         const { username, key } = req.query;
         const { make, model } = req.params;
 
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
         if (!make || !model) {
             res.status(400).json({ message: 'Make and model are required' });
             return;
         }
 
-        const allSpotsKeys = await redisClient.keys(`spots:${username || decodedUser}:${make}:${model}:*`);
+        const allSpotsKeys = await redisClient.keys(`spots:${username || user}:${make}:${model}:*`);
 
         const allSpots = [];
 
@@ -811,11 +793,9 @@ router.get('/get_spots/:make/:model', async (req: Request, res: Response, next: 
 router.get('/spots/makes/', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const username = req.query.username;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
-        const keys = await redisClient.keys(`spots:${username || decodedUser}:*`);
+        const keys = await redisClient.keys(`spots:${username || user}:*`);
 
         const makesArray = keys.map(key => key.split(':')[2]).filter((item, index, self) => self.indexOf(item) === index);
 
@@ -830,11 +810,9 @@ router.get('/spots/makes/:query', async (req: Request, res: Response, next: Next
         const { query } = req.params;
 
         const username = req.query.username;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
-        const keys = await redisClient.keys(`spots:${username || decodedUser}:*`);
+        const keys = await redisClient.keys(`spots:${username || user}:*`);
 
         const makesArray = keys.map(key => key.split(':')[2]).filter((item, index, self) => self.indexOf(item) === index);
 
@@ -849,11 +827,9 @@ router.get('/spots/makes/:query', async (req: Request, res: Response, next: Next
 router.get('/spots/makes/unknown/models/', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const username = req.query.username;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
-        const keys = await redisClient.keys(`spots:${username || decodedUser}:*`);
+        const keys = await redisClient.keys(`spots:${username || user}:*`);
 
         const makesArray = keys.map(key => key.split(':')[2]);
         const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
@@ -871,11 +847,9 @@ router.get('/spots/makes/unknown/models/:query', async (req: Request, res: Respo
         const { query } = req.params;
 
         const username = req.query.username;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
-        const keys = await redisClient.keys(`spots:${username || decodedUser}:*`);
+        const keys = await redisClient.keys(`spots:${username || user}:*`);
 
         const makesArray = keys.map(key => key.split(':')[2]);
         const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
@@ -895,11 +869,9 @@ router.get('/spots/makes/:make/models/', async (req: Request, res: Response, nex
         const { make } = req.params;
 
         const username = req.query.username;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
-        const keys = await redisClient.keys(`spots:${username || decodedUser}:${make}:*`);
+        const keys = await redisClient.keys(`spots:${username || user}:${make}:*`);
 
         const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
 
@@ -916,11 +888,9 @@ router.get('/spots/makes/:make/models/:query', async (req: Request, res: Respons
         const { make, query } = req.params;
 
         const username = req.query.username;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
-        const keys = await redisClient.keys(`spots:${username || decodedUser}:${make}:*`);
+        const keys = await redisClient.keys(`spots:${username || user}:${make}:*`);
 
         const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
 
@@ -936,9 +906,7 @@ router.get('/spots/makes/:make/models/:query', async (req: Request, res: Respons
 
 router.get('/discover', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
         const page = parseInt(req.query.page as string) || 0;
         const sort = req.query.sort as 'recent' | 'hot' | 'top' || 'recent';
@@ -1036,7 +1004,7 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
         const spots = await Promise.all(
             sortedSpotIDs.map(async spotID => {
                 const spot = await redisClient.hGetAll(`${spotID}`);
-                const likedByUser = await redisClient.hGet(`likes:${decodedUser}`, spotID);
+                const likedByUser = await redisClient.hGet(`likes:${user}`, spotID);
 
                 const images = Object.keys(spot).filter(key => key.startsWith('image')).map(key => spot[key]);
 
@@ -1069,9 +1037,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
     try {
         const { query } = req.query;
 
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
         if (!query || typeof query !== 'string') {
             res.status(400).json({ message: 'Query is required' });
@@ -1095,7 +1061,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
 
             searchStringsEnd.push(...filteredUsers.map(user => `user:${user}`));
         } else if (key === 'tag') {
-            const tagsUser = await redisClient.hGetAll(`tags:${decodedUser}`);
+            const tagsUser = await redisClient.hGetAll(`tags:${user}`);
             const allTags = await redisClient.hGetAll(`tags`);
             const tags = Object.keys(tagsUser).map(key => tagsUser[key]).concat(Object.keys(allTags).map(key => allTags[key]));
             const filteredTags = tags.filter(tag => tag.toLowerCase().startsWith(value));
@@ -1103,7 +1069,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             searchStringsEnd.push(...filteredTags.map(tag => `tag:${tag}`));
         } else if (key === 'likes' || key === 'notes') { // Dont do anything
         } else if (key === 'make') {
-            const makes = await getCombinedMakes(decodedUser);
+            const makes = await getCombinedMakes(user);
             const filteredMakes = makes.filter(make => make.toLowerCase().startsWith(value));
 
             searchStringsEnd.push(...filteredMakes.map(make => `make:${make}`));
@@ -1113,7 +1079,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             const queryMake = searchFinished.find(search => search.startsWith('make:'));
 
             if (!queryMake) {
-                const makes = await getCombinedMakes(decodedUser);
+                const makes = await getCombinedMakes(user);
                 makesArray.push(...makes);
             } else {
                 makesArray.push(queryMake.split(':')[1]);
@@ -1122,7 +1088,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             const modelsArray = [];
 
             for (const make of makesArray) {
-                const models = await getCombinedModels(decodedUser, make);
+                const models = await getCombinedModels(user, make);
                 const filteredModels = models.filter(model => model.toLowerCase().startsWith(value));
 
                 modelsArray.push(...filteredModels);
@@ -1138,12 +1104,12 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
                 ];
 
             if (parts.length === 1) { // if only one part, search in make
-                const makes = await getCombinedMakes(decodedUser);
+                const makes = await getCombinedMakes(user);
                 const filteredMakes = makes.filter(make => make.toLowerCase().startsWith(value));
 
                 if (filteredMakes.length === 0) { // if no makes, search in models
                     for (const make of makes) {
-                        const models = await getCombinedModels(decodedUser, make);
+                        const models = await getCombinedModels(user, make);
                         const filteredModels = models.filter(model => model.toLowerCase().startsWith(value));
 
                         searchStringsEnd.push(...filteredModels.map(model => `${make} ${model}`));
@@ -1152,10 +1118,10 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
                     searchStringsEnd.push(...filteredMakes);
                 }
             } else if (parts.length === 2) { // if multiple parts, search in make and model
-                const makes = await getCombinedMakes(decodedUser);
+                const makes = await getCombinedMakes(user);
                 const make = makes.find(make => make.toLowerCase() === parts[0]);
 
-                const modelsArray = make ? await getCombinedModels(decodedUser, make) : [];
+                const modelsArray = make ? await getCombinedModels(user, make) : [];
                 const filteredModels = modelsArray.filter(model => model.toLowerCase().startsWith(parts[1]));
 
                 searchStringsEnd.push(...filteredModels.map(model => `${make} ${model}`));
@@ -1177,9 +1143,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
 router.post('/likespot', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { make, model, key, user } = req.body;
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const decodedUser = await userFromCookies(req.headers.cookie);
 
         const spotKey = `spots:${user}:${make}:${model}:${key}`;
 
@@ -1215,7 +1179,7 @@ router.post('/likespot', async (req: Request, res: Response, next: NextFunction)
     }
 });
 
-router.post('/makes/:make', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/makes/:make', async (req: Request, res: Response, next: NextFunction) => { // TODO: Check if this is used
     try {
         const { make } = req.params;
 
@@ -1236,11 +1200,9 @@ router.post('/makes/:make', async (req: Request, res: Response, next: NextFuncti
 
 router.post('/updatespots', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const cookies = parse(req.headers.cookie || '');
-        const token = cookies.auth_token;
-        const decodedUser = await get_user(token);
+        const user = await userFromCookies(req.headers.cookie);
 
-        const is_admin = await redisClient.hGet('admins', decodedUser) ? true : decodedUser === 'Vetle';
+        const is_admin = await redisClient.hGet('admins', user) ? true : user === 'Vetle';
 
         if (!is_admin) {
             res.status(401).json({ message: 'Unauthorized' });

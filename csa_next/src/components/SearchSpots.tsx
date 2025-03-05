@@ -151,8 +151,16 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
                 </form>
                 {searchSuggestions.length > 0 && (
                     <ul className="absolute bg-white border border-black rounded-lg mt-1 w-full max-h-60 overflow-y-auto overflow-x-hidden">
-                        {searchSuggestions.map((suggestion, index) => (
-                            <li
+                        {searchSuggestions.map((suggestion, index) => {
+                            const lowerSuggestion = suggestion.toLowerCase();
+                            const lowerSearch = search.toLowerCase();
+                            const matchIndex = lowerSuggestion.indexOf(lowerSearch);
+                          
+                            const start = suggestion.slice(0, matchIndex);
+                            const match = suggestion.slice(matchIndex, matchIndex + search.length);
+                            const end = suggestion.slice(matchIndex + search.length);                          
+
+                            return <li
                                 key={index}
                                 ref={(el) => {
                                     listItemRefs.current[index] = el;
@@ -165,9 +173,11 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
                                 }}
                                 onMouseEnter={() => setActiveSuggestionIndex(index)}
                             >
-                                {suggestion}
+                                {start}
+                                <strong>{match}</strong>
+                                {end}
                             </li>
-                        ))}
+                        })}
                     </ul>
                 )}
             </div>

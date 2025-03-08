@@ -1179,25 +1179,6 @@ router.post('/likespot', async (req: Request, res: Response, next: NextFunction)
     }
 });
 
-router.post('/makes/:make', async (req: Request, res: Response, next: NextFunction) => { // TODO: Check if this is used
-    try {
-        const { make } = req.params;
-
-        const alreadyExists = await redisClient.hGet('makes', make);
-
-        if (alreadyExists) {
-            res.status(400).json({ message: 'Make already exists' });
-            return;
-        }
-
-        await redisClient.hSet('makes', make, make);
-
-        res.status(201).json({ message: 'Make created' });
-    } catch (err) {
-        next(err);
-    }
-});
-
 router.post('/updatespots', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = await userFromCookies(req.headers.cookie);

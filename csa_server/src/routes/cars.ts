@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response, Router } from 'express';
-import { getCombinedMakes, getCombinedModels } from '../utils/cars';
+import { getCombinedMakes, getCombinedModels, getCombinedTags } from '../utils/cars';
 import { get_user, getAllUsers, userFromCookies } from '../utils/user';
 import { redisClient } from '../redis-source';
 import { parse } from 'cookie';
@@ -1049,8 +1049,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
         const searchFinished = searchArray.slice(0, searchArray.length - 1);
 
         const stringSplit = currentSearch.toLowerCase().split(':');
-        const reversed = stringSplit[0].startsWith('!');
-        const key = stringSplit[1] === undefined ? null : reversed ? stringSplit[0].slice(1) : stringSplit[0]; // if no value, use key as value
+        const key = stringSplit[1] === undefined ? null : stringSplit[0].startsWith('!') ? stringSplit[0].slice(1) : stringSplit[0]; // if no value, use key as value
         const value = stringSplit[1] !== undefined ? stringSplit[1] : stringSplit[0]; // if no value, use key as value
 
         const searchStringsEnd = [];
@@ -1061,9 +1060,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
 
             searchStringsEnd.push(...filteredUsers.map(user => `user:${user}`));
         } else if (key === 'tag') {
-            const tagsUser = await redisClient.hGetAll(`tags:${user}`);
-            const allTags = await redisClient.hGetAll(`tags`);
-            const tags = Object.keys(tagsUser).map(key => tagsUser[key]).concat(Object.keys(allTags).map(key => allTags[key]));
+            const tags = await getCombinedTags(user);
             const filteredTags = tags.filter(tag => tag.toLowerCase().startsWith(value));
 
             searchStringsEnd.push(...filteredTags.map(tag => `tag:${tag}`));

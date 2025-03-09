@@ -67,3 +67,37 @@ export const getAllModels = async (make: string) => {
 
     return modelsArray;
 }
+
+export const getGlobalTags = async () => {
+    const tagsObject = await redisClient.hGetAll('tags');
+    const tagsArray = Object.keys(tagsObject).map(key => tagsObject[key]);
+
+    return tagsArray;
+}
+
+export const getUserTags = async (user: string) => {
+    const tagsObject = await redisClient.hGetAll(`tags:${user}`);
+    const tagsArray = Object.keys(tagsObject).map(key => tagsObject[key]);
+
+    return tagsArray;
+}
+
+export const getCombinedTags = async (user: string) => {
+    const globalTags = await getGlobalTags();
+    const userTags = await getUserTags(user);
+
+    return [...globalTags, ...userTags];
+}
+
+export const getAllTags = async () => {
+    const allUsers = await redisClient.hGetAll('users');
+    const users = Object.keys(allUsers);
+    let tagsArray = await getGlobalTags();
+
+    for (const user of users) {
+        const userTags = await getUserTags(user);
+        tagsArray.push(...userTags);
+    }
+
+    return tagsArray;
+}

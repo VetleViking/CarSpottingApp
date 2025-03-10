@@ -980,7 +980,7 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                     const dateB = dateMap[b];
                     return new Date(dateB).getTime() - new Date(dateA).getTime();
                 });
-            } else if (sort === 'hot' || sort === 'top') {
+            } else if (sort === 'hot' || sort === 'top') { // TODO: add own hot algorithm
                 const likesMap: { [key: string]: number } = {};
                 for (const id of filteredSpotIds) {
                     likesMap[id] = parseInt(await redisClient.hGet(id, 'likes')) || 0;
@@ -996,7 +996,7 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
         } else {
             if (sort === 'recent') {
                 sortedSpotIDs = await redisClient.zRange('zset:spots:recent', startIndex, endIndex, { 'REV': true });
-            } else if (sort === 'hot' || sort === 'top') {
+            } else if (sort === 'hot' || sort === 'top') { // TODO: add own hot algorithm
                 sortedSpotIDs = await redisClient.zRange('zset:spots:likes', startIndex, endIndex, { 'REV': true });
             }
         }
@@ -1064,34 +1064,34 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             const filteredTags = tags.filter(tag => tag.toLowerCase().startsWith(value));
 
             searchStringsEnd.push(...filteredTags.map(tag => `tag:${tag}`));
-        } else if (key === 'likes' || key === 'notes') { // Dont do anything
         } else if (key === 'make') {
             const makes = await getCombinedMakes(user);
             const filteredMakes = makes.filter(make => make.toLowerCase().startsWith(value));
-
+            
             searchStringsEnd.push(...filteredMakes.map(make => `make:${make}`));
         } else if (key === 'model') {
             const makesArray = [];
-
+            
             const queryMake = searchFinished.find(search => search.startsWith('make:'));
-
-            if (!queryMake) {
+            
+            if (queryMake) {
+                makesArray.push(queryMake.split(':')[1]);
+            } else {
                 const makes = await getCombinedMakes(user);
                 makesArray.push(...makes);
-            } else {
-                makesArray.push(queryMake.split(':')[1]);
             }
-
+            
             const modelsArray = [];
-
+            
             for (const make of makesArray) {
                 const models = await getCombinedModels(user, make);
                 const filteredModels = models.filter(model => model.toLowerCase().startsWith(value));
-
+                
                 modelsArray.push(...filteredModels);
             }
-
+            
             searchStringsEnd.push(...modelsArray.map(model => `model:${model}`));
+        } else if (key === 'likes' || key === 'notes') { // Dont do anything
         } else { // if no key, search in make and model
             const parts = value.toLowerCase().indexOf(' ') === -1
                 ? [value.toLowerCase()]
@@ -1100,8 +1100,10 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
                     value.substring(value.indexOf(' ') + 1).toLowerCase()
                 ];
 
-            if (parts.length === 1) { // if only one part, search in make
-                const makes = await getCombinedMakes(user);
+            const makes = await getCombinedMakes(user);
+            const make = makes.find(make => make.toLowerCase() === parts[0]); // TODO: add check for make w multiple words
+
+            if (!make) { // if not found make, search in make
                 const filteredMakes = makes.filter(make => make.toLowerCase().startsWith(value));
 
                 if (filteredMakes.length === 0) { // if no makes, search in models
@@ -1114,10 +1116,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
                 } else {
                     searchStringsEnd.push(...filteredMakes);
                 }
-            } else if (parts.length === 2) { // if multiple parts, search in make and model
-                const makes = await getCombinedMakes(user);
-                const make = makes.find(make => make.toLowerCase() === parts[0]);
-
+            } else { // if found make, search in make and model
                 const modelsArray = make ? await getCombinedModels(user, make) : [];
                 const filteredModels = modelsArray.filter(model => model.toLowerCase().startsWith(parts[1]));
 
@@ -1128,7 +1127,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
         const searchStrings = searchStringsEnd.map(searchString => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${searchString}`);
 
         const sortedSearchStrings = searchStrings.sort(
-            (a, b) => a.length - b.length || a.localeCompare(b)
+            (a, b) => a.length - b.length || a.localeCompare(b) // TODO: check if this works as intended
         );
 
         res.status(200).json(sortedSearchStrings);

@@ -1125,10 +1125,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
         }
 
         const searchStrings = searchStringsEnd.map(searchString => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${searchString}`);
-
-        const sortedSearchStrings = searchStrings.sort(
-            (a, b) => a.length - b.length || a.localeCompare(b) // TODO: check if this works as intended
-        );
+        const sortedSearchStrings = searchStrings.sort((a, b) => a.localeCompare(b));
 
         res.status(200).json(sortedSearchStrings);
     } catch (err) {

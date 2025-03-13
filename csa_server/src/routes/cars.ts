@@ -641,7 +641,7 @@ router.get('/getcomments/:key', async (req: Request, res: Response, next: NextFu
             const alreadyLiked = await redisClient.hGet(`likes:comments:${user}`, `${key}:${comment['commentId']}`);
             comment['liked'] = alreadyLiked ? 'true' : 'false';
 
-            if (comment['deleted'] === 'true') {
+            if (comment['deleted'] === 'true') { // comment content isnt deleted if deleted, just not sent to frontend
                 comment['comment'] = '[deleted by ' + comment['deletedBy'] + ']';
             }
 
@@ -671,16 +671,16 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
         }
 
         const spotKeyPrefix = `spots:${user}:${make}:${model}:${key}`;
-        const allSpots = await redisClient.hGetAll(spotKeyPrefix);
+        const spot = await redisClient.hGetAll(spotKeyPrefix);
 
-        if (!allSpots) {
+        if (!spot) {
             res.status(404).json({ message: 'Spot not found' });
             return;
         }
 
         const data: Record<string, string> = {};
 
-        if (tagsArray && tagsArray.length > 0) {
+        if (tagsArray && tagsArray.length > 0) { // TODO: idk what this does, fix
             const allTagsData = await redisClient.hGetAll(`tags:${user}`);
             const allTags: string[] = Array.isArray(allTagsData) ? allTagsData : []
 
@@ -738,7 +738,6 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
     }
 });
 
-
 router.get('/get_spots/:make/:model', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { username, key } = req.query;
@@ -776,7 +775,7 @@ router.get('/get_spots/:make/:model', async (req: Request, res: Response, next: 
             const spot = allSpots.find(spot => spot.key === key);
 
             if (!spot) {
-                res.status(404).json({ message: 'Spot not found' });
+                res.status(404).json({ message: `Spot with key ${key} not found` });
                 return;
             }
 

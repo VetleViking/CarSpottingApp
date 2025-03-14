@@ -142,7 +142,7 @@ const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ user
 
                 const newUrl = `${pathname}?${params.toString()}`;
 
-                router.push(newUrl);
+                router.push(newUrl, { scroll: false });
             } catch (e) {
                 console.error('Error loading spots:', e);
             } finally {

@@ -92,7 +92,7 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
           activeSuggestionIndex >= 0 &&
           listItemRefs.current[activeSuggestionIndex]
         ) {
-          listItemRefs.current[activeSuggestionIndex]?.scrollIntoView({ // TODO: i think this makes me scroll to top when fetching new spots
+          listItemRefs.current[activeSuggestionIndex]?.scrollIntoView({
             block: "nearest",
           });
         }

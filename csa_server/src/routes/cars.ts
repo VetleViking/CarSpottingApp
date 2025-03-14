@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response, Router } from 'express';
-import { getCombinedMakes, getCombinedModels, getCombinedTags } from '../utils/cars';
+import { getCombinedMakes, getCombinedModels, getCombinedTags, getHotScore } from '../utils/cars';
 import { get_user, getAllUsers, userFromCookies } from '../utils/user';
 import { redisClient } from '../redis-source';
 import { parse } from 'cookie';
@@ -979,7 +979,7 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                     const dateB = dateMap[b];
                     return new Date(dateB).getTime() - new Date(dateA).getTime();
                 });
-            } else if (sort === 'hot' || sort === 'top') { // TODO: add own hot algorithm
+            } else if (sort === 'top') {
                 const likesMap: { [key: string]: number } = {};
                 for (const id of filteredSpotIds) {
                     likesMap[id] = parseInt(await redisClient.hGet(id, 'likes')) || 0;
@@ -989,14 +989,47 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                     const likesB = likesMap[b];
                     return likesB - likesA;
                 });
+            } else if (sort === 'hot') {
+                let hotScore = {};
+                filteredSpotIds.map(async id => {
+                    const likes = parseInt(await redisClient.hGet(id, 'likes')) || 0;
+                    const date = new Date(await redisClient.hGet(id, 'uploadDate')).getTime();
+
+                    hotScore[id] = getHotScore(likes, date);
+                });
+
+                filteredSpotIds.sort((a, b) => {
+                    const scoreA = hotScore[a];
+                    const scoreB = hotScore[b];
+                    return scoreB - scoreA;
+                });
             }
 
             sortedSpotIDs = filteredSpotIds.slice(startIndex, endIndex + 1);
         } else {
             if (sort === 'recent') {
                 sortedSpotIDs = await redisClient.zRange('zset:spots:recent', startIndex, endIndex, { 'REV': true });
-            } else if (sort === 'hot' || sort === 'top') { // TODO: add own hot algorithm
+            } else if (sort === 'top') {
                 sortedSpotIDs = await redisClient.zRange('zset:spots:likes', startIndex, endIndex, { 'REV': true });
+            } else if (sort === 'hot') {
+                const allSpotsKeys = await redisClient.keys(`spots:*`);
+                
+                let hotScore = {};
+
+                await Promise.all(allSpotsKeys.map(async id => {
+                    const likes = parseInt(await redisClient.hGet(id, 'likes')) || 0;
+                    const date = new Date(await redisClient.hGet(id, 'uploadDate')).getTime();
+
+                    hotScore[id] = getHotScore(likes, date);
+                }))
+
+                allSpotsKeys.sort((a, b) => {
+                    const scoreA = hotScore[a];
+                    const scoreB = hotScore[b];
+                    return scoreB - scoreA;
+                });
+
+                sortedSpotIDs = allSpotsKeys.slice(startIndex, endIndex + 1);
             }
         }
 

@@ -101,3 +101,11 @@ export const getAllTags = async () => {
 
     return tagsArray;
 }
+
+export const getHotScore = (likes: number, createdAt: number) => {
+    const epoch = new Date('2024-01-01T00:00:00Z').getTime() / 1000;
+    const order = Math.log10(Math.max(Math.abs(likes), 1));
+    const sign = likes > 0 ? 1 : 0;
+    const epochSeconds = (createdAt / 1000) - epoch;
+    return order + (sign * epochSeconds) / 45000;
+}

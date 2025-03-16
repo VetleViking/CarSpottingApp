@@ -2,7 +2,7 @@
 
 **Car Spotting App** is a web application that allows users to upload and share images of cars they have spotted. The application leverages AI for car make and model recognition and provides additional vehicle details from the Statens Vegvesen registry for Norwegian registration numbers.
 
-**Live Demo:** [https://spots.vest.li](https://spots.vest.li)
+**You can find the site here:** [https://spots.vest.li](https://spots.vest.li)
 
 ## Features
 
@@ -31,8 +31,8 @@
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/car-spotting-app.git
-   cd car-spotting-app
+   git clone https://github.com/VetleViking/CarSpottingApp.git
+   cd CarSpottingApp
    ```
 
 2. **Set up environment variables:**

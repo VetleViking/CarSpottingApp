@@ -18,6 +18,7 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
     const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
     const [activeSuggestionIndex, setActiveSuggestionIndex] = useState<number>(-1);
     const [tempSearch, setTempSearch] = useState<boolean>(false);
+    const [currentSearch, setCurrentSearch] = useState<string>("");
 
     const listItemRefs = useRef<Array<HTMLLIElement | null>>([]);
 
@@ -26,6 +27,7 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
         onSearch(search);
         searchRef.current?.blur();
         setSearchSuggestions([]);
+        setActiveSuggestionIndex(-1);
         setTempSearch(false);
     }
 
@@ -37,6 +39,7 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
 
     function selectSuggestion(selected: string) {
         setSearch(selected);
+        setCurrentSearch(selected);
         onSearch(selected);
         searchRef.current?.blur();
         setSearchSuggestions([]);
@@ -117,6 +120,7 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
                                     ? handleSearchAutocomplete(e.target.value) 
                                     : setSearchSuggestions([]);
                                 setSearch(e.target.value);
+                                setCurrentSearch(e.target.value);
                             }
                         }}
                         onKeyDown={handleKeyDown}
@@ -141,6 +145,7 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
                             height={25}
                             onClick={() => {
                                 setSearch("");
+                                setCurrentSearch("");
                                 onSearch("");
                                 setSearchSuggestions([]);
                                 setTempSearch(false);
@@ -153,12 +158,12 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
                     <ul className="absolute bg-white border border-black rounded-lg mt-1 w-full max-h-60 overflow-y-auto overflow-x-hidden">
                         {searchSuggestions.map((suggestion, index) => {
                             const lowerSuggestion = suggestion.toLowerCase();
-                            const lowerSearch = search.toLowerCase();
+                            const lowerSearch = currentSearch.toLowerCase();
                             const matchIndex = lowerSuggestion.indexOf(lowerSearch);
                           
                             const start = suggestion.slice(0, matchIndex);
-                            const match = suggestion.slice(matchIndex, matchIndex + search.length);
-                            const end = suggestion.slice(matchIndex + search.length);                          
+                            const match = suggestion.slice(matchIndex, matchIndex + currentSearch.length);
+                            const end = suggestion.slice(matchIndex + currentSearch.length);                          
 
                             return <li
                                 key={index}

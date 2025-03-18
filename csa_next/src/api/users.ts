@@ -53,6 +53,12 @@ export async function login(username: string, password: string) {
     });
 }
 
+export async function logout() {
+    return apiCall('logout', {
+        method: 'POST'
+    });
+}
+
 export async function delete_user() {
     return apiCall('delete_user', {
         method: 'POST'

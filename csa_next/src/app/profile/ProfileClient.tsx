@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Button from '@/components/Button';
-import { delete_user } from '@/api/users';
+import { delete_user, logout } from '@/api/users';
 
 export default function ProfileClient() {
     const [delete_confirm, setDeleteConfirm] = useState(false);
@@ -16,14 +16,16 @@ export default function ProfileClient() {
             return;
         }
         delete_user().then(() => {
-            document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            window.location.href = "/login";
+            logout().then(() => {
+                window.location.href = "/login";
+            });
         });
     }
 
     function logoutHandler() {
-        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        window.location.href = "/login";
+        logout().then(() => {    
+            window.location.href = "/login";
+        });
     }
 
     return (

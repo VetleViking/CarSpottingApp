@@ -48,6 +48,25 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
     }
 });
 
+router.post('/logout', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const cookie = serialize('auth_token', '', {
+            httpOnly: process.env.PRODUCTION == "true", // Cookie is only accessible on the server
+            secure: true, // Set to true if served over HTTPS
+            maxAge: 0, // Expire cookie
+            sameSite: process.env.PRODUCTION === "true" ? 'none' : 'lax',
+            domain: process.env.PRODUCTION === "true" ? '.vest.li' : 'localhost',
+            path: '/', // Cookie is accessible on all routes
+        });
+
+        res.setHeader('Set-Cookie', cookie);
+
+        res.status(200).json({ message: 'Logged out' });
+    } catch (err) {
+        next(err);
+    }
+});
+
 router.get('/get_username', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const cookies = parse(req.headers.cookie || '');

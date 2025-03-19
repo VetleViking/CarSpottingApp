@@ -680,17 +680,9 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
 
         const data: Record<string, string> = {};
 
-        if (tagsArray && tagsArray.length > 0) { // TODO: idk what this does, fix
-            const allTagsData = await redisClient.hGetAll(`tags:${user}`);
-            const allTags: string[] = Array.isArray(allTagsData) ? allTagsData : []
-
-            allTags.forEach(tag => {
-            });
-
-            tagsArray.forEach((tag, index) => {
-                data[`tag${index}`] = tag;
-            });
-        }
+        tagsArray.forEach((tag, index) => {
+            data[`tag${index}`] = tag;
+        });
 
         data[`notes`] = notes || '';
 

@@ -1117,15 +1117,22 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             searchStringsEnd.push(...modelsArray.map(model => `model:${model}`));
         } else if (key === 'likes' || key === 'notes') { // Dont do anything
         } else { // if no key, search in make and model
-            const parts = value.toLowerCase().indexOf(' ') === -1
-                ? [value.toLowerCase()]
-                : [
-                    value.substring(0, value.indexOf(' ')).toLowerCase(),
-                    value.substring(value.indexOf(' ') + 1).toLowerCase()
-                ];
-
+            const parts = value.split(' ');
             const makes = await getCombinedMakes(user);
-            const make = makes.find(make => make.toLowerCase() === parts[0]); // TODO: add check for make w multiple words
+            const lowerMakes = makes.map(make => make.toLowerCase());
+
+            let make = ""; 
+            let currentMake = "";
+            let modelSearch = "";
+
+            parts.forEach((part, index) => {
+                currentMake += part + " ";
+
+                if (lowerMakes.includes(currentMake.trim())) {
+                    make = makes[lowerMakes.indexOf(currentMake.trim())];
+                    modelSearch = parts.slice(index + 1).join(" ");
+                }
+            });
 
             if (!make) { // if not found make, search in make
                 const filteredMakes = makes.filter(make => make.toLowerCase().startsWith(value));
@@ -1142,7 +1149,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
                 }
             } else { // if found make, search in make and model
                 const modelsArray = make ? await getCombinedModels(user, make) : [];
-                const filteredModels = modelsArray.filter(model => model.toLowerCase().startsWith(parts[1]));
+                const filteredModels = modelsArray.filter(model => model.toLowerCase().startsWith(modelSearch));
 
                 searchStringsEnd.push(...filteredModels.map(model => `${make} ${model}`));
             }

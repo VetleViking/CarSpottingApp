@@ -1118,20 +1118,20 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             const makes = await getCombinedMakes(user);
             const lowerMakes = makes.map(make => make.toLowerCase());
 
-            let make = ""; 
-            let currentMake = "";
+            let matchedMake = ""; 
             let modelSearch = "";
 
-            parts.forEach((part, index) => {
-                currentMake += part + " ";
+            for (let i = 0; i < parts.length; i++) {
+                const possibleMake = parts.slice(0, i + 1).join(' ');
 
-                if (lowerMakes.includes(currentMake.trim())) {
-                    make = makes[lowerMakes.indexOf(currentMake.trim())];
-                    modelSearch = parts.slice(index + 1).join(" ");
+                if (lowerMakes.includes(possibleMake)) {
+                    matchedMake = makes[lowerMakes.indexOf(possibleMake)];
+                    modelSearch = parts.slice(i + 1).join(" ");
+                    break;
                 }
-            });
+            };
 
-            if (!make) { // if not found make, search in make
+            if (!matchedMake) { // if not found make, search in make
                 const filteredMakes = makes.filter(make => make.toLowerCase().startsWith(value));
 
                 if (filteredMakes.length === 0) { // if no makes, search in models
@@ -1143,8 +1143,8 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
                     searchStringsEnd.push(...filteredMakes);
                 }
             } else { // if found make, search in make and model
-                const filteredModels = await fetchAndFilter(() => getCombinedModels(user, make), modelSearch);
-                searchStringsEnd.push(...filteredModels.map(model => `${make} ${model}`));
+                const filteredModels = await fetchAndFilter(() => getCombinedModels(user, matchedMake), modelSearch);
+                searchStringsEnd.push(...filteredModels.map(model => `${matchedMake} ${model}`));
             }
         }
 

@@ -1056,6 +1056,11 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
     }
 });
 
+async function fetchAndFilter( fetchFn: () => Promise<string[]>, searchValue: string ): Promise<string[]> {
+    const allValues = await fetchFn();
+    const filtered = allValues.filter(v => v.toLowerCase().startsWith(searchValue.toLowerCase()));
+    return filtered;
+}
 
 router.get('/search_autocomplete', async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -1079,19 +1084,13 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
         const searchStringsEnd = [];
 
         if (key === 'user') {
-            const users = await getAllUsers();
-            const filteredUsers = users.filter(user => user.toLowerCase().startsWith(value));
-
+            const filteredUsers = await fetchAndFilter(getAllUsers, value);
             searchStringsEnd.push(...filteredUsers.map(user => `user:${user}`));
         } else if (key === 'tag') {
-            const tags = await getCombinedTags(user);
-            const filteredTags = tags.filter(tag => tag.toLowerCase().startsWith(value));
-
+            const filteredTags = await fetchAndFilter(() => getCombinedTags(user), value);
             searchStringsEnd.push(...filteredTags.map(tag => `tag:${tag}`));
         } else if (key === 'make') {
-            const makes = await getCombinedMakes(user);
-            const filteredMakes = makes.filter(make => make.toLowerCase().startsWith(value));
-            
+            const filteredMakes = await fetchAndFilter(() => getCombinedMakes(user), value);
             searchStringsEnd.push(...filteredMakes.map(make => `make:${make}`));
         } else if (key === 'model') {
             const makesArray = [];
@@ -1108,9 +1107,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             const modelsArray = [];
             
             for (const make of makesArray) {
-                const models = await getCombinedModels(user, make);
-                const filteredModels = models.filter(model => model.toLowerCase().startsWith(value));
-                
+                const filteredModels = await fetchAndFilter(() => getCombinedModels(user, make), value);               
                 modelsArray.push(...filteredModels);
             }
             
@@ -1139,18 +1136,14 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
 
                 if (filteredMakes.length === 0) { // if no makes, search in models
                     for (const make of makes) {
-                        const models = await getCombinedModels(user, make);
-                        const filteredModels = models.filter(model => model.toLowerCase().startsWith(value));
-
+                        const filteredModels = await fetchAndFilter(() => getCombinedModels(user, make), value);
                         searchStringsEnd.push(...filteredModels.map(model => `${make} ${model}`));
                     }
                 } else {
                     searchStringsEnd.push(...filteredMakes);
                 }
             } else { // if found make, search in make and model
-                const modelsArray = make ? await getCombinedModels(user, make) : [];
-                const filteredModels = modelsArray.filter(model => model.toLowerCase().startsWith(modelSearch));
-
+                const filteredModels = await fetchAndFilter(() => getCombinedModels(user, make), modelSearch);
                 searchStringsEnd.push(...filteredModels.map(model => `${make} ${model}`));
             }
         }

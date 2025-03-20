@@ -914,12 +914,12 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
             const allSpotsKeys = await redisClient.keys(`spots:*`);
             const allSpots = await Promise.all(allSpotsKeys.map(async key => await redisClient.hGetAll(key)));
 
-            const searchArray = search.split('&');
+            const searchSegments = search.split('&');
 
             const filteredSpotIds = [];
 
             allSpots.filter((spot, i) => {
-                const searchResult = searchArray.every(searchString => {
+                const searchResult = searchSegments.every(searchString => {
                     const stringSplit = searchString.toLowerCase().split(':');
                     const reversed = stringSplit[0].startsWith('!');
                     const key = !stringSplit[1] ? null : reversed ? stringSplit[0].slice(1) : stringSplit[0]; // if no value, use key as value
@@ -1073,9 +1073,9 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             return;
         }
 
-        const searchArray = query.split('&');
-        const currentSearch = searchArray[searchArray.length - 1];
-        const searchFinished = searchArray.slice(0, searchArray.length - 1);
+        const searchSegments = query.split('&');
+        const currentSearch = searchSegments[searchSegments.length - 1];
+        const previousSearchParts = searchSegments.slice(0, searchSegments.length - 1);
 
         const stringSplit = currentSearch.toLowerCase().split(':');
         const key = stringSplit[1] === undefined ? null : stringSplit[0].startsWith('!') ? stringSplit[0].slice(1) : stringSplit[0]; // if no value, use key as value
@@ -1095,7 +1095,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
         } else if (key === 'model') {
             const makesArray = [];
             
-            const queryMake = searchFinished.find(search => search.startsWith('make:'));
+            const queryMake = previousSearchParts.find(search => search.startsWith('make:'));
             
             if (queryMake) {
                 makesArray.push(queryMake.split(':')[1]);
@@ -1148,7 +1148,7 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             }
         }
 
-        const searchStrings = searchStringsEnd.map(searchString => `${searchFinished.join("&")}${searchFinished.length > 0 ? "&" : ""}${searchString}`);
+        const searchStrings = searchStringsEnd.map(searchString => `${previousSearchParts.join("&")}${previousSearchParts.length > 0 ? "&" : ""}${searchString}`);
         const sortedSearchStrings = searchStrings.sort((a, b) => a.localeCompare(b));
 
         res.status(200).json(sortedSearchStrings);

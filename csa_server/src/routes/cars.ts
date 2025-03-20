@@ -906,8 +906,6 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
         const startIndex = page * spotsPerPage;
         const endIndex = (page + 1) * spotsPerPage - 1;
 
-        console.time('ExecutionTime');
-
         let sortedSpotIDs: string[] = [];
 
         if (search) { // if search, cant use zset
@@ -916,9 +914,7 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
 
             const searchSegments = search.split('&');
 
-            const filteredSpotIds = [];
-
-            allSpots.filter((spot, i) => {
+            const filteredSpotIds = allSpots.map((spot, i) => {
                 const searchResult = searchSegments.every(searchString => {
                     const stringSplit = searchString.toLowerCase().split(':');
                     const reversed = stringSplit[0].startsWith('!');
@@ -954,12 +950,8 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                     return reversed ? !match : match;
                 });
 
-                if (searchResult) {
-                    filteredSpotIds.push(allSpotsKeys[i]);
-                }
-
-                return searchResult;
-            });
+                return searchResult ? allSpotsKeys[i] : null;
+            }).filter(Boolean) as string[];
 
             if (sort === 'recent') {
                 const dateMap: { [key: string]: string } = {};
@@ -982,19 +974,15 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                     return likesB - likesA;
                 });
             } else if (sort === 'hot') {
-                let hotScore = {};
-                filteredSpotIds.map(async id => {
+                let hotScore: Record<string, number> = {};
+
+                await Promise.all(filteredSpotIds.map(async id => {
                     const likes = parseInt(await redisClient.hGet(id, 'likes')) || 0;
                     const date = new Date(await redisClient.hGet(id, 'uploadDate')).getTime();
-
                     hotScore[id] = getHotScore(likes, date);
-                });
+                }));
 
-                filteredSpotIds.sort((a, b) => {
-                    const scoreA = hotScore[a];
-                    const scoreB = hotScore[b];
-                    return scoreB - scoreA;
-                });
+                filteredSpotIds.sort((a, b) => hotScore[b] - hotScore[a]);
             }
 
             sortedSpotIDs = filteredSpotIds.slice(startIndex, endIndex + 1);
@@ -1047,8 +1035,6 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                 };
             })
         );
-
-        console.timeEnd('ExecutionTime');
 
         res.status(200).json(spots);
     } catch (err) {

@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { getCombinedMakes, getCombinedModels, getCombinedTags, getHotScore } from '../utils/cars';
-import { get_user, getAllUsers, userFromCookies } from '../utils/user';
+import { getAllUsers, userFromCookies } from '../utils/user';
 import { redisClient } from '../redis-source';
-import { parse } from 'cookie';
 import dotenv from "dotenv";
 import multer from 'multer';
 import { v4 } from 'uuid';
@@ -34,7 +33,11 @@ router.get('/makes/:query', async (req: Request, res: Response, next: NextFuncti
 
         const makes = await getCombinedMakes(user);
 
-        const filteredMakes = makes.filter(make => make.toLowerCase().includes(query.toLowerCase()));
+        const filteredMakes = makes
+        .filter(make => make
+            .toLowerCase()
+            .includes(query.toLowerCase())
+        );
 
         res.status(200).json(filteredMakes);
     } catch (err) {
@@ -149,7 +152,11 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
                 }
             }
 
-            const filteredModels = modelsArray.filter(model => model.model.toLowerCase().includes(query.toLowerCase()));
+            const filteredModels = modelsArray
+                .filter(model => model.model
+                    .toLowerCase()
+                    .includes(query.toLowerCase())
+                );
 
             res.status(200).json(filteredModels.slice(0, 50));
             return;
@@ -164,7 +171,11 @@ router.get('/makes/unknown/models/:query', async (req: Request, res: Response, n
         for (const make of makes) {
             const models = await getCombinedModels(user, make);
 
-            const filteredModels = models.filter(model => model.toLowerCase().includes(query.toLowerCase()));
+            const filteredModels = models
+                .filter(model => model
+                    .toLowerCase()
+                    .includes(query.toLowerCase())
+                );
 
             const modelsWithMake = filteredModels.map(model => ({ make, model }));
 
@@ -192,19 +203,21 @@ router.get('/makes/:make/models/', async (req: Request, res: Response, next: Nex
         if (!searchedBefore) {
             await redisClient.hSet(`searchedmakes`, make, make);
 
-            const responsePassenger = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/vehicleType/Passenger%20Car?format=json`);
+            const responsePassenger = await fetch(
+                `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/vehicleType/Passenger%20Car?format=json`
+            );
             const dataPassenger = await responsePassenger.json();
 
-            const responseMPV = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/vehicleType/Multipurpose%20Passenger%20Vehicle%20(MPV)?format=json`);
+            const responseMPV = await fetch(
+                `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/vehicleType/Multipurpose%20Passenger%20Vehicle%20(MPV)?format=json`
+            );
             const dataMPV = await responseMPV.json();
 
             const data = dataPassenger.Results.concat(dataMPV.Results);
 
-            const uniqueModels = data.filter((item: any, index: any, self: any) =>
-                index === self.findIndex((t: any) => (
-                    t.Model_Name === item.Model_Name
-                ))
-            );
+            const uniqueModels = data
+                .filter((item: any, index: any, self: any) => index === self
+                    .findIndex((t: any) => (t.Model_Name === item.Model_Name)));
 
             uniqueModels.forEach(async model => {
                 redisClient.hSet(`make:${make}`, model.Model_Name, model.Model_Name);
@@ -257,7 +270,11 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
 
             const modelsArray = uniqueModels.map(model => ({ make, model: model.Model_Name }));
 
-            const filteredModels = modelsArray.filter(model => model.model.toLowerCase().includes(query.toLowerCase()));
+            const filteredModels = modelsArray
+                .filter(model => model.model
+                    .toLowerCase()
+                    .includes(query.toLowerCase())
+                );
 
             if (filteredModels.length > 50) {
                 res.status(200).json(filteredModels.slice(0, 50));
@@ -272,7 +289,11 @@ router.get('/makes/:make/models/:query', async (req: Request, res: Response, nex
         const models = await getCombinedModels(user, make)
         const modelsArray = models.map(model => ({ make, model }));
 
-        const filteredModels = modelsArray.filter(model => model.model.toLowerCase().includes(query.toLowerCase()));
+        const filteredModels = modelsArray
+            .filter(model => model.model
+                .toLowerCase()
+                .includes(query.toLowerCase())
+            );
 
         res.status(269).json(filteredModels.slice(0, 50));
     } catch (err) {
@@ -293,7 +314,11 @@ router.get('/spots/:make/percentage', async (req: Request, res: Response, next: 
 
         const percentage = modelsArray.length > 0 ? Math.floor((uniqueModels.size / modelsArray.length) * 100) : 0;
 
-        res.status(200).json({ percentage: percentage, numSpots: uniqueModels.size, numModels: modelsArray.length });
+        res.status(200).json({ 
+            percentage: percentage, 
+            numSpots: uniqueModels.size, 
+            numModels: modelsArray.length 
+        });
     } catch (err) {
         next(err);
     }
@@ -345,7 +370,8 @@ router.post('/addtag', async (req: Request, res: Response, next: NextFunction) =
         const { tag } = req.body;
         const user = await userFromCookies(req.headers.cookie);
 
-        const alreadyExists = await redisClient.hGet('tags', tag) || await redisClient.hGet(`tags:${user}`, tag);
+        const alreadyExists = await redisClient.hGet('tags', tag) 
+            || await redisClient.hGet(`tags:${user}`, tag);
 
         if (alreadyExists) {
             res.status(400).json({ message: 'Tag already exists' });
@@ -366,7 +392,8 @@ router.get('/tags', async (req: Request, res: Response, next: NextFunction) => {
 
         const tagsObject = await redisClient.hGetAll('tags');
         const tagsObjectUser = await redisClient.hGetAll(`tags:${user}`);
-        const tagsArray = Object.keys(tagsObject).map(key => tagsObject[key])
+        const tagsArray = Object.keys(tagsObject)
+            .map(key => tagsObject[key])
             .concat(Object.keys(tagsObjectUser).map(key => tagsObjectUser[key]));
 
         res.status(200).json(tagsArray);
@@ -494,8 +521,14 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
         if (!notes) delete data[`notes`];
         if (!date) delete data[`date`];
 
-        await redisClient.zAdd('zset:spots:recent', { score: new Date(data['uploadDate']).getTime(), value: `spots:${user}:${make}:${model}:${offset}` });
-        await redisClient.zAdd('zset:spots:likes', { score: parseInt(data['likes']), value: `spots:${user}:${make}:${model}:${offset}` })
+        await redisClient.zAdd('zset:spots:recent', { 
+            score: new Date(data['uploadDate']).getTime(), 
+            value: `spots:${user}:${make}:${model}:${offset}` 
+        });
+        await redisClient.zAdd('zset:spots:likes', { 
+            score: parseInt(data['likes']), 
+            value: `spots:${user}:${make}:${model}:${offset}` 
+        });
         await redisClient.hSet(`spots:${user}:${make}:${model}:${offset}`, data);
 
         res.status(201).json({ message: 'Spot added' });
@@ -536,7 +569,11 @@ router.post('/addcomment', async (req: Request, res: Response, next: NextFunctio
 
         const validData = {};
         for (const key in data) {
-            if (key && typeof key === 'string' && (typeof data[key] === 'string' || typeof data[key] === 'number' || Buffer.isBuffer(data[key]))) {
+            if (key 
+                && typeof key === 'string' 
+                && (typeof data[key] === 'string' 
+                    || typeof data[key] === 'number' 
+                    || Buffer.isBuffer(data[key]))) {
                 validData[key] = data[key];
             }
         }
@@ -690,7 +727,11 @@ router.post('/editspot', async (req: Request, res: Response, next: NextFunction)
 
         const validData = {};
         for (const key in data) {
-            if (key && typeof key === 'string' && (typeof data[key] === 'string' || typeof data[key] === 'number' || Buffer.isBuffer(data[key]))) {
+            if (key 
+                && typeof key === 'string' 
+                && (typeof data[key] === 'string' 
+                    || typeof data[key] === 'number' 
+                    || Buffer.isBuffer(data[key]))) {
                 validData[key] = data[key];
             }
         }
@@ -749,9 +790,13 @@ router.get('/get_spots/:make/:model', async (req: Request, res: Response, next: 
         for (const key of allSpotsKeys) {
             const spot = await redisClient.hGetAll(key);
 
-            const images = Object.keys(spot).filter(key => key.startsWith('image')).map(key => spot[key]);
+            const images = Object.keys(spot)
+                .filter(key => key.startsWith('image'))
+                .map(key => spot[key]);
 
-            const tags = Object.keys(spot).filter(key => key.startsWith('tag')).map(key => spot[key]);
+            const tags = Object.keys(spot)
+                .filter(key => key.startsWith('tag'))
+                .map(key => spot[key]);
 
             allSpots.push({
                 key: key.split(':')[4],
@@ -788,7 +833,9 @@ router.get('/spots/makes/', async (req: Request, res: Response, next: NextFuncti
 
         const keys = await redisClient.keys(`spots:${username || user}:*`);
 
-        const makesArray = keys.map(key => key.split(':')[2]).filter((item, index, self) => self.indexOf(item) === index);
+        const makesArray = keys
+            .map(key => key.split(':')[2])
+            .filter((item, index, self) => self.indexOf(item) === index);
 
         res.status(200).json(makesArray);
     } catch (err) {
@@ -805,9 +852,15 @@ router.get('/spots/makes/:query', async (req: Request, res: Response, next: Next
 
         const keys = await redisClient.keys(`spots:${username || user}:*`);
 
-        const makesArray = keys.map(key => key.split(':')[2]).filter((item, index, self) => self.indexOf(item) === index);
+        const makesArray = keys
+            .map(key => key.split(':')[2])
+            .filter((item, index, self) => self.indexOf(item) === index);
 
-        const filteredMakes = Array.from(makesArray).filter(make => make.toLowerCase().includes((query as string).toLowerCase()));
+        const filteredMakes = Array.from(makesArray)
+            .filter(make => make
+                .toLowerCase()
+                .includes((query as string).toLowerCase())
+            );
 
         res.status(200).json(filteredMakes);
     } catch (err) {
@@ -823,7 +876,9 @@ router.get('/spots/makes/unknown/models/', async (req: Request, res: Response, n
         const keys = await redisClient.keys(`spots:${username || user}:*`);
 
         const makesArray = keys.map(key => key.split(':')[2]);
-        const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
+        const modelsArray = keys
+            .map(key => key.split(':')[3])
+            .filter((item, index, self) => self.indexOf(item) === index);
 
         const combinedArray = modelsArray.map((model, index) => ({ make: makesArray[index], model }));
 
@@ -843,9 +898,15 @@ router.get('/spots/makes/unknown/models/:query', async (req: Request, res: Respo
         const keys = await redisClient.keys(`spots:${username || user}:*`);
 
         const makesArray = keys.map(key => key.split(':')[2]);
-        const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
+        const modelsArray = keys
+            .map(key => key.split(':')[3])
+            .filter((item, index, self) => self.indexOf(item) === index);
 
-        const filteredModels = modelsArray.filter(model => model.toLowerCase().includes((query as string).toLowerCase()));
+        const filteredModels = modelsArray
+            .filter(model => model
+                .toLowerCase()
+                .includes((query as string).toLowerCase())
+            );
 
         const combinedArray = filteredModels.map((model, index) => ({ make: makesArray[index], model }));
 
@@ -864,7 +925,9 @@ router.get('/spots/makes/:make/models/', async (req: Request, res: Response, nex
 
         const keys = await redisClient.keys(`spots:${username || user}:${make}:*`);
 
-        const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
+        const modelsArray = keys
+            .map(key => key.split(':')[3])
+            .filter((item, index, self) => self.indexOf(item) === index);
 
         const combinedArray = modelsArray.map(model => ({ make, model }));
 
@@ -883,9 +946,15 @@ router.get('/spots/makes/:make/models/:query', async (req: Request, res: Respons
 
         const keys = await redisClient.keys(`spots:${username || user}:${make}:*`);
 
-        const modelsArray = keys.map(key => key.split(':')[3]).filter((item, index, self) => self.indexOf(item) === index);
+        const modelsArray = keys
+            .map(key => key.split(':')[3])
+            .filter((item, index, self) => self.indexOf(item) === index);
 
-        const filteredModels = modelsArray.filter(model => model.toLowerCase().includes((query as string).toLowerCase()));
+        const filteredModels = modelsArray
+            .filter(model => model
+                .toLowerCase()
+                .includes((query as string).toLowerCase())
+            );
 
         const combinedArray = filteredModels.map(model => ({ make, model }));
 
@@ -918,11 +987,16 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                 const searchResult = searchSegments.every(searchString => {
                     const stringSplit = searchString.toLowerCase().split(':');
                     const reversed = stringSplit[0].startsWith('!');
-                    const key = !stringSplit[1] ? null : reversed ? stringSplit[0].slice(1) : stringSplit[0]; // if no value, use key as value
+                    const key = !stringSplit[1] ? null 
+                        : reversed ? stringSplit[0].slice(1) 
+                            : stringSplit[0]; // if no value, use key as value
                     const value = stringSplit[1] ? stringSplit[1] : stringSplit[0]; // if no value, use key as value
                     const spotKey = allSpotsKeys[i].toLowerCase();
 
-                    const tags = Object.keys(spot).filter(key => key.startsWith('tag')).map(key => spot[key]).map(tag => tag.toLowerCase());
+                    const tags = Object.keys(spot)
+                        .filter(key => key.startsWith('tag'))
+                        .map(key => spot[key])
+                        .map(tag => tag.toLowerCase());
 
                     let match = false;
 
@@ -1018,14 +1092,18 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
                 const spot = await redisClient.hGetAll(`${spotID}`);
                 const likedByUser = await redisClient.hGet(`likes:${user}`, spotID);
 
-                const images = Object.keys(spot).filter(key => key.startsWith('image')).map(key => spot[key]);
+                const images = Object.keys(spot)
+                    .filter(key => key.startsWith('image'))
+                    .map(key => spot[key]);
 
                 return {
                     key: spotID.split(':')[4],
                     notes: spot['notes'],
                     date: spot['date'],
                     images,
-                    tags: Object.keys(spot).filter(key => key.startsWith('tag')).map(key => spot[key]),
+                    tags: Object.keys(spot)
+                        .filter(key => key.startsWith('tag'))
+                        .map(key => spot[key]),
                     user: spotID.split(':')[1],
                     make: spotID.split(':')[2],
                     model: spotID.split(':')[3],
@@ -1042,9 +1120,15 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
     }
 });
 
-async function fetchAndFilter( fetchFn: () => Promise<string[]>, searchValue: string ): Promise<string[]> {
+async function fetchAndFilter( 
+    fetchFn: () => Promise<string[]>, searchValue: string 
+): Promise<string[]> {
     const allValues = await fetchFn();
-    const filtered = allValues.filter(v => v.toLowerCase().startsWith(searchValue.toLowerCase()));
+    const filtered = allValues
+        .filter(v => v
+            .toLowerCase()
+            .startsWith(searchValue.toLowerCase())
+        );
     return filtered;
 }
 
@@ -1064,7 +1148,9 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
         const previousSearchParts = searchSegments.slice(0, searchSegments.length - 1);
 
         const stringSplit = currentSearch.toLowerCase().split(':');
-        const key = stringSplit[1] === undefined ? null : stringSplit[0].startsWith('!') ? stringSplit[0].slice(1) : stringSplit[0]; // if no value, use key as value
+        const key = stringSplit[1] === undefined ? null 
+            : stringSplit[0].startsWith('!') ? stringSplit[0].slice(1) 
+                : stringSplit[0]; // if no value, use key as value
         const value = stringSplit[1] !== undefined ? stringSplit[1] : stringSplit[0]; // if no value, use key as value
 
         const searchStringsEnd = [];
@@ -1134,7 +1220,12 @@ router.get('/search_autocomplete', async (req: Request, res: Response, next: Nex
             }
         }
 
-        const searchStrings = searchStringsEnd.map(searchString => `${previousSearchParts.join("&")}${previousSearchParts.length > 0 ? "&" : ""}${searchString}`);
+        const searchStrings = searchStringsEnd
+            .map(searchString => 
+                `${previousSearchParts.join("&")}
+                 ${previousSearchParts.length > 0 ? "&" : ""}
+                 ${searchString}`
+            );
         const sortedSearchStrings = searchStrings.sort((a, b) => a.localeCompare(b));
 
         res.status(200).json(sortedSearchStrings);

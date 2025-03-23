@@ -81,7 +81,14 @@ export async function regnr_info(regnr: string) {
     return apiCall(`regnr/${regnr}`);
 }
 
-export async function upload_spot(make: string, model: string, images: File[], notes?: string, date?: string, tags?: string[]) {
+export async function upload_spot(
+    make: string, 
+    model: string, 
+    images: File[], 
+    notes?: string, 
+    date?: string, 
+    tags?: string[]
+) {
     const formData = new FormData();
     formData.append('make', make);
     formData.append('model', model);
@@ -109,7 +116,10 @@ interface UploadData {
     tags?: string[];
 }
 
-export async function startBackgroundUpload(registration: ServiceWorkerRegistration, data: UploadData) {
+export async function startBackgroundUpload(
+    registration: ServiceWorkerRegistration, 
+    data: UploadData
+) {
     const { make, model, files, notes, date, tags } = data;
     const formData = new FormData();
     formData.append('make', make);
@@ -140,7 +150,14 @@ export async function startBackgroundUpload(registration: ServiceWorkerRegistrat
     }
 }
 
-export async function edit_spot(make: string, model: string, key: string, notes: string, date: string, tags?: string[]) {
+export async function edit_spot(
+    make: string, 
+    model: string, 
+    key: string, 
+    notes: string, 
+    date: string, 
+    tags?: string[]
+) {
     return apiCall('editspot', {
         method: 'POST',
         body: { make, model, key, notes, date, tags }
@@ -196,7 +213,14 @@ export async function get_comments(username: string, make: string, model: string
     return apiCall(`getcomments/${spotKey}`);
 }
 
-export async function add_comment(username: string, make: string, model: string, key: string, comment: string, parentId?: string) {
+export async function add_comment(
+    username: string, 
+    make: string, 
+    model: string, 
+    key: string, 
+    comment: string, 
+    parentId?: string
+) {
     const spotKey = `${username}:${make}:${model}:${key}`;
 
     return apiCall('addcomment', {
@@ -205,7 +229,13 @@ export async function add_comment(username: string, make: string, model: string,
     });
 }
 
-export async function delete_comment(username: string, make: string, model: string, key: string, commentId: string) {
+export async function delete_comment(
+    username: string, 
+    make: string, 
+    model: string, 
+    key: string, 
+    commentId: string
+) {
     const spotKey = `${username}:${make}:${model}:${key}`;
 
     return apiCall('deletecomment', {
@@ -227,22 +257,6 @@ export async function discover(page?: number, sort?: 'recent' | 'hot' | 'top', s
 
 export async function search_autocomplete(query: string) {
     return apiCall('search_autocomplete', { query: { query } });
-}
-
-export async function fix_spots() {
-    return apiCall('fixspots');
-}
-
-export async function fix_spot(make: string, model: string, user: string, key: string, images: File[]) {
-    const formData = new FormData();
-    formData.append('make', make);
-    formData.append('model', model);
-    formData.append('user', user);
-    formData.append('key', key);
-
-    images.forEach(image => formData.append('images', image));
-
-    return apiCall('fixspot', { method: 'POST', body: formData });
 }
 
 export async function update_spots() {

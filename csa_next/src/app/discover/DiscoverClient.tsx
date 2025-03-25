@@ -24,7 +24,15 @@ interface SpotType {
     likedByUser: boolean;
 }
 
-const SpotCard: React.FC<{ spot: SpotType, username: string, isAdmin: boolean }> = ({ spot, username, isAdmin }) => {
+const SpotCard: React.FC<{ 
+    spot: SpotType, 
+    username: string, 
+    isAdmin: boolean 
+}> = ({ 
+    spot, 
+    username, 
+    isAdmin 
+}) => {
     const [shared, setShared] = useState(false);
     const [liked, setLiked] = useState(spot.likedByUser);
     const [likeCount, setLikeCount] = useState(spot.likes);
@@ -100,7 +108,14 @@ const SpotCard: React.FC<{ spot: SpotType, username: string, isAdmin: boolean }>
                 <Button text="View" className="py-1" onClick={onView} />
                 <Button text={shared ? "Link copied" : "Share"} className="py-1" onClick={onShare} />
             </div>
-            <Comments username={username} spotUsername={spot.user} make={spot.make} model={spot.model} spotKey={spot.key} isAdmin={isAdmin} />
+            <Comments 
+                username={username} 
+                spotUsername={spot.user} 
+                make={spot.make} 
+                model={spot.model} 
+                spotKey={spot.key} 
+                isAdmin={isAdmin} 
+            />
         </div>
     </div>
 };
@@ -121,7 +136,6 @@ const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ user
     const [currentSearch, setCurrentSearch] = useState<string | null>(searchParams.get('search') || null);
     const [search, setSearch] = useState<string>(searchParams.get('search') || '');
     
-
     useEffect(() => {
         if (!shouldFetch) return;
         if (reachEnd) return;

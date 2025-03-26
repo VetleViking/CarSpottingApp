@@ -46,7 +46,7 @@ const SpotCard: React.FC<{
     
     const spotLink = useMemo(() => buildSpotLink(spot), [spot]);
 
-    const timeAgo = getTimeAgo(spot.uploadDate);
+    const timeAgo = useMemo(() => getTimeAgo(spot.uploadDate), [spot.uploadDate]);
 
     const onLike = () => {
         const prevLiked = liked;
@@ -137,9 +137,7 @@ const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ user
     const [search, setSearch] = useState<string>(searchParams.get('search') || '');
     
     useEffect(() => {
-        if (!shouldFetch) return;
-        if (reachEnd) return;
-        if (loading) return;
+        if (!shouldFetch || reachEnd || loading) return;
       
         const getSpots = async () => {
             setLoading(true);
@@ -158,7 +156,7 @@ const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ user
 
                 router.push(newUrl, { scroll: false });
             } catch (e) {
-                console.error('Error loading spots:', e);
+                console.error('Error fetching spots:', e);
             } finally {
                 setShouldFetch(false);
                 setLoading(false);

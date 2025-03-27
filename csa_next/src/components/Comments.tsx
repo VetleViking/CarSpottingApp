@@ -1,10 +1,9 @@
 import { add_comment, delete_comment, get_comments, like_comment } from "@/api/cars";
 import { getTimeAgo } from "@/functions/functions";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Button from "./Button";
 import Image from "next/image";
 import down_arrow from "@/images/down_arrow.svg";
-import { check_admin } from "@/api/users";
 
 interface NestedComment {
     key: string;

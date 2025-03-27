@@ -40,11 +40,6 @@ async function apiCall(endpoint: string, { method = 'GET', body, query, headers 
     }
 
     const response = await fetch(url, fetchOptions);
-
-    if (!response.ok) { // maybe add error handling here
-        //const errorText = await response.text();
-    }
-
     return response.json();
 }
 

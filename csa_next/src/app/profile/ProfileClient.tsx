@@ -8,7 +8,6 @@ export default function ProfileClient() {
     const [delete_confirm, setDeleteConfirm] = useState(false);
     const [delete_message, setDeleteMessage] = useState('Delete profile');
 
-
     function deleteHandler() {
         if (!delete_confirm) {
             setDeleteMessage('Are you sure?');

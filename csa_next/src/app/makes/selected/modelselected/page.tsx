@@ -24,31 +24,33 @@ export default async function Makes({searchParams}: {searchParams: Promise<{ [ke
         key: string;
     }[] : [];
 
-    return <div>
-        <Header username={altUsername as string} />
-        {(!make || !model) ? (
-            <p className="text-white text-center text-xl m-4">Make and model not found.</p>
-        ) : username && (!Array.isArray(spots) || spots.length == 0) ? (
-            <p className="text-white text-center text-xl m-4">No spots found.</p>
-        ) : username ? ( 
-            <div>
-                <p className="text-white text-center text-xl m-4">
-                    {(isOwner ? `Your` : `${username}'s`) + ` spots of ${make} ${model}:`}
-                </p>
-                <div className='flex flex-col items-center gap-2'>
-                    {spots.map((item, id) => 
-                        <Spotimage
-                            key={id}
-                            images={item.images.map(image => `https://images.vest.li${image}`)} 
-                            tags={item.tags} 
-                            notes={item.notes} 
-                            date={item.date}
-                            spotdata={{ make: make, model: model, key: item.key, isOwner: isOwner }} />
-                    )}
-                </div>
-            </div> 
-        ) : (
-            <UploadSpot make={make as string} model={model as string} username={altUsername} />
-        )}      
-    </div>
+    return (
+        <div>
+            <Header username={altUsername as string} />
+            {(!make || !model) ? (
+                <p className="text-white text-center text-xl m-4">Make and model not found.</p>
+            ) : username && (!Array.isArray(spots) || spots.length == 0) ? (
+                <p className="text-white text-center text-xl m-4">No spots found.</p>
+            ) : username ? ( 
+                <div>
+                    <p className="text-white text-center text-xl m-4">
+                        {(isOwner ? `Your` : `${username}'s`) + ` spots of ${make} ${model}:`}
+                    </p>
+                    <div className='flex flex-col items-center gap-2'>
+                        {spots.map((item, id) => 
+                            <Spotimage
+                                key={id}
+                                images={item.images.map(image => `https://images.vest.li${image}`)} 
+                                tags={item.tags} 
+                                notes={item.notes} 
+                                date={item.date}
+                                spotdata={{ make: make, model: model, key: item.key, isOwner: isOwner }} />
+                        )}
+                    </div>
+                </div> 
+            ) : (
+                <UploadSpot make={make as string} model={model as string} username={altUsername} />
+            )}      
+        </div>
+    );
 }

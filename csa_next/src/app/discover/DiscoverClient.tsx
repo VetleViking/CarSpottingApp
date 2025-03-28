@@ -1,14 +1,14 @@
 "use client";
 
-import { discover, like_spot } from "@/api/cars";
-import Button from "@/components/Button";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import LoadingAnimation from "@/components/LoadingAnim";
 import SearchSpots from "@/components/SearchSpots";
-import Spotimage from "@/components/Spotimage";
-import { useEffect, useMemo, useRef, useState } from "react";
 import { getTimeAgo } from "@/functions/functions";
+import { discover, like_spot } from "@/api/cars";
+import Spotimage from "@/components/Spotimage";
 import Comments from "@/components/Comments";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Button from "@/components/Button";
 
 interface SpotType {
     date: string;

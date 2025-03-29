@@ -1,6 +1,6 @@
 # Car Spotting App
 
-**Car Spotting App** is a web application that allows users to upload and share images of cars they have spotted. The application leverages AI for car make and model recognition and provides additional vehicle details from the Statens Vegvesen registry for Norwegian registration numbers.
+**Car Spotting App** is a website that allows users to upload and share images of cars they have spotted. The application leverages AI for car make and model recognition and provides additional vehicle details from the Statens Vegvesen registry for Norwegian registration numbers.
 
 **You can find the site here:** [https://spots.vest.li](https://spots.vest.li)
 

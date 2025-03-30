@@ -8,8 +8,10 @@ export default async function MakesComponent({searchParams}: {searchParams: Prom
     const username = resolvedSearchParams.username as string || undefined; 
     const altUsername = await ensure_login();
 
-    return <div>
-        <AskAi />
-        <MakesClient username={username} altUsername={altUsername} />
-    </div>
+    return (
+        <div>
+            <AskAi />
+            <MakesClient username={username} altUsername={altUsername} />
+        </div>
+    );
 }

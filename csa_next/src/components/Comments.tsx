@@ -123,6 +123,7 @@ const Comments: React.FC<{
             getComments();
             setNewComment('');
         }).catch(error => {
+            setNewComment('');
             console.error('Error adding comment:', error);
         });
     }
@@ -131,6 +132,7 @@ const Comments: React.FC<{
         get_comments(spotUsername, make, model, spotKey).then((res) => {
             setComments(res);
         }).catch(error => {
+            setComments([]);
             console.error('Error getting comments:', error);
         });
     }

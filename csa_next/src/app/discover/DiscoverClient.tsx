@@ -7,26 +7,12 @@ import SearchSpots from "@/components/SearchSpots";
 import { discover } from "@/api/cars";
 import FullSpot from "@/components/FullSpot";
 
-interface SpotType {
-    date: string;
-    images: string[];
-    key: string;
-    notes: string;
-    tags: string[];
-    user: string;
-    make: string;
-    model: string;
-    likes: number;
-    uploadDate: string;
-    likedByUser: boolean;
-}
-  
 const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ username, isAdmin }) =>  {
     const router = useRouter();
     const searchParams = useSearchParams();
     const pathname = usePathname();
     
-    const [spots, setSpots] = useState<SpotType[]>([]);
+    const [spots, setSpots] = useState<Spot[]>([]);
     const [sort, setSort] = useState<'recent' | 'hot' | 'top'>(searchParams.get('sort') as 'recent' | 'hot' | 'top' || 'recent');
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(0);

@@ -3,7 +3,7 @@ import { ensure_login } from "@/functions/server_functions";
 import MakeSelectedClient from "./MakeselectedClient";
 import AskAi from "@/components/AskAi";
 
-export default async function MakeSelected({searchParams}: {searchParams: Promise<{ [key: string]: string | string[] | undefined }>}) {
+export default async function MakeSelected({searchParams}: SearchParams) {
     const altUsername = await ensure_login();
 
     const resolvedSearchParams = await searchParams;

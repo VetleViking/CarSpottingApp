@@ -5,7 +5,7 @@ import FullSpot from '@/components/FullSpot';
 import Header from '@/components/Header';
 import React from 'react';
 
-export default async function Makes({searchParams}: {searchParams: Promise<{ [key: string]: string | string[] | undefined }>}) {
+export default async function Makes({searchParams}: SearchParams) {
     const resolvedSearchParams = await searchParams;
     const username = resolvedSearchParams.username as string || undefined;
     const key = resolvedSearchParams.key as string || undefined;
@@ -36,14 +36,7 @@ export default async function Makes({searchParams}: {searchParams: Promise<{ [ke
                                 key={id} 
                                 spot={item} 
                                 isAdmin={false}
-                            /> 
-                            // <Spotimage
-                            //     key={id}
-                            //     images={item.images.map(image => `https://images.vest.li${image}`)} 
-                            //     tags={item.tags} 
-                            //     notes={item.notes} 
-                            //     date={item.date}
-                            //     spotdata={{ make: make, model: model, key: item.key, isOwner: isOwner }} />
+                            />
                         )}
                     </div>
                 </div> 

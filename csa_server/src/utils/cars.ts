@@ -109,3 +109,32 @@ export const getHotScore = (likes: number, createdAt: number) => {
     const epochSeconds = (createdAt / 1000) - epoch;
     return order + (sign * epochSeconds) / 45000;
 }
+
+export const getFullSpot = async (key: string) => {
+    const user = key.split(':')[1];
+
+    const spot = await redisClient.hGetAll(`${key}`);
+    const likedByUser = await redisClient.hGet(`likes:${user}`, key);
+
+    const images = Object.keys(spot)
+        .filter(key => key.startsWith('image'))
+        .map(key => spot[key]);
+
+    const tags = Object.keys(spot)
+        .filter(key => key.startsWith('tag'))
+        .map(key => spot[key]);
+
+    return {
+        key: key.split(':')[4],
+        notes: spot['notes'],
+        date: spot['date'],
+        images,
+        tags,
+        user: key.split(':')[1],
+        make: key.split(':')[2],
+        model: key.split(':')[3],
+        likes: Number(spot['likes'] || 0),
+        uploadDate: spot['uploadDate'] || new Date().toISOString(),
+        likedByUser: !!likedByUser,
+    };
+}

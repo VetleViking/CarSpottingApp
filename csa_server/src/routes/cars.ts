@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response, Router } from 'express';
-import { getCombinedMakes, getCombinedModels, getCombinedTags, getHotScore } from '../utils/cars';
+import { getCombinedMakes, getCombinedModels, getCombinedTags, getFullSpot, getHotScore } from '../utils/cars';
 import { getAllUsers, userFromCookies } from '../utils/user';
 import { redisClient } from '../redis-source';
 import dotenv from "dotenv";
@@ -788,24 +788,7 @@ router.get('/get_spots/:make/:model', async (req: Request, res: Response, next: 
         const allSpots = [];
 
         for (const key of allSpotsKeys) {
-            const spot = await redisClient.hGetAll(key);
-
-            const images = Object.keys(spot)
-                .filter(key => key.startsWith('image'))
-                .map(key => spot[key]);
-
-            const tags = Object.keys(spot)
-                .filter(key => key.startsWith('tag'))
-                .map(key => spot[key]);
-
-            allSpots.push({
-                key: key.split(':')[4],
-                images,
-                notes: spot['notes'],
-                date: spot['date'],
-                uploadDate: spot['uploadDate'],
-                tags
-            });
+            allSpots.push(await getFullSpot(key));
         }
 
         if (key) {
@@ -1089,28 +1072,7 @@ router.get('/discover', async (req: Request, res: Response, next: NextFunction) 
 
         const spots = await Promise.all(
             sortedSpotIDs.map(async spotID => {
-                const spot = await redisClient.hGetAll(`${spotID}`);
-                const likedByUser = await redisClient.hGet(`likes:${user}`, spotID);
-
-                const images = Object.keys(spot)
-                    .filter(key => key.startsWith('image'))
-                    .map(key => spot[key]);
-
-                return {
-                    key: spotID.split(':')[4],
-                    notes: spot['notes'],
-                    date: spot['date'],
-                    images,
-                    tags: Object.keys(spot)
-                        .filter(key => key.startsWith('tag'))
-                        .map(key => spot[key]),
-                    user: spotID.split(':')[1],
-                    make: spotID.split(':')[2],
-                    model: spotID.split(':')[3],
-                    likes: Number(spot['likes'] || 0),
-                    uploadDate: spot['uploadDate'] || new Date().toISOString(),
-                    likedByUser: !!likedByUser,
-                };
+                return await getFullSpot(spotID);
             })
         );
 

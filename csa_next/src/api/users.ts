@@ -1,13 +1,6 @@
 const BASE_URL = process.env.NEXT_PUBLIC_DATABASE_IP || "http://localhost:4000";
 const apiBase = `${BASE_URL}/api/v1/users`;
 
-interface ApiCallOptions {
-    method?: string;
-    body?: object;
-    query?: Record<string, string | number | undefined | null>;
-    headers?: Record<string, string>;
-}
-
 async function apiCall(endpoint: string, { method = 'GET', body, query, headers }: ApiCallOptions = {}) {
     let url = `${apiBase}/${endpoint}`;
 

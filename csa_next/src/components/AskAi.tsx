@@ -10,12 +10,15 @@ import uploadMissing from "@/functions/uploadMissing";
 
 const AskAi = () => {
     const [open, setOpen] = React.useState(false);
+    
     const [files, setFiles] = useState<FileList | null>(null);
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
     const [additional, setAdditional] = useState('');
+    
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState<CarDetails | null>(null);
     const [exists, setExists] = useState(false);
+
     const aiRef = useRef<HTMLDivElement>(null);
 
     const upload = async () => {

@@ -21,11 +21,10 @@ const AddNew = ({ type, make }: AddNewProps) => {
     function addNewHandler() {
         if (!newItem) return;
 
+        setUploading(true);
         if (type === "make") {
-            setUploading(true);
             add_make(newItem).then(() => window.location.href = `/makes/selected?make=${newItem}`);
         } else if (type === "model" && make) {
-            setUploading(true);
             add_model(make, newItem).then(() => window.location.href = `/makes/selected/modelselected?make=${make}&model=${newItem}`);
         }
     }

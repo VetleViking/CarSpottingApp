@@ -7,7 +7,6 @@ import Spotimage from "./Spotimage";
 import Comments from "./Comments";
 import Button from "./Button";
 
-
 const FullSpot: React.FC<{ 
     spot: Spot, 
     username: string, 

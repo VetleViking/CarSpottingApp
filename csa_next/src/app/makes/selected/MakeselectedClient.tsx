@@ -21,7 +21,7 @@ interface Model {
     model: string;
 }
   
-const MakeSelectedClient = ({altUsername, username, make, children}: MakeSelectedClientProps) => {
+export default function MakeSelectedClient({ altUsername, username, make, children }: MakeSelectedClientProps) {
     const [search, setSearch] = useState('');
     const [data, setData] = useState<Model[]>([]);
     const [loading, setLoading] = useState(true);
@@ -72,5 +72,3 @@ const MakeSelectedClient = ({altUsername, username, make, children}: MakeSelecte
         </div>
     );
 };
-
-export default MakeSelectedClient;

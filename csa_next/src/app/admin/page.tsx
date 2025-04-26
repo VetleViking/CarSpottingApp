@@ -12,8 +12,10 @@ export default async function Admin() {
 
     if (!isAdmin) redirect('/login');
 
-    return <div>
-        <Header username={username} />
-        <AdminClientSide />
-    </div>
+    return (
+        <div>
+            <Header username={username} />
+            <AdminClientSide />
+        </div>
+    );
 }

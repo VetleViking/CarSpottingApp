@@ -8,8 +8,10 @@ export default async function Discover() {
     const username = await ensure_login();
     const isAdmin = await check_admin().then(res => !!res.is_admin);
 
-    return <div>
-        <Header username={username} />
-        <DiscoverClient username={username} isAdmin={isAdmin} />
-    </div >
-}
+    return (
+        <div>
+            <Header username={username} />
+            <DiscoverClient username={username} isAdmin={isAdmin} />
+        </div>
+    );
+};

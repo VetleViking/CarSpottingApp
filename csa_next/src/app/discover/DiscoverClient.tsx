@@ -7,7 +7,7 @@ import SearchSpots from "@/components/SearchSpots";
 import { discover } from "@/api/cars";
 import FullSpot from "@/components/FullSpot";
 
-const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ username, isAdmin }) =>  {
+export default function DiscoverClient({ username, isAdmin }: { username: string; isAdmin: boolean }) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const pathname = usePathname();
@@ -90,46 +90,46 @@ const DiscoverClient: React.FC<{ username: string, isAdmin: boolean }> = ({ user
         setShouldFetch(true);
     }
 
-    return <div className='flex flex-col gap-4 items-center mt-4 font-ListComponent'>
-        <div className='w-full max-w-96'>
-            <div className='mb-2'>
-                <SearchSpots onSearch={onSearch} search={search} setSearch={setSearch} />
-                <p className='text-white'>Sort by</p>
-                <select value={sort} onChange={e => {
-                    setSort(e.target.value as 'recent' | 'hot' | 'top');
-                    setPage(0);
-                    setReachEnd(false);
-                    setSpots([]);
-                    setShouldFetch(true);
-                }}>
-                    <option value='recent'>Recent</option>
-                    <option value='hot'>Hot</option>
-                    <option value='top'>Top</option>
-                </select>
+    return (
+        <div className='flex flex-col gap-4 items-center mt-4 font-ListComponent'>
+            <div className='w-full max-w-96'>
+                <div className='mb-2'>
+                    <SearchSpots onSearch={onSearch} search={search} setSearch={setSearch} />
+                    <p className='text-white'>Sort by</p>
+                    <select value={sort} onChange={e => {
+                        setSort(e.target.value as 'recent' | 'hot' | 'top');
+                        setPage(0);
+                        setReachEnd(false);
+                        setSpots([]);
+                        setShouldFetch(true);
+                    }}>
+                        <option value='recent'>Recent</option>
+                        <option value='hot'>Hot</option>
+                        <option value='top'>Top</option>
+                    </select>
+                </div>
+                {spots.length ? (
+                    <>
+                        {spots.map((item, id) => <FullSpot 
+                            username={username}
+                            key={id} 
+                            spot={item} 
+                            isAdmin={isAdmin}
+                        />)}
+                        <div className='flex justify-center m-4'>
+                            {reachEnd ? <p className='text-white text-xl'>No more spots.</p> 
+                                    : <LoadingAnimation text='Loading spots' />}
+                        </div>
+                    </> 
+                ) : (loading || shouldFetch) ?  (
+                    <LoadingAnimation text='Loading spots' />
+                ) : spots.length == 0 ? (
+                    <p className='text-white text-xl text-nowrap'>No spots found.</p>
+                ) : (
+                    <p className='text-white text-xl text-nowrap'>Spots could not be loaded.</p>
+                )}
+                {!reachEnd && <div ref={observerRef} style={{ height: '1px' }} />}
             </div>
-            {spots.length ? (
-                <>
-                    {spots.map((item, id) => <FullSpot 
-                        username={username}
-                        key={id} 
-                        spot={item} 
-                        isAdmin={isAdmin}
-                    />)}
-                    <div className='flex justify-center m-4'>
-                        {reachEnd ? <p className='text-white text-xl'>No more spots.</p> 
-                                  : <LoadingAnimation text='Loading spots' />}
-                    </div>
-                </> 
-            ) : (loading || shouldFetch) ?  (
-                <LoadingAnimation text='Loading spots' />
-            ) : spots.length == 0 ? (
-                <p className='text-white text-xl text-nowrap'>No spots found.</p>
-            ) : (
-                <p className='text-white text-xl text-nowrap'>Spots could not be loaded.</p>
-            )}
-            {!reachEnd && <div ref={observerRef} style={{ height: '1px' }} />}
         </div>
-    </div>
+    );
 };
-
-export default DiscoverClient;

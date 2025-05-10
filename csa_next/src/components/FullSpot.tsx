@@ -84,6 +84,7 @@ const FullSpot: React.FC<{
                 tags={spot.tags} 
                 notes={spot.notes} 
                 date={spot.date}
+                isAdmin={isAdmin}
             />
             <div className="flex items-center mb-1 gap-2">
                 <p className="p-1 text-xl">{likeCount} {likeCount === 1 ? 'like' : 'likes'}</p>

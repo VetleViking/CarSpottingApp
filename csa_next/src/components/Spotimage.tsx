@@ -13,9 +13,10 @@ type ImageProps = {
     date?: string;
     spotdata?: { make: string; model: string; key: string; isOwner?: boolean; }
     alt?: string;
+    isAdmin?: boolean;
 };
 
-const Spotimage = ({ images, tags, notes, date, alt, spotdata }: ImageProps) => {
+const Spotimage = ({ images, tags, notes, date, alt, spotdata, isAdmin }: ImageProps) => {
     const [editing, setEditing] = useState(false);
     const [newNotes, setNewNotes] = useState(notes || "");
     const [newDate, setNewDate] = useState(date || "");
@@ -134,7 +135,7 @@ const Spotimage = ({ images, tags, notes, date, alt, spotdata }: ImageProps) => 
                         )}
                     </div>
                 </div>
-                {(spotdata && spotdata.isOwner) && <div className="flex justify-between">
+                {(spotdata && (spotdata.isOwner || isAdmin))  && <div className="flex justify-between">
                     <Button
                         text="Delete"
                         className="border border-black mt-1"

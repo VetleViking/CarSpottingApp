@@ -748,21 +748,30 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
     try {
         const { make, model, key } = req.body;
         const user = await userFromCookies(req.headers.cookie);
+        const isAdmin = await redisClient.hGet('admins', user);
 
         if (!make || !model || (key === undefined || key === null)) {
             res.status(400).json({ message: 'Make, model, and key are required' });
             return;
         }
 
-        await redisClient.zRem('zset:spots:recent', `spots:${user}:${make}:${model}:${key}`);
-        await redisClient.zRem('zset:spots:likes', `spots:${user}:${make}:${model}:${key}`);
+        const spotKeyPrefix = `spots:${user}:${make}:${model}:${key}`;
+        const spot = await redisClient.hGetAll(spotKeyPrefix);
 
-        await redisClient.del(`spots:${user}:${make}:${model}:${key}`);
+        if (!isAdmin && spot['user'] !== user) {
+            res.status(403).json({ message: 'Unauthorized' });
+            return;
+        }
+
+        await redisClient.zRem('zset:spots:recent', spotKeyPrefix);
+        await redisClient.zRem('zset:spots:likes', spotKeyPrefix);
+
+        await redisClient.del(spotKeyPrefix);
 
         const tagsObject = await redisClient.hGetAll(`tags:${user}`);
 
         for (const tag in tagsObject) {
-            await redisClient.hDel(`tags:${user}:${tag}`, `spots:${user}:${make}:${model}:${key}`);
+            await redisClient.hDel(`tags:${user}:${tag}`, spotKeyPrefix);
         }
 
         res.status(200).json({ message: 'Spot deleted' });

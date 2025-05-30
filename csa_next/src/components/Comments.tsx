@@ -81,6 +81,8 @@ const Comments: React.FC<{
                 console.error("Error liking comment:", error);
             });
         };
+
+        // add max, timeAgo not working
       
         return (
             <div key={comment.commentId} className="px-1 mt-2 border-l-2 border-black">
@@ -157,6 +159,9 @@ const Comments: React.FC<{
                     onChange={e => {
                         e.target.style.height = "auto";
                         e.target.style.height = e.target.scrollHeight + "px";
+                        if (e.target.value.length > 100) {
+                            e.target.value = e.target.value.slice(0, 100);
+                        }
                         setNewComment(e.target.value);
                     }} 
                     placeholder='Write a comment...'

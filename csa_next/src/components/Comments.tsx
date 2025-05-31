@@ -81,8 +81,6 @@ const Comments: React.FC<{
                 console.error("Error liking comment:", error);
             });
         };
-
-        // add max, timeAgo not working
       
         return (
             <div key={comment.commentId} className="px-1 mt-2 border-l-2 border-black">

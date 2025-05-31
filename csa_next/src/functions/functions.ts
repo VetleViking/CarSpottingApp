@@ -41,17 +41,17 @@ export const getTimeAgo = (date: string) => {
     const minutes = Math.floor((sinceUploadMs / (1000 * 60)) % 60);
     const seconds = Math.floor((sinceUploadMs / 1000) % 60);
 
-    return years
+    return years > 0
         ? `${years} ${years === 1 ? 'year' : 'years'} ago`
-        : months
+        : months > 0
         ? `${months} ${months === 1 ? 'month' : 'months'} ago` 
-        : days 
+        : days > 0
         ? `${days} ${days === 1 ? 'day' : 'days'} ago`
-        : hours
+        : hours > 0
         ? `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`
-        : minutes
+        : minutes > 0
         ? `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`
-        : seconds 
+        : seconds > 0
         ? `${seconds} ${seconds === 1 ? 'second' : 'seconds'} ago`
         : 'Just now';
 }

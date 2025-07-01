@@ -96,7 +96,7 @@ export default function DiscoverClient({ username, isAdmin }: { username: string
                 <div className='mb-2'>
                     <SearchSpots onSearch={onSearch} search={search} setSearch={setSearch} />
                     <p className='text-white'>Sort by</p>
-                    <select value={sort} onChange={e => {
+                    <select className="rounded p-1" value={sort} onChange={e => {
                         setSort(e.target.value as 'recent' | 'hot' | 'top');
                         setPage(0);
                         setReachEnd(false);

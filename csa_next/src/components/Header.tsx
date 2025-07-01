@@ -13,7 +13,7 @@ const Header = ({ username }: HeaderProps) => {
     return (
         <div className="pb-20">
             <div className="fixed top-0 left-0 w-full z-50">
-                <div className="bg-white border-b-[6px] border-white">
+                <div className="bg-white border-b-[6px] border-white shadow-md">
                     <div className="flex justify-between items-center gap-8 px-4 py-3 border-b-[6px] border-black md:justify-center md:gap-24">
                         <button
                             className="md:hidden text-xl"

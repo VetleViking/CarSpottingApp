@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { redisClient } from '../redis-source';
-import { generate_jwt, get_user, verify_jwt } from '../utils/user';
+import { generate_jwt, get_user, userFromCookies, verify_jwt } from '../utils/user';
 import { parse, serialize } from 'cookie';
 
 const router = Router();
@@ -150,16 +150,9 @@ router.post('/deleteuser', async (req: Request, res: Response, next: NextFunctio
 
 router.get('/check_admin', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const cookies = parse(req.headers.cookie || '');
+        const username = await userFromCookies(req.headers.cookie);
 
-        const token = cookies.auth_token;
 
-        if (!token) {
-            res.status(400).json({ message: 'Token is required' });
-            return;
-        }
-
-        const username = await get_user(token);
         const userExists = await redisClient.hGet('users', username);
 
         if (!userExists) {
@@ -212,6 +205,41 @@ router.post('/decodejwt', async (req: Request, res: Response, next: NextFunction
         const decoded = await verify_jwt(token);
 
         res.status(200).json(decoded.username);
+    } catch(err) {
+        next(err);
+    }
+});
+
+router.post('/update_users', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const user = await userFromCookies(req.headers.cookie);
+        
+        const is_admin = await redisClient.hGet('admins', user) ? true : user === 'Vetle';
+
+        if (!is_admin) {
+            res.status(401).json({ message: 'Unauthorized' });
+            return;
+        }
+
+        const users = await redisClient.hGetAll('users');
+        
+        console.log(users);
+
+        Object.keys(users).forEach(async (username) => {
+            console.log(`Updating user: ${username}, password: ${users[username]}`);
+
+            const newUserData = {
+                username,
+                password: users[username],
+                created_at: new Date().toISOString(),
+                status: 'active',
+                is_admin: username === 'Vetle' || await redisClient.hGet('admins', username) ? true : false,
+                total_spots: 0,
+                total_likes: 0,
+            };
+        })
+
+        res.status(200).json("Users updated");
     } catch(err) {
         next(err);
     }

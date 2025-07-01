@@ -68,3 +68,9 @@ export async function decode_jwt(token: string) {
 export async function check_admin() {
     return apiCall(`check_admin`);
 }
+
+export async function update_users() {
+    return apiCall(`update_users`, {
+        method: 'POST'
+    });
+}

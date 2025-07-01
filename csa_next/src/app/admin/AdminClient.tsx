@@ -3,6 +3,7 @@
 import React from 'react';
 import Button from '@/components/Button';
 import { update_spots } from '@/api/cars';
+import { update_users } from '@/api/users';
 
 export default function AdminClientSide() {
     return (
@@ -10,6 +11,11 @@ export default function AdminClientSide() {
             <Button
                 onClick={update_spots}
                 text='Update spots'
+                className='text-xl m-4'
+            />
+            <Button
+                onClick={update_users}
+                text='Update users'
                 className='text-xl m-4'
             />
             <div>

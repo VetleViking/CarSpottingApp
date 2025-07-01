@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import imageProcess, { CarDetails } from "@/api/chatGPT";
+import imageProcess from "@/api/chatGPT";
 import uploadMissing from "@/functions/uploadMissing";
 import LoadingAnimation from "./LoadingAnim";
 import { get_models } from "@/api/cars";

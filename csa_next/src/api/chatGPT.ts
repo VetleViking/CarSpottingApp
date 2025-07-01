@@ -1,11 +1,5 @@
 import { OpenAI } from "openai";
 
-export interface CarDetails {
-    make: string;
-    model: string;
-    confidence: number;
-}
-
 export default async function imageProcess(file: string, additionalInfo?: string) {
     const openai = new OpenAI({ apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY, dangerouslyAllowBrowser: true });
 

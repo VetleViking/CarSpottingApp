@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import Button from "./Button";
-import Spotimage from "./Spotimage";
 import imageProcess, { CarDetails } from "@/api/chatGPT";
+import uploadMissing from "@/functions/uploadMissing";
 import LoadingAnimation from "./LoadingAnim";
 import { get_models } from "@/api/cars";
-import uploadMissing from "@/functions/uploadMissing";
+import Spotimage from "./Spotimage";
+import Button from "./Button";
 
 const AskAi = () => {
     const [open, setOpen] = React.useState(false);
@@ -18,6 +18,7 @@ const AskAi = () => {
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState<CarDetails | null>(null);
     const [exists, setExists] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const aiRef = useRef<HTMLDivElement>(null);
 
@@ -28,14 +29,20 @@ const AskAi = () => {
 
         const reader = new FileReader();
         reader.onload = async () => {
-            const base64Data = reader.result as string;
-            const text = await imageProcess(base64Data, additional) as CarDetails;
+            try {
+                const base64Data = reader.result as string;
+                const text = await imageProcess(base64Data, additional) as CarDetails;
 
-            const carExists = await ((text.make !== "cant recognize" && text.model !== "cant recognize") && get_models(text.make, text.model));
-            
-            setExists(carExists.length > 0);
-            setResults(text);
-            setLoading(false);
+                const carExists = await ((text.make !== "cant recognize" && text.model !== "cant recognize") && get_models(text.make, text.model));
+                
+                setExists(carExists.length > 0);
+                setResults(text);
+                setLoading(false);
+            } catch (error) {
+                console.error("Error processing image:", error);
+                setLoading(false);
+                setError("Failed to process the image. Please try again later.");
+            }
         };
         reader.readAsDataURL(files[0]);
     }
@@ -71,7 +78,7 @@ const AskAi = () => {
             {open ? (
                 <div className=" flex flex-col gap-2 items-center">
                     <p className="text-white font-ListComponent">
-                        Here you can ask AI to identify a car from the chosen image.
+                        Here you can ask AI to identify a car from an image.
                     </p>
                     <div className="flex items-center flex-col max-w-96 gap-2">
                         <input
@@ -87,6 +94,11 @@ const AskAi = () => {
                             onChange={e => setAdditional(e.target.value)}
                         />
                     </div>
+                    {error && (
+                        <p className="text-red-500 font-ListComponent">
+                            {error}
+                        </p>
+                    )}
                     {results && (
                         <div className="flex flex-col gap-2 items-center">
                             <p className="text-white font-ListComponent">

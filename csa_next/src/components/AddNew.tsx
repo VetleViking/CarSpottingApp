@@ -23,9 +23,13 @@ const AddNew = ({ type, make }: AddNewProps) => {
 
         setUploading(true);
         if (type === "make") {
-            add_make(newItem).then(() => window.location.href = `/makes/selected?make=${newItem}`);
+            add_make(newItem).then(() => 
+                window.location.href = `/makes/selected?make=${newItem}`
+            );
         } else if (type === "model" && make) {
-            add_model(make, newItem).then(() => window.location.href = `/makes/selected/modelselected?make=${make}&model=${newItem}`);
+            add_model(make, newItem).then(() => 
+                window.location.href = `/makes/selected/modelselected?make=${make}&model=${newItem}`
+            );
         }
     }
 
@@ -47,7 +51,12 @@ const AddNew = ({ type, make }: AddNewProps) => {
                 setOpen(!open);
             }}>
             <p className=" font-ListComponent text-[#9ca3af] my-1">Add new {type}</p>
-            <Image src={down_arrow} alt="Down arrow" width={15} height={15} className={open ? "transform rotate-180" : ""} />
+            <Image 
+                src={down_arrow} alt="Down arrow" 
+                width={15} 
+                height={15} 
+                className={open ? "transform rotate-180" : ""} 
+            />
         </div>
         {open && <div className='absolute bg-black border border-[#9ca3af] p-2 w-[calc(100vw-0.5rem)] md:w-auto'>
             <div className="flex items-center justify-center gap-4">
@@ -58,8 +67,10 @@ const AddNew = ({ type, make }: AddNewProps) => {
                     value={newItem}
                     onChange={(e) => setNewItem(e.target.value)}
                 />
-                {!uploading ? <Button onClick={addNewHandler}
-                    text={`Add new ${type}`} /> : <LoadingAnimation text="Uploading" />}
+                {!uploading 
+                    ? <Button onClick={addNewHandler} text={`Add new ${type}`} /> 
+                    : <LoadingAnimation text="Uploading" />
+                }
             </div>
         </div>}
     </div>

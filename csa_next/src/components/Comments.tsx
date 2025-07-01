@@ -147,7 +147,13 @@ const Comments: React.FC<{
                 }}
             >
                 <p className='text-xl'>Comments</p>
-                <Image src={down_arrow} alt="Down arrow" width={15} height={15} className={open ? "transform rotate-180" : ""} />
+                <Image 
+                    src={down_arrow} 
+                    alt="Down arrow" 
+                    width={15} 
+                    height={15} 
+                    className={open ? "transform rotate-180" : ""} 
+                />
             </div>
             {open && <div className='bg-white p-1 w-full'>
                 <div className='flex gap-2'>

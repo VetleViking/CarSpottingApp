@@ -222,11 +222,25 @@ router.post('/update_users', async (req: Request, res: Response, next: NextFunct
         }
 
         const users = await redisClient.hGetAll('users');
-        
+        // delete all users
+        // await redisClient.del('users');
+
         console.log(users);
 
         Object.keys(users).forEach(async (username) => {
             console.log(`Updating user: ${username}, password: ${users[username]}`);
+
+            // find all spots that belong to user
+            const spotKeys = await redisClient.keys(`spots:${username}:*`);
+
+            // get all likes for each spot
+            let totalLikes = 0;
+            for (const key of spotKeys) {
+                const likes = await redisClient.hGet(key, 'likes');
+                totalLikes += parseInt(likes || '0');
+            }
+
+            const totalSpots = spotKeys.length;
 
             const newUserData = {
                 username,
@@ -234,9 +248,14 @@ router.post('/update_users', async (req: Request, res: Response, next: NextFunct
                 created_at: new Date().toISOString(),
                 status: 'active',
                 is_admin: username === 'Vetle' || await redisClient.hGet('admins', username) ? true : false,
-                total_spots: 0,
-                total_likes: 0,
+                total_spots: totalSpots,
+                total_likes: totalLikes,
             };
+
+            console.log(`New user data for ${username}:`, newUserData);
+
+            // Store the new user data in a separate hash
+            // await redisClient.hSet('users', username, JSON.stringify(newUserData));
         })
 
         res.status(200).json("Users updated");

@@ -228,6 +228,11 @@ router.post('/update_users', async (req: Request, res: Response, next: NextFunct
         console.log(users);
 
         Object.keys(users).forEach(async (username) => {
+            if (typeof username !== 'string' || typeof users[username] !== 'string') {
+                console.warn(`Skipping invalid data or already updated user for ${username}`);
+                return;
+            }
+
             console.log(`Updating user: ${username}, password: ${users[username]}`);
 
             // find all spots that belong to user
@@ -244,7 +249,7 @@ router.post('/update_users', async (req: Request, res: Response, next: NextFunct
 
             const newUserData = {
                 username,
-                password: users[username],
+                password: users[username], // TODO: hash password
                 created_at: new Date().toISOString(),
                 status: 'active',
                 is_admin: username === 'Vetle' || await redisClient.hGet('admins', username) ? true : false,

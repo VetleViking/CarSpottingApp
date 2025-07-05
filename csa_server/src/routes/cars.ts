@@ -1222,21 +1222,22 @@ router.post('/likespot', async (req: Request, res: Response, next: NextFunction)
         }
 
         const likes = parseInt(spot['likes']) || 0;
+        const userLikes = +(await redisClient.hGet(`users:${user}`, 'likes')) || 0;
+
+        const newLikes = alreadyLiked ? likes - 1 : likes + 1;
+        const newUserLikes = alreadyLiked ? userLikes - 1 : userLikes + 1;
+
+        await redisClient.hSet(spotKey, 'likes', newLikes);
+        await redisClient.hSet(`users:${user}`, 'likes', newUserLikes);
+
+        await redisClient.zAdd('zset:spots:likes', { score: newLikes, value: spotKey });
 
         if (alreadyLiked) {
             await redisClient.hDel(`likes:${decodedUser}`, spotKey);
-            await redisClient.hSet(spotKey, 'likes', likes - 1);
-
-            await redisClient.zAdd('zset:spots:likes', { score: likes - 1, value: spotKey });
-
             res.status(200).json({ message: 'Spot unliked' });
             return;
         } else {
             await redisClient.hSet(`likes:${decodedUser}`, spotKey, spotKey);
-            await redisClient.hSet(spotKey, 'likes', likes + 1);
-
-            await redisClient.zAdd('zset:spots:likes', { score: likes + 1, value: spotKey });
-
             res.status(200).json({ message: 'Spot liked' });
         }
     } catch (err) {

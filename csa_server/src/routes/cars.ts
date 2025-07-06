@@ -521,6 +521,9 @@ router.post('/addspot', upload.array('images', 10), async (req: Request, res: Re
         if (!notes) delete data[`notes`];
         if (!date) delete data[`date`];
 
+        const spotsUser = +(await redisClient.hGet(`users:${user}`, 'total_spots')) || 0;
+
+        await redisClient.hSet(`users:${user}`, 'total_spots', spotsUser + 1);
         await redisClient.zAdd('zset:spots:recent', { 
             score: new Date(data['uploadDate']).getTime(), 
             value: `spots:${user}:${make}:${model}:${offset}` 
@@ -762,6 +765,9 @@ router.post('/deletespot', async (req: Request, res: Response, next: NextFunctio
             res.status(403).json({ message: 'Unauthorized' });
             return;
         }
+
+        const spotsUser = +(await redisClient.hGet(`users:${user}`, 'total_spots')) || 0;
+        await redisClient.hSet(`users:${user}`, 'total_spots', spotsUser - 1);
 
         await redisClient.zRem('zset:spots:recent', spotKeyPrefix);
         await redisClient.zRem('zset:spots:likes', spotKeyPrefix);
@@ -1222,13 +1228,13 @@ router.post('/likespot', async (req: Request, res: Response, next: NextFunction)
         }
 
         const likes = parseInt(spot['likes']) || 0;
-        const userLikes = +(await redisClient.hGet(`users:${user}`, 'likes')) || 0;
+        const userLikes = +(await redisClient.hGet(`users:${user}`, 'total_likes')) || 0;
 
         const newLikes = alreadyLiked ? likes - 1 : likes + 1;
         const newUserLikes = alreadyLiked ? userLikes - 1 : userLikes + 1;
 
         await redisClient.hSet(spotKey, 'likes', newLikes);
-        await redisClient.hSet(`users:${user}`, 'likes', newUserLikes);
+        await redisClient.hSet(`users:${user}`, 'total_likes', newUserLikes);
 
         await redisClient.zAdd('zset:spots:likes', { score: newLikes, value: spotKey });
 

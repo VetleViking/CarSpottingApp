@@ -18,7 +18,9 @@ const CreateUser = () => {
         } else setErrormessage(data.message || 'An error occurred');
     }
 
-    return <div className="flex flex-col gap-2 w-48 p-2 bg-black border border-white">
+    return <div>
+        <p className="text-white text-center p-2 text-xl italic font-medium">Sign <span className="text-[#e72328]">up</span></p>
+        <div className="flex flex-col gap-2 w-48 p-2 bg-black border border-white">
         <input
             className="font-ListComponent"
             type="text"
@@ -47,6 +49,7 @@ const CreateUser = () => {
             className="bg-white text-black py-1 px-2 mt-1 italic"
             onClick={() => create_user_handler(username, password)}>Create user</button>
         <p className="text-[#e72328] text-center font-ListComponent">{errormessage}</p>
+        </div>
     </div>
 };
 

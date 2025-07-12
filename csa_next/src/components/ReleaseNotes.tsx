@@ -3,6 +3,8 @@ import React, { useState } from "react";
 const ReleaseNotes  = () => {
     const [title, setTitle] = useState<string>("");
     const [releaseNotes, setReleaseNotes] = useState<string>("");
+    
+    const uploadReleaseNotes = async () => {}
 
     return <div>
         <input
@@ -19,6 +21,12 @@ const ReleaseNotes  = () => {
             onChange={e => setReleaseNotes(e.target.value)}
             rows={10}
         ></textarea>
+        <button
+            className="bg-white text-black py-1 px-2 mt-1 italic"
+            onClick={uploadReleaseNotes}
+        >
+            Add Release Notes
+        </button>
     </div>
 };
 

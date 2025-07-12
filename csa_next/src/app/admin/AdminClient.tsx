@@ -5,6 +5,7 @@ import Button from '@/components/Button';
 import { update_spots } from '@/api/cars';
 import { update_users } from '@/api/users';
 import ReleaseNotes from '@/components/ReleaseNotes';
+import AddAdmin from '@/components/AddAdmin';
 
 export default function AdminClientSide() {
     return (
@@ -19,6 +20,7 @@ export default function AdminClientSide() {
                 text='Update users'
                 className='text-xl m-4'
             />
+            <AddAdmin />
             <ReleaseNotes />
         </div>
     );

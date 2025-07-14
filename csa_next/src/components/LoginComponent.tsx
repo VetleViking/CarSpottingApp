@@ -9,9 +9,13 @@ const LoginComponent = () => {
     const [errormessage, setErrormessage] = useState('');
 
     const login_handler = async (username: string, password: string) => {
-        const data = await login(username, password);
+        try {
+            const data = await login(username, password);
 
-        data.message === 'Logged in' ? window.location.href = '/' : setErrormessage(data.message || 'An error occurred');
+            data.message === 'Logged in' ? window.location.href = '/' : setErrormessage(data.message || 'An error occurred');
+        } catch (err) {
+            setErrormessage('An error occurred')
+        }
     }
 
     return <div>

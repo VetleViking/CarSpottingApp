@@ -9,13 +9,17 @@ const CreateUser = () => {
     const [errormessage, setErrormessage] = useState('');
 
     const create_user_handler = async (username: string, password: string) => {
-        const data = await create_user(username, password);
+        try {
+            const data = await create_user(username, password);
 
-        if (data.message === "User created") {
-            const loginData = await login(username, password);
+            if (data.message === "User created") {
+                const loginData = await login(username, password);
 
-            loginData.message === 'Logged in' ? window.location.href = '/' : setErrormessage(loginData.message || 'An error occurred');
-        } else setErrormessage(data.message || 'An error occurred');
+                loginData.message === 'Logged in' ? window.location.href = '/' : setErrormessage(loginData.message || 'An error occurred');
+            } else setErrormessage(data.message || 'An error occurred');
+        } catch (err) {
+            setErrormessage('An error occurred');
+        }
     }
 
     return <div>

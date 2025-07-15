@@ -20,8 +20,10 @@ export default function AdminClientSide() {
                 text='Update users'
                 className='text-xl m-4'
             />
-            <AddAdmin />
-            <ReleaseNotes />
+            <div className='flex flex-col items-center gap-8 m-8'>
+                <AddAdmin />
+                <ReleaseNotes />
+            </div>
         </div>
     );
 }

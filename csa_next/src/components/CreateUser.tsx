@@ -8,7 +8,7 @@ const CreateUser = () => {
     const [password, setPassword] = useState('');
     const [errormessage, setErrormessage] = useState('');
 
-    const create_user_handler = async (username: string, password: string) => {
+    const create_user_handler = async () => {
         try {
             const data = await create_user(username, password);
 
@@ -32,9 +32,7 @@ const CreateUser = () => {
             value={username}
             onChange={e => setUsername(e.target.value)} 
             onKeyDown={(e) => {
-                if(e.key === 'Enter') {
-                    create_user_handler(username, password);
-                }
+                if(e.key === 'Enter') create_user_handler();
             }}    
         />
         <input
@@ -44,14 +42,15 @@ const CreateUser = () => {
             value={password}
             onChange={e => setPassword(e.target.value)} 
             onKeyDown={(e) => {
-                if(e.key === 'Enter') {
-                    create_user_handler(username, password);
-                }
+                if(e.key === 'Enter') create_user_handler();
             }}      
         />
         <button
             className="bg-white text-black py-1 px-2 mt-1 italic"
-            onClick={() => create_user_handler(username, password)}>Create user</button>
+            onClick={() => create_user_handler()}
+        >
+            Create user
+        </button>
         <p className="text-[#e72328] text-center font-ListComponent">{errormessage}</p>
         </div>
     </div>

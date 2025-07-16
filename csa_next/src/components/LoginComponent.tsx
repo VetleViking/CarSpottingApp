@@ -8,7 +8,7 @@ const LoginComponent = () => {
     const [password, setPassword] = useState('');
     const [errormessage, setErrormessage] = useState('');
 
-    const login_handler = async (username: string, password: string) => {
+    const login_handler = async () => {
         try {
             const data = await login(username, password);
 
@@ -28,9 +28,7 @@ const LoginComponent = () => {
                 value={username}
                 onChange={e => setUsername(e.target.value)} 
                 onKeyDown={(e) => {
-                    if(e.key === 'Enter') {
-                        login_handler(username, password);
-                    }
+                    if(e.key === 'Enter') login_handler();
                 }}    
             />
             <input
@@ -40,14 +38,15 @@ const LoginComponent = () => {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 onKeyDown={(e) => {
-                    if(e.key === 'Enter') {
-                        login_handler(username, password);
-                    }
+                    if(e.key === 'Enter') login_handler();
                 }}     
             />
             <button
                 className="bg-white text-black py-1 px-2 mt-1 italic"
-                onClick={() => login_handler(username, password)}>Log in</button>
+                onClick={() => login_handler()}
+            >
+                Log in
+            </button>
             <p className="text-[#e72328] text-center font-ListComponent">{errormessage}</p>
         </div>
     </div>

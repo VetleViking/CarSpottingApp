@@ -167,6 +167,27 @@ router.get('/check_admin', async (req: Request, res: Response, next: NextFunctio
     }
 });
 
+router.post('/add_admin', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const username = await userFromCookies(req.headers.cookie);
+
+        const isAdmin = await redisClient.hGet('admins', username) ? true : username === 'Vetle';
+
+        if (!isAdmin) {
+            res.status(401).json({ message: 'Unauthorized' });
+            return;
+        }
+
+        const { admin_username } = req.body;
+
+        console.log(admin_username)
+
+        res.status(200).json("Admin user added");
+    } catch(err) {
+        next(err);
+    }
+});
+
 router.get('/get_stats/:username', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { username } = req.params;

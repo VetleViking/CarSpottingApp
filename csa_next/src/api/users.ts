@@ -69,6 +69,13 @@ export async function check_admin() {
     return apiCall(`check_admin`);
 }
 
+export async function add_admin(username: string) {
+    return apiCall(`add_admin`, {
+        method: 'POST',
+        body: { admin_username: username }
+    });
+}
+
 export async function update_users() {
     return apiCall(`update_users`, {
         method: 'POST'

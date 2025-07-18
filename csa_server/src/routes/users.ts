@@ -180,7 +180,19 @@ router.post('/add_admin', async (req: Request, res: Response, next: NextFunction
 
         const { admin_username } = req.body;
 
-        console.log(admin_username)
+        const adminExists = await redisClient.hGet('users', admin_username);
+        if (!adminExists) {
+            res.status(400).json({ message: 'Admin user does not exist' });
+            return;
+        }
+
+        const alreadyAdmin = await redisClient.hGet('admins', admin_username);
+        if (alreadyAdmin) {
+            res.status(400).json({ message: 'User is already an admin' });
+            return;
+        }
+
+        await redisClient.hSet('admins', admin_username, 'true');
 
         res.status(200).json("Admin user added");
     } catch(err) {

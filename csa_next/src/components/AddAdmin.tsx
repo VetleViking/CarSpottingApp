@@ -1,11 +1,33 @@
+import { add_admin } from "@/api/users";
 import React, { useState } from "react";
 
 const AddAdmin  = () => {
     const [adminUsername, setAdminUsername] = useState("");
     const [errormessage, setErrormessage] = useState("");
+    const [message, setMessage] = useState("");
 
     const addAdminHandler = async () => {
-        console.log(`Adding admin user: ${adminUsername}`);
+        setErrormessage("");
+        setMessage("");
+
+        if (adminUsername.trim() === "") {
+            setErrormessage("Username cannot be empty");
+            return;
+        }
+
+        try {
+            const res = await add_admin(adminUsername);
+            if (res.status === 200) {
+                setAdminUsername("");
+                setMessage("Admin user added successfully");
+                setErrormessage("");
+            } else {
+                const data = await res.json();
+                setErrormessage(data.message || "Failed to add admin");
+            }
+        } catch (error) {
+            setErrormessage("An error occurred");
+        }
     }
 
     return <div className="flex flex-col gap-2 w-48 p-2 bg-black border border-white">
@@ -14,9 +36,13 @@ const AddAdmin  = () => {
             type="text"
             placeholder="Admin username"
             value={adminUsername}
-            onChange={e => setAdminUsername(e.target.value)} 
+            onChange={e => {
+                setErrormessage("");
+                setMessage("");
+                setAdminUsername(e.target.value);
+            }}
             onKeyDown={(e) => {
-                if(e.key === 'Enter') addAdminHandler();
+                if (e.key === 'Enter') addAdminHandler();
             }}  
             className="font-ListComponent"
         />

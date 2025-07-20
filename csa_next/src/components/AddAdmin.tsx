@@ -42,14 +42,15 @@ const AddAdmin  = () => {
                 setAdminUsername(e.target.value);
             }}
             onKeyDown={(e) => {
-                if (e.key === 'Enter') addAdminHandler();
-            }}  
+                e.key === 'Enter' && addAdminHandler();
+            }}
             className="font-ListComponent"
         />
         <button
             className="bg-white text-black py-1 px-2 mt-1 italic"
             onClick={() => addAdminHandler()}>Create user</button>
         {errormessage && <p className="text-[#e72328] text-center font-ListComponent">{errormessage}</p>}
+        {message && <p className="text-white text-center font-ListComponent">{message}</p>}
     </div>
 };
 

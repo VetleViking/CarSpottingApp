@@ -9,3 +9,8 @@ type CarDetails = {
     model: string;
     confidence: number;
 }
+
+type releaseNotesComponent = {
+    type: "title" | "text";
+    text: string;
+}

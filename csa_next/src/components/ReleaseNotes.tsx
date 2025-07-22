@@ -8,12 +8,16 @@ const ReleaseNotes  = () => {
 
     const addNote = (type: "title" | "text") => {
         setReleaseNotes([...releaseNotes, { type, text: "" }]);
-    }
+    };
 
     const updateNote = (index: number, text: string) => {
         const updatedNotes = [...releaseNotes];
         updatedNotes[index].text = text;
         setReleaseNotes(updatedNotes);
+    };
+
+    const uploadReleaseNotes = async () => {
+        console.log(releaseNotes);
     };
 
     return <div className="flex flex-col gap-2 w-48 p-2 bg-black border border-white">
@@ -36,6 +40,9 @@ const ReleaseNotes  = () => {
             <button
                 className="bg-white text-black py-1 px-2 italic"
                 onClick={() => addNote("text")}>Add Text</button>
+            <button 
+                className="bg-white text-black py-1 px-2 italic"
+                onClick={() => uploadReleaseNotes()}>Upload Release Notes</button>
         </div>
     </div>
 

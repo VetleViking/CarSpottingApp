@@ -76,6 +76,13 @@ export async function add_admin(username: string) {
     });
 }
 
+export async function add_release_notes(notes: releaseNotesComponent[]) {
+    return apiCall(`add_release_notes`, {
+        method: 'POST',
+        body: { notes }
+    });
+}
+
 export async function update_users() {
     return apiCall(`update_users`, {
         method: 'POST'

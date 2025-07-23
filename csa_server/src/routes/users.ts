@@ -226,6 +226,14 @@ router.get('/get_stats/:username', async (req: Request, res: Response, next: Nex
     }
 });
 
+router.post('/add_release_notes', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+    } catch(err) {
+        next(err);
+    }
+});
+
 router.post('/decodejwt', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { token } = req.body;

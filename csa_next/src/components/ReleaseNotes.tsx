@@ -5,6 +5,8 @@ const ReleaseNotes  = () => {
         { type: "title", text: "Placeholder Title" },
         { type: "text", text: "Placeholder Text" }
     ]);
+    const [prevVersion, setPrevVersion] = useState<string>("");
+    const [newVersion, setNewVersion] = useState<string>("");
 
     const addNote = (type: "title" | "text") => {
         setReleaseNotes([...releaseNotes, { type, text: "" }]);
@@ -22,6 +24,17 @@ const ReleaseNotes  = () => {
 
     return <div className="flex flex-col gap-2 w-48 p-2 bg-black border border-white">
         <p className="text-center text-xl text-white">Release Notes</p>
+        <div className="flex gap-2">
+            <p>Previous Version</p>
+            <p>{prevVersion}</p>
+            <input
+                type="text"
+                placeholder="New Version"
+                value={newVersion}
+                onChange={e => setNewVersion(e.target.value)}
+                className="font-ListComponent"
+            />
+        </div>
         {releaseNotes.map((note, index) => (
             <div key={index} className="flex flex-col gap-1">
                 <input

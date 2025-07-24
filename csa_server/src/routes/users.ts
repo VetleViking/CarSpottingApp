@@ -228,7 +228,15 @@ router.get('/get_stats/:username', async (req: Request, res: Response, next: Nex
 
 router.post('/add_release_notes', async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const user = await userFromCookies(req.headers.cookie);
+        const is_admin = await redisClient.hGet('admins', user) ? true : user === 'Vetle';
 
+        if (!is_admin) {
+            res.status(401).json({ message: 'Unauthorized' });
+            return;
+        }
+
+        
     } catch(err) {
         next(err);
     }

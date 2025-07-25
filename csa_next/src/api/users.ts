@@ -76,10 +76,10 @@ export async function add_admin(username: string) {
     });
 }
 
-export async function add_release_notes(notes: releaseNotesComponent[]) {
+export async function add_release_notes(notes: releaseNotesComponent[], version: string) {
     return apiCall(`add_release_notes`, {
         method: 'POST',
-        body: { notes }
+        body: { notes, version }
     });
 }
 

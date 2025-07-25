@@ -1,3 +1,4 @@
+import { add_release_notes } from "@/api/users";
 import React, { useState } from "react";
 
 const ReleaseNotes  = () => {
@@ -7,6 +8,9 @@ const ReleaseNotes  = () => {
     ]);
     const [prevVersion, setPrevVersion] = useState<string>("");
     const [newVersion, setNewVersion] = useState<string>("");
+
+    const [error, setError] = useState<string>("");
+    const [message, setMessage] = useState<string>("");
 
     const addNote = (type: "title" | "text") => {
         setReleaseNotes([...releaseNotes, { type, text: "" }]);
@@ -19,7 +23,22 @@ const ReleaseNotes  = () => {
     };
 
     const uploadReleaseNotes = async () => {
-        console.log(releaseNotes);
+        try {
+            const response = await add_release_notes(releaseNotes, newVersion);
+
+            if (response.error) {
+                setError(response.error);
+                return;
+            }
+
+            setMessage("Release notes uploaded successfully!");
+            setPrevVersion(newVersion);
+            setNewVersion("");
+            setReleaseNotes([{ type: "title", text: "Placeholder title" }, { type: "text", text: "Placeholder text" }]);
+        } catch (err) {
+            setError("Failed to upload release notes.");
+            return;
+        }
     };
 
     return <div className="flex flex-col gap-2 w-48 p-2 bg-black border border-white">
@@ -57,6 +76,8 @@ const ReleaseNotes  = () => {
                 className="bg-white text-black py-1 px-2 italic"
                 onClick={() => uploadReleaseNotes()}>Upload Release Notes</button>
         </div>
+        {error && <p className="text-red-500">{error}</p>}
+        {message && <p className="text-green-500">{message}</p>}
     </div>
 
     // Old

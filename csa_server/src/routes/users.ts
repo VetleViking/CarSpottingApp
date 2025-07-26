@@ -236,6 +236,19 @@ router.post('/add_release_notes', async (req: Request, res: Response, next: Next
             return;
         }
 
+        const { version, notes } = req.body;
+
+        if (!version || !notes || !Array.isArray(notes)) {
+            res.status(400).json({ message: 'Version and notes are required' });
+            return;
+        }
+
+        const response = await redisClient.hGet('release_notes', version);
+
+        if (response) {
+            res.status(400).json({ message: 'Release notes for this version already exist' });
+            return;
+        }
         
     } catch(err) {
         next(err);

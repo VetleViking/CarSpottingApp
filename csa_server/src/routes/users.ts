@@ -249,7 +249,22 @@ router.post('/add_release_notes', async (req: Request, res: Response, next: Next
             res.status(400).json({ message: 'Release notes for this version already exist' });
             return;
         }
+
+        const releaseNotesData = {
+            version,
+            notes: JSON.stringify(notes),
+            created_at: new Date().toISOString(),
+        };
         
+    } catch(err) {
+        next(err);
+    }
+});
+
+router.post('/get_current_version', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const version = await redisClient.hGet('current_version', 'version');
+        res.status(200).json({ version });
     } catch(err) {
         next(err);
     }

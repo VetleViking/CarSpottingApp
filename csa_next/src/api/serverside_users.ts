@@ -47,3 +47,7 @@ export async function check_admin() {
 export async function get_stats(username: string) {
     return apiCall(`get_stats/${encodeURIComponent(username)}`);
 }
+
+export async function get_current_version() {
+    return apiCall('get_current_version');
+}

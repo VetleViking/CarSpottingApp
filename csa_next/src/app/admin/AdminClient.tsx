@@ -7,7 +7,7 @@ import { update_users } from '@/api/users';
 import ReleaseNotes from '@/components/ReleaseNotes';
 import AddAdmin from '@/components/AddAdmin';
 
-export default function AdminClientSide() {
+export default function AdminClientSide({ currentVersion }: { currentVersion: string }) {
     return (
         <div>
             <Button
@@ -22,7 +22,7 @@ export default function AdminClientSide() {
             />
             <div className='flex flex-col items-center gap-8 m-8'>
                 <AddAdmin />
-                <ReleaseNotes />
+                <ReleaseNotes currentVersion={currentVersion} />
             </div>
         </div>
     );

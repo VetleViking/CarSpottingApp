@@ -4,7 +4,7 @@ import React from 'react';
 import Button from '@/components/Button';
 import { update_spots } from '@/api/cars';
 import { update_users } from '@/api/users';
-import ReleaseNotes from '@/components/ReleaseNotes';
+import CreateReleaseNotes from '@/components/CreateReleaseNotes';
 import AddAdmin from '@/components/AddAdmin';
 
 export default function AdminClientSide({ currentVersion }: { currentVersion: string }) {
@@ -22,7 +22,7 @@ export default function AdminClientSide({ currentVersion }: { currentVersion: st
             />
             <div className='flex flex-col items-center gap-8 m-8'>
                 <AddAdmin />
-                <ReleaseNotes currentVersion={currentVersion} />
+                <CreateReleaseNotes currentVersion={currentVersion} />
             </div>
         </div>
     );

@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import { ensure_login } from "@/functions/server_functions";
 import HomePageButtons from "@/components/HomePageButtons";
+import ReleaseNotes from "@/components/ReleaseNotes";
 
 export default async function Home() {
     const username = await ensure_login();
@@ -13,6 +14,7 @@ export default async function Home() {
                 <p className="text-xl text-white">Welcome, {username}</p>
             </div>
             <HomePageButtons username={username} />
+            <ReleaseNotes />
         </div>
     );
 }

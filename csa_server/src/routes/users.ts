@@ -255,7 +255,9 @@ router.post('/add_release_notes', async (req: Request, res: Response, next: Next
             notes: JSON.stringify(notes),
             created_at: new Date().toISOString(),
         };
-        
+
+        await redisClient.hSet('release_notes', version, JSON.stringify(releaseNotesData));
+        await redisClient.hSet('current_version', 'version', version);
     } catch(err) {
         next(err);
     }
@@ -299,7 +301,6 @@ router.post('/update_users', async (req: Request, res: Response, next: NextFunct
         }
 
         const users = await redisClient.hGetAll('users');
-        // delete all users
         // await redisClient.del('users');
 
         console.log(users);
@@ -336,7 +337,6 @@ router.post('/update_users', async (req: Request, res: Response, next: NextFunct
 
             console.log(`New user data for ${username}:`, newUserData);
 
-            // Store the new user data in a separate hash
             // await redisClient.hSet('users', username, JSON.stringify(newUserData));
         })
 

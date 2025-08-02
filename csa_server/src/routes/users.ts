@@ -263,6 +263,28 @@ router.post('/add_release_notes', async (req: Request, res: Response, next: Next
     }
 });
 
+router.get('/get_release_notes', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const version = req.query.version as string;
+
+        if (!version) {
+            res.status(400).json({ message: 'Version is required' });
+            return;
+        }
+
+        const notes = await redisClient.hGet('release_notes', version);
+
+        if (!notes) {
+            res.status(404).json({ message: 'Release notes not found' });
+            return;
+        }
+
+        res.status(200).json(JSON.parse(notes));
+    } catch(err) {
+        next(err);
+    }
+});
+
 router.post('/get_current_version', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const version = await redisClient.hGet('current_version', 'version');

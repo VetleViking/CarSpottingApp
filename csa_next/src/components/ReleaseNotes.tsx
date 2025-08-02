@@ -1,12 +1,12 @@
 import { add_release_notes } from "@/api/users";
 import React, { useState } from "react";
 
-const ReleaseNotes  = () => {
+const ReleaseNotes  = ({ currentVersion }: { currentVersion: string }) => {
     const [releaseNotes, setReleaseNotes] = useState<releaseNotesComponent[]>([
         { type: "title", text: "Placeholder Title" },
         { type: "text", text: "Placeholder Text" }
     ]);
-    const [prevVersion, setPrevVersion] = useState<string>("");
+    const [prevVersion, setPrevVersion] = useState<string>(currentVersion || "0.0.0");
     const [newVersion, setNewVersion] = useState<string>("");
 
     const [error, setError] = useState<string>("");

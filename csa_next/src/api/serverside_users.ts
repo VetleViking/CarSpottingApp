@@ -51,3 +51,7 @@ export async function get_stats(username: string) {
 export async function get_current_version() {
     return apiCall('get_current_version');
 }
+
+export async function get_release_notes_serverside(currentVersion: string) {
+    return apiCall('get_release_notes', { query: { currentVersion } });
+}

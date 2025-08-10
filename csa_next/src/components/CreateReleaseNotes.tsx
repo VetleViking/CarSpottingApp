@@ -65,7 +65,7 @@ const CreateReleaseNotes  = ({ currentVersion }: { currentVersion: string }) => 
                 />
             </div>
         ))}
-        <div className="flex gap-2 mt-2">
+        <div className="flex gap-2 my-2">
             <button
                 className="bg-white text-black py-1 px-2 italic"
                 onClick={() => addNote("title")}>Add Title</button>

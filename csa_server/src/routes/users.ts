@@ -288,6 +288,12 @@ router.get('/get_release_notes', async (req: Request, res: Response, next: NextF
 router.post('/get_current_version', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const version = await redisClient.hGet('current_version', 'version');
+
+        if (!version) {
+            res.status(404).json({ message: 'Current version not set' });
+            return;
+        }
+        
         res.status(200).json({ version });
     } catch(err) {
         next(err);

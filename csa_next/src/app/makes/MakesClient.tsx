@@ -1,6 +1,7 @@
 "use client";
 
 import { get_makes, get_spotted_makes } from "@/api/cars";
+import LoadingAnimation from "@/components/LoadingAnim";
 import ListComponent from "@/components/ListComponent";
 import SearchReg from "@/components/SearchReg";
 import { useEffect, useState } from "react";
@@ -8,7 +9,6 @@ import AddNew from "@/components/AddNew";
 import Header from "@/components/Header";
 import Search from "@/components/Search";
 import Link from "next/link";
-import LoadingAnimation from "@/components/LoadingAnim";
 
 interface MakesClientProps {
     altUsername: string;

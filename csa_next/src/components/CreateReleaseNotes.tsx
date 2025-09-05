@@ -1,7 +1,13 @@
+"use client";
+
 import { add_release_notes } from "@/api/users";
 import React, { useState } from "react";
 
-const CreateReleaseNotes  = ({ currentVersion }: { currentVersion: string }) => {
+type CreateReleaseNotesProps = {
+    currentVersion: string;
+};
+
+const CreateReleaseNotes  = ({ currentVersion }: CreateReleaseNotesProps) => {
     const [releaseNotes, setReleaseNotes] = useState<releaseNotesComponent[]>([
         { type: "title", text: "Placeholder Title" },
         { type: "text", text: "Placeholder Text" }
@@ -77,7 +83,7 @@ const CreateReleaseNotes  = ({ currentVersion }: { currentVersion: string }) => 
                 onClick={() => uploadReleaseNotes()}>Upload Release Notes</button>
         </div>
         {error && <p className="text-red-500">{error}</p>}
-        {message && <p className="text-green-500">{message}</p>}
+        {message && <p>{message}</p>}
     </div>
 };
 

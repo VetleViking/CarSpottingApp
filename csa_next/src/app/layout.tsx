@@ -14,7 +14,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" className="bg-black">
-            <body className="">
+            <body>
                 {children}
                 <ServiceWorker />
             </body>

@@ -5,11 +5,11 @@ import Button from '@/components/Button';
 import { delete_user, logout } from '@/api/users';
 
 export default function ProfileClient() {
-    const [delete_confirm, setDeleteConfirm] = useState(false);
-    const [delete_message, setDeleteMessage] = useState('Delete profile');
+    const [deleteConfirm, setDeleteConfirm] = useState(false);
+    const [deleteMessage, setDeleteMessage] = useState('Delete profile');
 
     function deleteHandler() {
-        if (!delete_confirm) {
+        if (!deleteConfirm) {
             setDeleteMessage('Are you sure?');
             setDeleteConfirm(true);
             return;
@@ -29,7 +29,7 @@ export default function ProfileClient() {
 
     return (
         <div>
-            <Button onClick={deleteHandler} text={delete_message} className="text-xl mx-4" />
+            <Button onClick={deleteHandler} text={deleteMessage} className="text-xl mx-4" />
             <Button onClick={logoutHandler} text="Logout" className="text-xl" />
         </div>
     );

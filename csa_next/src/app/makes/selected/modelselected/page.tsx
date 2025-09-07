@@ -5,7 +5,7 @@ import FullSpot from '@/components/FullSpot';
 import Header from '@/components/Header';
 import React from 'react';
 
-export default async function Makes({searchParams}: SearchParams) {
+export default async function Spots({searchParams}: SearchParams) {
     const resolvedSearchParams = await searchParams;
     const username = resolvedSearchParams.username as string || undefined;
     const key = resolvedSearchParams.key as string || undefined;

@@ -66,7 +66,7 @@ export default function MakeSelectedClient({ altUsername, username, make, childr
                 <LoadingAnimation text="Loading" />
             ) : (
                 <div className="text-white font-ListComponent px-1 text-nowrap text-center">
-                    No models found
+                    No models found.
                 </div>
             )}
         </div>

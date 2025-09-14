@@ -1,11 +1,11 @@
 "use client";
 
-import React from 'react';
-import Button from '@/components/Button';
-import { update_spots } from '@/api/cars';
-import { update_users } from '@/api/users';
 import CreateReleaseNotes from '@/components/CreateReleaseNotes';
 import AddAdmin from '@/components/AddAdmin';
+import { update_users } from '@/api/users';
+import { update_spots } from '@/api/cars';
+import Button from '@/components/Button';
+import React from 'react';
 
 export default function AdminClientSide({ currentVersion }: { currentVersion: string }) {
     return (

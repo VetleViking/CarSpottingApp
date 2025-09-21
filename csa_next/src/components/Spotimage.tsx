@@ -88,7 +88,7 @@ const Spotimage = ({ images, tags, notes, date, alt, spotdata, isAdmin }: ImageP
                         </div>}
                 </div>}
 
-                {(tags && tags[0] && !editing) && <div className="flex flex-col gap-1 py-1">
+                {(Array.isArray(tags) && !editing) && <div className="flex flex-col gap-1 py-1">
                     <p className="font-ListComponent">Tags:</p>
                     <div className="flex gap-1">
                         {tags.map((tag, id) => 

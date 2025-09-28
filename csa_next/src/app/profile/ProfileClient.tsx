@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useState } from 'react';
-import Button from '@/components/Button';
-import { delete_user, logout } from '@/api/users';
+import React, { useState } from "react";
+import Button from "@/components/Button";
+import { delete_user, logout } from "@/api/users";
 
 export default function ProfileClient() {
     const [deleteConfirm, setDeleteConfirm] = useState(false);
-    const [deleteMessage, setDeleteMessage] = useState('Delete profile');
+    const [deleteMessage, setDeleteMessage] = useState("Delete profile");
 
     function deleteHandler() {
         if (!deleteConfirm) {
-            setDeleteMessage('Are you sure?');
+            setDeleteMessage("Are you sure?");
             setDeleteConfirm(true);
             return;
         }
@@ -22,7 +22,7 @@ export default function ProfileClient() {
     }
 
     function logoutHandler() {
-        logout().then(() => {    
+        logout().then(() => {
             window.location.href = "/login";
         });
     }
@@ -34,4 +34,3 @@ export default function ProfileClient() {
         </div>
     );
 }
-

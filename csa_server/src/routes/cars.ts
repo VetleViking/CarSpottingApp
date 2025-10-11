@@ -517,7 +517,7 @@ router.post(
                 for (const [index, image] of images.entries()) {
                     const imageName = `${offset}_${index}.jpg`; // Unique image name
                     const imagePath = path.join(userDir, imageName);
-                    await fs.promises.writeFile(imagePath, image.buffer); // Write image buffer to file
+                    await fs.promises.writeFile(imagePath, new Uint8Array(image.buffer)); // Write image buffer to file
                     imagePaths.push(`/${user}/${make}_${model}/${imageName}`);
                 }
 

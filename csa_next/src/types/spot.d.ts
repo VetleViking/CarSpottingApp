@@ -10,4 +10,4 @@ type Spot = {
     likes: number;
     uploadDate: string;
     likedByUser: boolean;
-}
+};

@@ -11,7 +11,7 @@ type ImageProps = {
     tags?: string[];
     notes?: string;
     date?: string;
-    spotdata?: { make: string; model: string; key: string; isOwner?: boolean; }
+    spotdata?: { make: string; model: string; key: string; isOwner?: boolean };
     alt?: string;
     isAdmin?: boolean;
 };
@@ -23,18 +23,26 @@ const Spotimage = ({ images, tags, notes, date, alt, spotdata, isAdmin }: ImageP
     const [newTags, setNewTags] = useState(tags || []);
     const [tagList, setTagList] = useState<string[]>([]);
     const [tagOpen, setTagOpen] = useState(false);
-    const [newTag, setNewTag] = useState('');
+    const [newTag, setNewTag] = useState("");
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
     async function uploadEdit() {
         if (spotdata) {
-            await edit_spot(spotdata.make, spotdata.model, spotdata.key, newNotes, newDate, newTags);
+            await edit_spot(
+                spotdata.make,
+                spotdata.model,
+                spotdata.key,
+                newNotes,
+                newDate,
+                newTags
+            );
 
             window.location.reload();
         }
     }
 
     if (editing && !tagList.length) {
-        if (typeof window !== 'undefined') {
+        if (typeof window !== "undefined") {
             get_tags().then((tags: string[]) => setTagList(tags));
         }
     }
@@ -42,123 +50,208 @@ const Spotimage = ({ images, tags, notes, date, alt, spotdata, isAdmin }: ImageP
     return (
         <div className="flex justify-center">
             <div className="max-w-96 w-96 bg-white p-1">
-                {editing && <div className="pb-1">
-                    <div className="flex justify-between p-1 border border-black" onClick={() => setTagOpen(!tagOpen)}>
-                        <p className=" font-ListComponent">Select new tag(s)</p>
-                        <Image src={down_arrow} alt="Down arrow" width={15} height={15} className={tagOpen ? "transform rotate-180" : ""} />
-                    </div>
-                    {tagOpen &&
-                        <div className="flex flex-col gap-1 p-1 border-x border-b border-black">
-                            <div className="flex justify-between">
-                                <input
-                                    type="text"
-                                    className="p-1 border border-black font-ListComponent w-36"
-                                    value={newTag}
-                                    onChange={e => setNewTag(e.target.value)}
-                                    placeholder="Add tag" />
-                                <Button
-                                    text="Add"
-                                    className="py-1 px-4"
-                                    onClick={() => {
-                                        if (newTag.length < 1) return;   
-                                        add_tag(newTag).then((res) => {
-                                            if (res.message == 'Tag already exists') {
-                                                setNewTag('');
-                                                return;
-                                            }
-                                            setTagList([...tagList, newTag]);
-                                            setNewTag('');
-                                    })}}
-                                />
-                            </div>
-                            {tagList.map((tag, id) => 
-                                <div key={id} className="flex justify-between items-center">
-                                    <p className="font-ListComponent">{tag}</p>
-                                    <input type="checkbox"
-                                        checked={newTags.includes(tag)}
-                                        onChange={() => {
-                                            if (newTags.includes(tag)) {
-                                                setNewTags(newTags.filter(item => item !== tag));
-                                                return;
-                                            }
-                                            setNewTags([...newTags, tag]);
-                                        }}/>
+                {editing && (
+                    <div className="pb-1">
+                        <div
+                            className="flex justify-between p-1 border border-black"
+                            onClick={() => setTagOpen(!tagOpen)}
+                        >
+                            <p className=" font-ListComponent">Select new tag(s)</p>
+                            <Image
+                                src={down_arrow}
+                                alt="Down arrow"
+                                width={15}
+                                height={15}
+                                className={tagOpen ? "transform rotate-180" : ""}
+                            />
+                        </div>
+                        {tagOpen && (
+                            <div className="flex flex-col gap-1 p-1 border-x border-b border-black">
+                                <div className="flex justify-between">
+                                    <input
+                                        type="text"
+                                        className="p-1 border border-black font-ListComponent w-36"
+                                        value={newTag}
+                                        onChange={(e) => setNewTag(e.target.value)}
+                                        placeholder="Add tag"
+                                    />
+                                    <Button
+                                        text="Add"
+                                        className="py-1 px-4"
+                                        onClick={() => {
+                                            if (newTag.length < 1) return;
+                                            add_tag(newTag).then((res) => {
+                                                if (res.message == "Tag already exists") {
+                                                    setNewTag("");
+                                                    return;
+                                                }
+                                                setTagList([...tagList, newTag]);
+                                                setNewTag("");
+                                            });
+                                        }}
+                                    />
                                 </div>
-                            )}
-                        </div>}
-                </div>}
-
-                {(Array.isArray(tags) && !editing) && <div className="flex flex-col gap-1 py-1">
-                    <p className="font-ListComponent">Tags:</p>
-                    <div className="flex gap-1">
-                        {tags.map((tag, id) => 
-                            <div key={id} className="bg-gray-200 px-2 rounded font-ListComponent">
-                                {tag}
+                                {tagList.map((tag, id) => (
+                                    <div key={id} className="flex justify-between items-center">
+                                        <p className="font-ListComponent">{tag}</p>
+                                        <input
+                                            type="checkbox"
+                                            checked={newTags.includes(tag)}
+                                            onChange={() => {
+                                                if (newTags.includes(tag)) {
+                                                    setNewTags(
+                                                        newTags.filter((item) => item !== tag)
+                                                    );
+                                                    return;
+                                                }
+                                                setNewTags([...newTags, tag]);
+                                            }}
+                                        />
+                                    </div>
+                                ))}
                             </div>
                         )}
                     </div>
-                </div>}
+                )}
+
+                {Array.isArray(tags) && !editing && (
+                    <div className="flex flex-col gap-1 py-1">
+                        <p className="font-ListComponent">Tags:</p>
+                        <div className="flex gap-1">
+                            {tags.map((tag, id) => (
+                                <div
+                                    key={id}
+                                    className="bg-gray-200 px-2 rounded font-ListComponent"
+                                >
+                                    {tag}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <div className="flex flex-col gap-1">
-                    {images.map((image, id) => 
-                        <img key={id} src={image} alt={alt ?? ""} width={800} height={1000}/>
+                    {images.length > 1 ? (
+                        <div className="relative">
+                            <img
+                                src={images[currentImageIndex]}
+                                alt={alt ?? ""}
+                                width={800}
+                                height={1000}
+                                className="w-full h-auto"
+                            />
+                            {images.length > 1 && (
+                                <>
+                                    <button
+                                        onClick={() =>
+                                            setCurrentImageIndex((prev) =>
+                                                prev === 0 ? images.length - 1 : prev - 1
+                                            )
+                                        }
+                                        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded"
+                                    >
+                                        &#8249;
+                                    </button>
+                                    <button
+                                        onClick={() =>
+                                            setCurrentImageIndex((prev) =>
+                                                prev === images.length - 1 ? 0 : prev + 1
+                                            )
+                                        }
+                                        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded"
+                                    >
+                                        &#8250;
+                                    </button>
+                                    <div className="flex justify-center mt-2 gap-1">
+                                        {images.map((_, index) => (
+                                            <button
+                                                key={index}
+                                                onClick={() => setCurrentImageIndex(index)}
+                                                className={`w-2 h-2 rounded-full ${
+                                                    index === currentImageIndex
+                                                        ? "bg-black"
+                                                        : "bg-gray-400"
+                                                }`}
+                                            />
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    ) : (
+                        <img
+                            src={images[0]}
+                            alt={alt ?? ""}
+                            width={800}
+                            height={1000}
+                            className="w-full h-auto"
+                        />
                     )}
                 </div>
                 <div className="flex justify-between gap-4">
                     <div className="flex flex-col items-start">
-                        <p className="text-black font-ListComponent">{(notes || editing) ? "Notes:" : ""}</p>
+                        <p className="text-black font-ListComponent">
+                            {notes || editing ? "Notes:" : ""}
+                        </p>
                         {editing ? (
-                            <input 
-                                type="text" 
-                                className="border border-black font-ListComponent" 
-                                value={newNotes} 
-                                alt="Notes:" 
-                                onChange={(e) => setNewNotes(e.target.value)} />
-                        ) : ( 
+                            <input
+                                type="text"
+                                className="border border-black font-ListComponent"
+                                value={newNotes}
+                                alt="Notes:"
+                                onChange={(e) => setNewNotes(e.target.value)}
+                            />
+                        ) : (
                             <p className="text-black font-ListComponent break-all">
                                 {notes ? notes : ""}
                             </p>
                         )}
                     </div>
                     <div className="flex flex-col items-start min-w-max">
-                        <p className="text-black font-ListComponent">{(date || editing) ? "Date spotted:" : ""}</p>
+                        <p className="text-black font-ListComponent">
+                            {date || editing ? "Date spotted:" : ""}
+                        </p>
                         {editing ? (
-                            <input 
-                                type="date" 
-                                className="border border-black font-ListComponent" 
-                                value={newDate} 
-                                onChange={(e) => setNewDate(e.target.value)} />
+                            <input
+                                type="date"
+                                className="border border-black font-ListComponent"
+                                value={newDate}
+                                onChange={(e) => setNewDate(e.target.value)}
+                            />
                         ) : (
-                            <p className="text-black font-ListComponent">
-                                {date ? date : ""}
-                            </p>
+                            <p className="text-black font-ListComponent">{date ? date : ""}</p>
                         )}
                     </div>
                 </div>
-                {(spotdata && (spotdata.isOwner || isAdmin))  && <div className="flex justify-between">
-                    <Button
-                        text="Delete"
-                        className="border border-black mt-1"
-                        onClick={() => 
-                            delete_spot(spotdata.make, spotdata.model, spotdata.key).then(() => 
-                                window.location.reload()
-                            )
-                        }
-                    />
-                    {editing ? <Button
-                        text="Save"
-                        className="border border-black mt-1"
-                        onClick={() => {
-                            setEditing(false);
-                            uploadEdit().then(() => window.location.reload())
-                        }}
-                    /> : <Button
-                        text="Edit"
-                        className="border border-black mt-1"
-                        onClick={() => setEditing(true)}
-                    />
-                    }
-                </div>}
+                {spotdata && (spotdata.isOwner || isAdmin) && (
+                    <div className="flex justify-between">
+                        <Button
+                            text="Delete"
+                            className="border border-black mt-1"
+                            onClick={() =>
+                                delete_spot(spotdata.make, spotdata.model, spotdata.key).then(() =>
+                                    window.location.reload()
+                                )
+                            }
+                        />
+                        {editing ? (
+                            <Button
+                                text="Save"
+                                className="border border-black mt-1"
+                                onClick={() => {
+                                    setEditing(false);
+                                    uploadEdit().then(() => window.location.reload());
+                                }}
+                            />
+                        ) : (
+                            <Button
+                                text="Edit"
+                                className="border border-black mt-1"
+                                onClick={() => setEditing(true)}
+                            />
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

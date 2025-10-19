@@ -49,27 +49,33 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
 
     function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
         if (!searchSuggestions.length) return;
-        
+
         switch (e.key) {
             case "ArrowDown":
             case "Tab":
-                e.preventDefault(); 
-                const nextIndex = activeSuggestionIndex + 1 < searchSuggestions.length ? activeSuggestionIndex + 1 : 0;
+                e.preventDefault();
+                const nextIndex =
+                    activeSuggestionIndex + 1 < searchSuggestions.length
+                        ? activeSuggestionIndex + 1
+                        : 0;
 
                 setSearch(searchSuggestions[nextIndex]);
                 setActiveSuggestionIndex(nextIndex);
                 setTempSearch(true);
                 break;
-        
+
             case "ArrowUp":
                 e.preventDefault();
-                const prevIndex = activeSuggestionIndex > 0 ? activeSuggestionIndex - 1 : searchSuggestions.length - 1;
-                
+                const prevIndex =
+                    activeSuggestionIndex > 0
+                        ? activeSuggestionIndex - 1
+                        : searchSuggestions.length - 1;
+
                 setSearch(searchSuggestions[prevIndex]);
                 setActiveSuggestionIndex(prevIndex);
                 setTempSearch(true);
                 break;
-        
+
             case "Enter":
                 if (activeSuggestionIndex >= 0) {
                     e.preventDefault();
@@ -77,13 +83,13 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
                 }
                 setTempSearch(false);
                 break;
-        
+
             case "Escape":
                 setSearchSuggestions([]);
                 setActiveSuggestionIndex(-1);
                 setTempSearch(false);
                 break;
-        
+
             default:
                 setTempSearch(false);
                 break;
@@ -91,21 +97,18 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
     }
 
     useEffect(() => {
-        if (
-          activeSuggestionIndex >= 0 &&
-          listItemRefs.current[activeSuggestionIndex]
-        ) {
-          listItemRefs.current[activeSuggestionIndex]?.scrollIntoView({
-            block: "nearest",
-          });
+        if (activeSuggestionIndex >= 0 && listItemRefs.current[activeSuggestionIndex]) {
+            listItemRefs.current[activeSuggestionIndex]?.scrollIntoView({
+                block: "nearest",
+            });
         }
-      }, [activeSuggestionIndex]);
+    }, [activeSuggestionIndex]);
 
     return (
         <div className="flex justify-center mb-4">
             <div className="relative w-full">
                 <form
-                    onSubmit={handleSubmit} 
+                    onSubmit={handleSubmit}
                     className="flex items-center justify-center  rounded-lg w-full"
                 >
                     <input
@@ -114,10 +117,10 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
                         type="text"
                         placeholder="Search..."
                         value={search}
-                        onChange={e => {
+                        onChange={(e) => {
                             if (!tempSearch) {
-                                e.target.value 
-                                    ? handleSearchAutocomplete(e.target.value) 
+                                e.target.value
+                                    ? handleSearchAutocomplete(e.target.value)
                                     : setSearchSuggestions([]);
                                 setSearch(e.target.value);
                                 setCurrentSearch(e.target.value);
@@ -125,23 +128,23 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
                         }}
                         onKeyDown={handleKeyDown}
                     />
-                    <Image 
-                        src={search_icon} 
-                        alt="Search icon" 
-                        width={25} 
+                    <Image
+                        src={search_icon}
+                        alt="Search icon"
+                        width={25}
                         height={25}
                         onClick={() => {
-                            onSearch(search)
+                            onSearch(search);
                             setSearchSuggestions([]);
                             setTempSearch(false);
                         }}
                         className="cursor-pointer pr-1"
                     />
                     {search.length > 0 && (
-                        <Image 
-                            src={crossmark} 
-                            alt="Clear search" 
-                            width={25} 
+                        <Image
+                            src={crossmark}
+                            alt="Clear search"
+                            width={25}
                             height={25}
                             onClick={() => {
                                 setSearch("");
@@ -160,28 +163,33 @@ const SearchSpots = ({ onSearch, search, setSearch }: SearchSpotProps) => {
                             const lowerSuggestion = suggestion.toLowerCase();
                             const lowerSearch = currentSearch.toLowerCase();
                             const matchIndex = lowerSuggestion.indexOf(lowerSearch);
-                          
-                            const start = suggestion.slice(0, matchIndex);
-                            const match = suggestion.slice(matchIndex, matchIndex + currentSearch.length);
-                            const end = suggestion.slice(matchIndex + currentSearch.length);                          
 
-                            return <li
-                                key={index}
-                                ref={(el) => {
-                                    listItemRefs.current[index] = el;
-                                }}
-                                className={`p-2 cursor-pointer ${
-                                    index === activeSuggestionIndex ? "bg-gray-200" : ""
-                                }`}
-                                onClick={() => {
-                                    selectSuggestion(suggestion);
-                                }}
-                                onMouseEnter={() => setActiveSuggestionIndex(index)}
-                            >
-                                {start}
-                                <strong>{match}</strong>
-                                {end}
-                            </li>
+                            const start = suggestion.slice(0, matchIndex);
+                            const match = suggestion.slice(
+                                matchIndex,
+                                matchIndex + currentSearch.length
+                            );
+                            const end = suggestion.slice(matchIndex + currentSearch.length);
+
+                            return (
+                                <li
+                                    key={index}
+                                    ref={(el) => {
+                                        listItemRefs.current[index] = el;
+                                    }}
+                                    className={`p-2 cursor-pointer ${
+                                        index === activeSuggestionIndex ? "bg-gray-200" : ""
+                                    }`}
+                                    onClick={() => {
+                                        selectSuggestion(suggestion);
+                                    }}
+                                    onMouseEnter={() => setActiveSuggestionIndex(index)}
+                                >
+                                    {start}
+                                    <strong>{match}</strong>
+                                    {end}
+                                </li>
+                            );
                         })}
                     </ul>
                 )}

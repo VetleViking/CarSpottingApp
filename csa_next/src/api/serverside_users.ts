@@ -3,7 +3,10 @@ import { cookies } from "next/headers";
 const BASE_URL = process.env.NEXT_PUBLIC_DATABASE_IP || "http://localhost:4000";
 const apiIpUsers = `${BASE_URL}/api/v1/users`;
 
-async function apiCall(endpoint: string, { method = 'GET', body, query, headers }: ApiCallOptions = {}) {
+async function apiCall(
+    endpoint: string,
+    { method = "GET", body, query, headers }: ApiCallOptions = {}
+) {
     let url = `${apiIpUsers}/${endpoint}`;
 
     // Make query string
@@ -18,14 +21,14 @@ async function apiCall(endpoint: string, { method = 'GET', body, query, headers 
     }
 
     const defaultHeaders: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'Cookie': cookies().toString()
+        "Content-Type": "application/json",
+        Cookie: cookies().toString(),
     };
 
     let fetchOptions: RequestInit = {
         method,
-        credentials: 'include',
-        headers: { ...defaultHeaders, ...headers }
+        credentials: "include",
+        headers: { ...defaultHeaders, ...headers },
     };
 
     if (body) {
@@ -37,11 +40,11 @@ async function apiCall(endpoint: string, { method = 'GET', body, query, headers 
 }
 
 export async function get_username() {
-    return apiCall('get_username');
+    return apiCall("get_username");
 }
 
 export async function check_admin() {
-    return apiCall('check_admin');
+    return apiCall("check_admin");
 }
 
 export async function get_stats(username: string) {
@@ -49,9 +52,9 @@ export async function get_stats(username: string) {
 }
 
 export async function get_current_version() {
-    return apiCall('get_current_version');
+    return apiCall("get_current_version");
 }
 
 export async function get_release_notes_serverside(currentVersion: string) {
-    return apiCall('get_release_notes', { query: { currentVersion } });
+    return apiCall("get_release_notes", { query: { currentVersion } });
 }

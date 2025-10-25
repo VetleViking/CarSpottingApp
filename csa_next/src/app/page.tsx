@@ -17,7 +17,9 @@ export default async function Home() {
                 <p className="text-xl text-white">Welcome, {username}</p>
             </div>
             <HomePageButtons username={username} />
-            <ReleaseNotes currentVersion={currentVersion} releaseNotes={releaseNotes} />
+            {!currentVersion.message && !releaseNotes.message && (
+                <ReleaseNotes currentVersion={currentVersion} releaseNotes={releaseNotes} />
+            )}
         </div>
     );
 }

@@ -284,7 +284,7 @@ router.get("/get_release_notes", async (req: Request, res: Response, next: NextF
     }
 });
 
-router.post("/get_current_version", async (req: Request, res: Response, next: NextFunction) => {
+router.get("/get_current_version", async (req: Request, res: Response, next: NextFunction) => {
     try {
         const version = await redisClient.hGet("current_version", "version");
 

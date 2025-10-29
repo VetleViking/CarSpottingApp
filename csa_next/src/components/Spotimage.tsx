@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Button from "./Button";
 import down_arrow from "@/images/down_arrow.svg";
+import DownArrow from "@/images/DownArrow";
 
 type ImageProps = {
     images: string[];
@@ -142,26 +143,22 @@ const Spotimage = ({ images, tags, notes, date, alt, spotdata, isAdmin }: ImageP
                             />
                             {images.length > 1 && (
                                 <>
-                                    <button
-                                        onClick={() =>
-                                            setCurrentImageIndex((prev) =>
-                                                prev === 0 ? images.length - 1 : prev - 1
-                                            )
-                                        }
-                                        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded"
-                                    >
-                                        &#8249;
-                                    </button>
-                                    <button
-                                        onClick={() =>
-                                            setCurrentImageIndex((prev) =>
-                                                prev === images.length - 1 ? 0 : prev + 1
-                                            )
-                                        }
-                                        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded"
-                                    >
-                                        &#8250;
-                                    </button>
+                                    {currentImageIndex > 0 && (
+                                        <button
+                                            onClick={() => setCurrentImageIndex((prev) => prev - 1)}
+                                            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-60 text-white rounded-full py-[7px] pl-[6px] pr-[8px]"
+                                        >
+                                            <DownArrow className="transform rotate-90 fill-white w-[16px] h-[16px]" />
+                                        </button>
+                                    )}
+                                    {currentImageIndex < images.length - 1 && (
+                                        <button
+                                            onClick={() => setCurrentImageIndex((prev) => prev + 1)}
+                                            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-60 text-white rounded-full py-[7px] pl-[8px] pr-[6px]"
+                                        >
+                                            <DownArrow className="transform -rotate-90 fill-white w-[16px] h-[16px]" />
+                                        </button>
+                                    )}
                                     <div className="flex justify-center mt-2 gap-1">
                                         {images.map((_, index) => (
                                             <button

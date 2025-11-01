@@ -146,7 +146,7 @@ const Spotimage = ({ images, tags, notes, date, alt, spotdata, isAdmin }: ImageP
                                     {currentImageIndex > 0 && (
                                         <button
                                             onClick={() => setCurrentImageIndex((prev) => prev - 1)}
-                                            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-60 text-white rounded-full py-[7px] pl-[6px] pr-[8px]"
+                                            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-60 text-white rounded-full py-[7px] pl-[6px] pr-[8px] hover:bg-opacity-80"
                                         >
                                             <DownArrow className="transform rotate-90 fill-white w-[16px] h-[16px]" />
                                         </button>
@@ -154,7 +154,7 @@ const Spotimage = ({ images, tags, notes, date, alt, spotdata, isAdmin }: ImageP
                                     {currentImageIndex < images.length - 1 && (
                                         <button
                                             onClick={() => setCurrentImageIndex((prev) => prev + 1)}
-                                            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-60 text-white rounded-full py-[7px] pl-[8px] pr-[6px]"
+                                            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-60 text-white rounded-full py-[7px] pl-[8px] pr-[6px] hover:bg-opacity-80"
                                         >
                                             <DownArrow className="transform -rotate-90 fill-white w-[16px] h-[16px]" />
                                         </button>

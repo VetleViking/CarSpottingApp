@@ -1,15 +1,15 @@
 {
-  "compilerOptions": {
-    "target": "es6",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
+    "compilerOptions": {
+        "target": "es6",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
 
-    "esModuleInterop": true,
-    "moduleResolution": "Node",
-    "outDir": "./dist",
+        "esModuleInterop": true,
+        "moduleResolution": "Node",
+        "outDir": "./dist",
 
-    "paths": {
-      "@shared/*": ["../shared/*"]
+        "paths": {
+            "@shared/*": ["../shared/*"]
+        }
     }
-  }
 }

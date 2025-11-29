@@ -1,7 +1,10 @@
 const BASE_URL = process.env.NEXT_PUBLIC_DATABASE_IP || "http://localhost:4000";
 const apiBase = `${BASE_URL}/api/v1/users`;
 
-async function apiCall(endpoint: string, { method = 'GET', body, query, headers }: ApiCallOptions = {}) {
+async function apiCall(
+    endpoint: string,
+    { method = "GET", body, query, headers }: ApiCallOptions = {}
+) {
     let url = `${apiBase}/${endpoint}`;
 
     // Make query string
@@ -17,11 +20,11 @@ async function apiCall(endpoint: string, { method = 'GET', body, query, headers 
 
     let fetchOptions: RequestInit = {
         method,
-        credentials: 'include',
+        credentials: "include",
         headers: {
-            'Content-Type': 'application/json',
-            ...(headers || {})
-        }
+            "Content-Type": "application/json",
+            ...(headers || {}),
+        },
     };
 
     if (body) {
@@ -33,35 +36,35 @@ async function apiCall(endpoint: string, { method = 'GET', body, query, headers 
 }
 
 export async function create_user(username: string, password: string) {
-    return apiCall('create_user', {
-        method: 'POST',
-        body: { username, password }
+    return apiCall("create_user", {
+        method: "POST",
+        body: { username, password },
     });
 }
 
 export async function login(username: string, password: string) {
-    return apiCall('login', {
-        method: 'POST',
-        body: { username, password }
+    return apiCall("login", {
+        method: "POST",
+        body: { username, password },
     });
 }
 
 export async function logout() {
-    return apiCall('logout', {
-        method: 'POST'
+    return apiCall("logout", {
+        method: "POST",
     });
 }
 
 export async function delete_user() {
-    return apiCall('delete_user', {
-        method: 'POST'
+    return apiCall("delete_user", {
+        method: "POST",
     });
 }
 
 export async function decode_jwt(token: string) {
-    return apiCall('decodejwt', {
-        method: 'POST',
-        body: { token }
+    return apiCall("decodejwt", {
+        method: "POST",
+        body: { token },
     });
 }
 
@@ -71,20 +74,20 @@ export async function check_admin() {
 
 export async function add_admin(username: string) {
     return apiCall(`add_admin`, {
-        method: 'POST',
-        body: { admin_username: username }
+        method: "POST",
+        body: { admin_username: username },
     });
 }
 
 export async function add_release_notes(notes: releaseNotesComponent[], version: string) {
     return apiCall(`add_release_notes`, {
-        method: 'POST',
-        body: { notes, version }
+        method: "POST",
+        body: { notes, version },
     });
 }
 
 export async function update_users() {
     return apiCall(`update_users`, {
-        method: 'POST'
+        method: "POST",
     });
 }

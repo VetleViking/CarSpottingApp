@@ -85,7 +85,7 @@ const AskAi = () => {
             {open ? (
                 <div className=" flex flex-col gap-2 items-center">
                     <p className="text-white font-ListComponent">
-                        Here you can ask AI to identify a car from an image.
+                        Here you can get help from an AI to identify a car from an image.
                     </p>
                     <div className="flex items-center flex-col max-w-96 gap-2">
                         <input
@@ -106,13 +106,13 @@ const AskAi = () => {
                     {results && (
                         <div className="flex flex-col gap-2 items-center">
                             <p className="text-white font-ListComponent">
-                                AI identified the car as:
+                                The AI identified the car as:
                             </p>
                             <p className="text-white font-ListComponent">
                                 {results.make} {results.model}
                             </p>
                             <p className="text-white font-ListComponent">
-                                Confidence: {results.confidence}
+                                With a confidence of: {results.confidence}
                             </p>
                         </div>
                     )}
